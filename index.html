@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clase Gratuita con Femiliano — Contenido Viral</title>
+  <meta name="description" content="Clase gratuita en vivo: aprende los 3 hacks para crear contenido viral que posiciona y vende.">
+  <meta property="og:title" content="Clase Gratuita — Femiliano">
+  <meta property="og:description" content="Jueves 8PM México · Online · Gratis">
+  <meta property="og:image" content="assets/femiliano.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --black:      #000000;
+      --dark:       #0d0d0d;
+      --card:       #161616;
+      --card2:      #1e1e1e;
+      --border:     #2a2a2a;
+      --blue:       #0450E0;
+      --blue-dim:   rgba(4,80,224,0.15);
+      --gold:       #FFE500;
+      --gold-dim:   rgba(255,229,0,0.12);
+      --gold-dark:  #ccb700;
+      --white:      #ffffff;
+      --text:       #cccccc;
+      --muted:      #888888;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+
+    .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+    .text-center { text-align: center; }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--blue); color: var(--white);
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; padding: 7px 14px; border-radius: 3px;
+    }
+    .badge-gold {
+      background: transparent; border: 1px solid var(--gold); color: var(--gold);
+    }
+
+    /* ── SECTION LABEL ── */
+    .label {
+      display: block; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 14px;
+    }
+
+    /* ── DIVIDER ── */
+    .divider { width: 48px; height: 3px; background: var(--gold); margin: 14px auto 44px; }
+
+    /* ── SECTION TITLE ── */
+    .sec-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1.05; margin-bottom: 6px;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-block; font-weight: 800; font-size: 1rem;
+      padding: 18px 42px; border-radius: 4px; text-decoration: none;
+      cursor: pointer; border: none; transition: transform 0.15s, filter 0.15s;
+      text-transform: uppercase; letter-spacing: 0.06em; font-family: 'Inter', sans-serif;
+    }
+    .btn:hover { transform: scale(1.03); filter: brightness(1.08); }
+    .btn-gold { background: var(--gold); color: var(--black); }
+    .btn-full { width: 100%; text-align: center; }
+
+    /* ══════════════════════════════════════════
+       STICKY CTA BAR
+    ══════════════════════════════════════════ */
+    #stickyCta {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+      background: var(--gold); color: var(--black);
+      padding: 14px 24px;
+      display: flex; align-items: center; justify-content: center;
+      gap: 20px; flex-wrap: wrap;
+      transform: translateY(100%); transition: transform 0.3s ease;
+      box-shadow: 0 -4px 24px rgba(255,229,0,0.25);
+    }
+    #stickyCta.visible { transform: translateY(0); }
+    #stickyCta .s-text { font-weight: 700; font-size: 0.9rem; }
+    #stickyCta .s-btn {
+      background: var(--black); color: var(--gold);
+      font-weight: 800; font-size: 0.85rem;
+      padding: 10px 24px; border-radius: 3px;
+      text-decoration: none; cursor: pointer; border: none;
+      text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Inter', sans-serif;
+    }
+
+    /* ══════════════════════════════════════════
+       HERO
+    ══════════════════════════════════════════ */
+    #hero {
+      min-height: 100vh; display: flex; align-items: center;
+      padding: 90px 0 70px; position: relative; overflow: hidden;
+      background: var(--black);
+    }
+    #hero::before {
+      content: ''; position: absolute; top: -40%; right: -15%;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, var(--blue-dim) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    #hero::after {
+      content: ''; position: absolute; bottom: -30%; left: -10%;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, var(--gold-dim) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-inner { position: relative; z-index: 1; }
+
+    .hero-badges { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.6rem, 6vw, 5rem);
+      line-height: 1.02; color: var(--gold);
+      max-width: 860px; margin-bottom: 22px;
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 1.8vw, 1.15rem);
+      color: var(--text); max-width: 560px;
+      line-height: 1.65; margin-bottom: 36px;
+    }
+
+    .hero-meta {
+      display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 36px;
+    }
+    .meta-item {
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 600; font-size: 0.92rem; color: var(--white);
+    }
+    .meta-item .ico { color: var(--gold); font-size: 1rem; }
+
+    /* COUNTDOWN */
+    .countdown-wrap { margin-bottom: 38px; }
+    .countdown-label { font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .countdown { display: flex; gap: 10px; flex-wrap: wrap; }
+    .cd-box {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 6px; padding: 14px 18px; text-align: center; min-width: 74px;
+    }
+    .cd-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.4rem; color: var(--gold); line-height: 1; display: block;
+    }
+    .cd-unit {
+      font-size: 0.62rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted); margin-top: 3px; display: block;
+    }
+
+    .hero-cta { margin-bottom: 28px; }
+
+    .social-proof { font-size: 0.88rem; color: var(--muted); }
+    .social-proof strong { color: var(--gold); font-size: 1rem; }
+
+    /* ══════════════════════════════════════════
+       WHAT YOU'LL LEARN
+    ══════════════════════════════════════════ */
+    #aprender { background: var(--dark); padding: 100px 0; }
+
+    .hacks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 22px; margin-top: 0;
+    }
+    .hack-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-top: 3px solid var(--gold); border-radius: 8px;
+      padding: 36px 28px; transition: transform 0.2s;
+    }
+    .hack-card:hover { transform: translateY(-5px); }
+    .hack-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.5rem; color: var(--blue);
+      line-height: 1; margin-bottom: 14px;
+    }
+    .hack-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 12px; }
+    .hack-desc { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+
+    /* ══════════════════════════════════════════
+       QUIÉN SOY
+    ══════════════════════════════════════════ */
+    #quien { background: var(--black); padding: 100px 0; }
+
+    .quien-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 64px; align-items: center;
+    }
+
+    .quien-img-wrap { position: relative; }
+    .quien-img {
+      width: 100%; border-radius: 8px;
+      border: 2px solid var(--border);
+      display: block;
+      box-shadow: 8px 8px 0 var(--gold);
+    }
+    .quien-img-tag {
+      position: absolute; bottom: -12px; right: -12px;
+      background: var(--gold); color: var(--black);
+      font-weight: 800; font-size: 0.75rem; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 8px 14px; border-radius: 3px;
+    }
+
+    .quien-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.2rem; color: var(--gold); line-height: 1; margin-bottom: 18px;
+    }
+    .quien-bio {
+      color: var(--text); line-height: 1.8;
+      font-size: 0.97rem; margin-bottom: 18px;
+    }
+    .quien-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 14px; margin-top: 32px;
+    }
+    .stat { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 16px 10px; text-align: center; }
+    .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--gold); display: block; }
+    .stat-lbl { font-size: 0.72rem; color: var(--muted); line-height: 1.35; }
+
+    /* ══════════════════════════════════════════
+       RESULTADOS
+    ══════════════════════════════════════════ */
+    #resultados { background: var(--dark); padding: 100px 0; }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px; margin-top: 0;
+    }
+    .result-item {
+      background: var(--card); border: 1px solid var(--border);
+      border-left: 3px solid var(--gold); border-radius: 4px;
+      padding: 20px 20px; display: flex; align-items: flex-start; gap: 14px;
+    }
+    .result-check { color: var(--gold); font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .result-text { color: var(--text); font-size: 0.92rem; line-height: 1.55; }
+
+    /* ══════════════════════════════════════════
+       TESTIMONIOS
+    ══════════════════════════════════════════ */
+    #testimonios { background: var(--black); padding: 100px 0; }
+
+    .testi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 22px;
+    }
+    .testi-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 28px; position: relative; overflow: hidden;
+    }
+    .testi-card::before {
+      content: '"'; font-family: 'Bebas Neue', sans-serif;
+      font-size: 6rem; color: var(--gold); opacity: 0.2;
+      position: absolute; top: -8px; left: 14px; line-height: 1;
+    }
+    .video-ph {
+      background: var(--dark); border: 1px dashed var(--border);
+      border-radius: 6px; aspect-ratio: 16/9;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 10px;
+      color: var(--muted); font-size: 0.82rem; margin-bottom: 18px;
+    }
+    .play-btn {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--border); display: flex; align-items: center;
+      justify-content: center; color: var(--gold); font-size: 1.1rem;
+    }
+    .testi-author { display: flex; align-items: center; gap: 12px; }
+    .testi-av {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--blue); display: flex; align-items: center;
+      justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0;
+    }
+    .testi-name { font-weight: 700; font-size: 0.88rem; }
+    .testi-role { font-size: 0.78rem; color: var(--muted); }
+
+    /* ══════════════════════════════════════════
+       URGENCY BAR
+    ══════════════════════════════════════════ */
+    #urgencia {
+      background: var(--gold); color: var(--black);
+      padding: 28px 0; text-align: center;
+    }
+    #urgencia p { font-weight: 700; font-size: 1.05rem; }
+    #urgencia span { font-size: 0.9rem; font-weight: 500; display: block; margin-top: 4px; }
+
+    /* ══════════════════════════════════════════
+       REGISTRO
+    ══════════════════════════════════════════ */
+    #registro { background: var(--dark); padding: 100px 0; }
+
+    .form-box {
+      max-width: 500px; margin: 0 auto;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 48px 40px;
+    }
+    .form-box-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem; color: var(--gold); text-align: center; margin-bottom: 6px;
+    }
+    .form-box-sub {
+      color: var(--muted); text-align: center;
+      font-size: 0.88rem; margin-bottom: 32px; line-height: 1.5;
+    }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 7px; }
+    .field input {
+      width: 100%; background: var(--dark); border: 1px solid var(--border);
+      border-radius: 4px; padding: 14px 16px; color: var(--white);
+      font-size: 0.97rem; font-family: 'Inter', sans-serif; outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus { border-color: var(--gold); }
+    .field input::placeholder { color: #444; }
+    .phone-wrap { display: flex; gap: 8px; }
+    .phone-wrap select {
+      background: var(--dark); border: 1px solid var(--border);
+      border-radius: 4px; padding: 14px 10px; color: var(--white);
+      font-size: 0.97rem; font-family: 'Inter', sans-serif; outline: none;
+      transition: border-color 0.2s; cursor: pointer; flex-shrink: 0; width: 130px;
+    }
+    .phone-wrap select:focus { border-color: var(--gold); }
+    .phone-wrap input { flex: 1; }
+    .form-privacy { text-align: center; font-size: 0.74rem; color: var(--muted); margin-top: 14px; line-height: 1.5; }
+
+    /* ══════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════ */
+    footer {
+      background: var(--black); border-top: 1px solid var(--border);
+      padding: 36px 0; text-align: center;
+      color: var(--muted); font-size: 0.82rem;
+    }
+    footer .ft-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem; color: var(--gold); margin-bottom: 6px;
+    }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width: 860px) {
+      .quien-grid { grid-template-columns: 1fr; text-align: center; }
+      .quien-img { max-width: 320px; margin: 0 auto; }
+      .quien-stats { grid-template-columns: repeat(3, 1fr); }
+      .quien-img-wrap { max-width: 320px; margin: 0 auto; }
+    }
+    @media (max-width: 600px) {
+      .form-box { padding: 32px 22px; }
+      .hero-title { font-size: 2.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ────────────────────────────────────────
+     STICKY CTA BAR
+──────────────────────────────────────── -->
+<div id="stickyCta">
+  <span class="s-text">🔥 Próxima clase: <strong id="stickyDate">Jueves 2 Abril · 8PM</strong> — ¡Lugares limitados!</span>
+  <button class="s-btn" onclick="scrollToForm()">RESERVAR MI LUGAR</button>
+</div>
+
+<!-- ────────────────────────────────────────
+     HERO
+──────────────────────────────────────── -->
+<section id="hero">
+  <div class="container hero-inner">
+
+    <div class="hero-badges">
+      <span class="badge">🎓 Clase Gratuita en Vivo</span>
+      <span class="badge badge-gold">⚡ 100% Online</span>
+    </div>
+
+    <h1 class="hero-title" id="heroTitle">Cargando…</h1>
+
+    <p class="hero-sub">
+      Aprende en vivo los sistemas exactos que usan los creadores más exitosos
+      para viralizar su contenido, posicionarse como autoridades y convertir
+      seguidores en clientes — sin agotarse ni publicar todos los días.
+    </p>
+
+    <div class="hero-meta">
+      <div class="meta-item"><span class="ico">📅</span><span id="heroDate">Jueves, 2 de Abril 2026</span></div>
+      <div class="meta-item"><span class="ico">🕗</span><span>8:00 PM · Hora México</span></div>
+      <div class="meta-item"><span class="ico">💻</span><span>100% Online · Gratis</span></div>
+    </div>
+
+    <div class="countdown-wrap">
+      <p class="countdown-label">La clase comienza en:</p>
+      <div class="countdown">
+        <div class="cd-box"><span class="cd-num" id="cd-d">00</span><span class="cd-unit">Días</span></div>
+        <div class="cd-box"><span class="cd-num" id="cd-h">00</span><span class="cd-unit">Horas</span></div>
+        <div class="cd-box"><span class="cd-num" id="cd-m">00</span><span class="cd-unit">Min</span></div>
+        <div class="cd-box"><span class="cd-num" id="cd-s">00</span><span class="cd-unit">Seg</span></div>
+      </div>
+    </div>
+
+    <div class="hero-cta">
+      <button class="btn btn-gold" onclick="scrollToForm()">✅ RESERVAR MI LUGAR GRATIS →</button>
+    </div>
+
+    <p class="social-proof">
+      <strong id="spCount">0</strong> personas ya se registraron — los lugares son limitados.
+    </p>
+
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────
+     QUÉ VAS A APRENDER
+──────────────────────────────────────── -->
+<section id="aprender">
+  <div class="container text-center">
+    <span class="label">Lo que vas a dominar</span>
+    <h2 class="sec-title">Los <span style="color:var(--gold)">3 Hacks</span> que transformarán tu contenido</h2>
+    <div class="divider"></div>
+    <p style="color:var(--text);max-width:580px;margin:0 auto 52px;line-height:1.7;font-size:0.97rem;">
+      No teoría. No relleno. Tres sistemas accionables que puedes implementar
+      esta misma semana para que tu contenido trabaje para ti.
+    </p>
+    <div class="hacks-grid">
+      <div class="hack-card">
+        <div class="hack-num">01</div>
+        <h3 class="hack-title">El Gancho que Para el Scroll</h3>
+        <p class="hack-desc">Domina los primeros 3 segundos de tu video. La fórmula exacta para crear aperturas que el algoritmo impulsa y que hacen que la gente no pueda ignorar tu contenido.</p>
+      </div>
+      <div class="hack-card">
+        <div class="hack-num">02</div>
+        <h3 class="hack-title">El Sistema de Batching de 4 Horas</h3>
+        <p class="hack-desc">Graba contenido para toda la semana en una sola sesión. El mismo método que usan los mayores creadores para publicar consistentemente sin vivir grabando.</p>
+      </div>
+      <div class="hack-card">
+        <div class="hack-num">03</div>
+        <h3 class="hack-title">El Puente de Contenido a Venta</h3>
+        <p class="hack-desc">La estructura exacta para pasar de dar valor a presentar tu oferta de forma completamente natural. Vende sin sonar a vendedor y sin perder la confianza de tu audiencia.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────
+     QUIÉN SOY
+──────────────────────────────────────── -->
+<section id="quien">
+  <div class="container">
+    <div class="quien-grid">
+      <div class="quien-img-wrap">
+        <img src="assets/femiliano.jpg" alt="Femiliano" class="quien-img">
+        <span class="quien-img-tag">Tu Instructor</span>
+      </div>
+      <div>
+        <span class="label">Quién te va a enseñar</span>
+        <h2 class="quien-name">Femiliano</h2>
+        <p class="quien-bio">
+          Soy emprendedor digital y estratega de marca personal. Me especializo en
+          ayudar a creadores, coaches y emprendedores a construir audiencias que
+          convierten y sistemas de contenido que generan ventas consistentes.
+        </p>
+        <p class="quien-bio">
+          He acompañado a decenas de creadores a pasar de publicar sin estrategia
+          a tener sistemas claros de contenido viral, posicionamiento y monetización.
+          Lo que comparto en esta clase son los patrones que aparecen una y otra vez
+          en los proyectos que más crecen.
+        </p>
+        <div class="quien-stats">
+          <div class="stat"><span class="stat-num">+100</span><span class="stat-lbl">Creadores impactados</span></div>
+          <div class="stat"><span class="stat-num">3x</span><span class="stat-lbl">Crecimiento promedio</span></div>
+          <div class="stat"><span class="stat-num">100%</span><span class="stat-lbl">Aplicable de inmediato</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────
+     RESULTADOS
+──────────────────────────────────────── -->
+<section id="resultados">
+  <div class="container text-center">
+    <span class="label">Después de esta clase</span>
+    <h2 class="sec-title">Vas a poder <span style="color:var(--gold)">hacer esto</span></h2>
+    <div class="divider"></div>
+    <div class="results-grid">
+      <div class="result-item"><span class="result-check">✓</span><span class="result-text">Crear contenido que para el scroll y genera miles de vistas desde los primeros segundos</span></div>
+      <div class="result-item"><span class="result-check">✓</span><span class="result-text">Publicar consistentemente sin agotarte ni sacrificar calidad ni tiempo</span></div>
+      <div class="result-item"><span class="result-check">✓</span><span class="result-text">Posicionarte como referente en tu nicho sin necesitar millones de seguidores</span></div>
+      <div class="result-item"><span class="result-check">✓</span><span class="result-text">Convertir seguidores en clientes con un sistema natural de ventas a través de contenido</span></div>
+      <div class="result-item"><span class="result-check">✓</span><span class="result-text">Saber exactamente qué tipo de contenido le funciona a tu audiencia y duplicar eso</span></div>
+      <div class="result-item"><span class="result-check">✓</span><span class="result-text">Construir una marca personal que genera oportunidades y ventas en piloto automático</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────
+     TESTIMONIOS
+──────────────────────────────────────── -->
+<section id="testimonios">
+  <div class="container text-center">
+    <span class="label">Lo que dicen quienes han trabajado conmigo</span>
+    <h2 class="sec-title">Resultados <span style="color:var(--gold)">reales</span></h2>
+    <div class="divider"></div>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="video-ph">
+          <div class="play-btn">▶</div>
+          <span>Testimonio en video · Próximamente</span>
+        </div>
+        <div class="testi-author">
+          <div class="testi-av">M</div>
+          <div><div class="testi-name">María González</div><div class="testi-role">Creadora de contenido</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="video-ph">
+          <div class="play-btn">▶</div>
+          <span>Testimonio en video · Próximamente</span>
+        </div>
+        <div class="testi-author">
+          <div class="testi-av">C</div>
+          <div><div class="testi-name">Carlos Ramos</div><div class="testi-role">Coach de negocios</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="video-ph">
+          <div class="play-btn">▶</div>
+          <span>Testimonio en video · Próximamente</span>
+        </div>
+        <div class="testi-author">
+          <div class="testi-av">L</div>
+          <div><div class="testi-name">Laura Méndez</div><div class="testi-role">Emprendedora digital</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────
+     URGENCY BAR
+──────────────────────────────────────── -->
+<div id="urgencia">
+  <div class="container">
+    <p>⏰ Los lugares para esta clase son limitados — no dejes tu registro para después</p>
+    <span>Jueves · 8PM Hora México · Totalmente Gratis · 100% Online</span>
+  </div>
+</div>
+
+<!-- ────────────────────────────────────────
+     REGISTRO
+──────────────────────────────────────── -->
+<section id="registro">
+  <div class="container text-center">
+    <span class="label">¡Solo te toma 30 segundos!</span>
+    <h2 class="sec-title">Reserva tu lugar <span style="color:var(--gold)">ahora</span></h2>
+    <div class="divider"></div>
+
+    <div class="form-box">
+      <h3 class="form-box-title">REGISTRO GRATUITO</h3>
+      <p class="form-box-sub" id="formDateText">Jueves 2 de Abril 2026 · 8PM Hora México</p>
+
+      <form id="regForm">
+        <div class="field">
+          <label for="fname">Tu nombre</label>
+          <input type="text" id="fname" name="name" placeholder="Nombre completo" required autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="femail">Tu correo electrónico</label>
+          <input type="email" id="femail" name="email" placeholder="correo@ejemplo.com" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="fphone">Tu número de WhatsApp</label>
+          <div class="phone-wrap">
+            <select id="fphonecode" name="phone_code" autocomplete="tel-country-code">
+              <option value="+52">🇲🇽 +52</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+1-CA">🇨🇦 +1</option>
+              <option value="+34">🇪🇸 +34</option>
+              <option value="+54">🇦🇷 +54</option>
+              <option value="+57">🇨🇴 +57</option>
+              <option value="+56">🇨🇱 +56</option>
+              <option value="+51">🇵🇪 +51</option>
+              <option value="+58">🇻🇪 +58</option>
+              <option value="+593">🇪🇨 +593</option>
+              <option value="+502">🇬🇹 +502</option>
+              <option value="+503">🇸🇻 +503</option>
+              <option value="+504">🇭🇳 +504</option>
+              <option value="+505">🇳🇮 +505</option>
+              <option value="+506">🇨🇷 +506</option>
+              <option value="+507">🇵🇦 +507</option>
+              <option value="+591">🇧🇴 +591</option>
+              <option value="+595">🇵🇾 +595</option>
+              <option value="+598">🇺🇾 +598</option>
+              <option value="+1-DO">🇩🇴 +1</option>
+              <option value="+53">🇨🇺 +53</option>
+              <option value="+55">🇧🇷 +55</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+33">🇫🇷 +33</option>
+              <option value="+49">🇩🇪 +49</option>
+              <option value="+39">🇮🇹 +39</option>
+            </select>
+            <input type="tel" id="fphone" name="phone" placeholder="ej. 5512345678" required autocomplete="tel-national">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-gold btn-full" style="margin-top:8px;">
+          ✅ QUIERO MI LUGAR GRATIS →
+        </button>
+      </form>
+
+      <p class="form-privacy">
+        🔒 Tu información está 100% segura. Sin spam, nunca.<br>
+        Al registrarte recibirás acceso al grupo de WhatsApp donde se llevará a cabo la clase.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────────────────────────
+     FOOTER
+──────────────────────────────────────── -->
+<footer>
+  <div class="container">
+    <p class="ft-name">FEMILIANO</p>
+    <p>Estratega de marca personal y contenido digital</p>
+    <p style="margin-top:14px;">© 2026 Femiliano. Todos los derechos reservados.</p>
+    <p style="margin-top:8px;">
+      <a href="dashboard.html" style="color:var(--border);text-decoration:none;font-size:0.75rem;">Panel de administración</a>
+    </p>
+  </div>
+</footer>
+
+<!-- ════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+/* ──────────────────────────────────────
+   CONFIG — sincroniza con dashboard
+────────────────────────────────────── */
+const DEFAULTS = {
+  whatsappLink:    'https://chat.whatsapp.com/Fs0EufLqgmZI3aUiR9zM02?mode=gi_t',
+  socialProofBase: 847,
+  variants: {
+    A: 'Masterclass: El Método de 3 Pasos para Crear Contenido que se Viraliza, te Posiciona como Referente y Convierte Seguidores en Clientes',
+    B: 'Clase GRATIS: Cómo Crear Contenido Viral que Construye tu Marca y Genera Ventas Sin Publicar Todos los Días',
+    C: 'Los 3 Hacks que Usan los Creadores que Más Crecen para Viralizar, Posicionarse y Vender con Contenido',
+    D: '3 Hacks para Crear Contenido Viral que Posicione y Venda'
+  }
+};
+
+function cfg() {
+  try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem('landing_config') || '{}')); }
+  catch(e) { return DEFAULTS; }
+}
+
+/* ──────────────────────────────────────
+   A/B TESTING
+────────────────────────────────────── */
+function getVariant() {
+  let v = localStorage.getItem('ab_variant');
+  if (!v || !['A','B','C','D'].includes(v)) {
+    v = ['A','B','C','D'][Math.floor(Math.random() * 4)];
+    localStorage.setItem('ab_variant', v);
+  }
+  return v;
+}
+
+function trackView(v) {
+  const k = 'ab_views_' + v;
+  localStorage.setItem(k, String(+( localStorage.getItem(k) || 0) + 1));
+}
+
+function trackConversion(v, name, email, phone) {
+  const k = 'ab_conv_' + v;
+  localStorage.setItem(k, String(+(localStorage.getItem(k) || 0) + 1));
+  const regs = JSON.parse(localStorage.getItem('registrations') || '[]');
+  regs.push({ id: Date.now(), name, email, phone, variant: v, ts: new Date().toISOString() });
+  localStorage.setItem('registrations', JSON.stringify(regs));
+}
+
+/* ──────────────────────────────────────
+   NEXT THURSDAY 8PM MEXICO (UTC-6)
+────────────────────────────────────── */
+function nextThursday8PM() {
+  const MX = -6 * 3600000;
+  const now = new Date();
+  const mxNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + MX);
+  let days = (4 - mxNow.getDay() + 7) % 7;
+  if (days === 0 && mxNow.getHours() >= 20) days = 7;
+  const target = new Date(mxNow);
+  target.setDate(mxNow.getDate() + days);
+  target.setHours(20, 0, 0, 0);
+  return new Date(target.getTime() - now.getTimezoneOffset() * 60000 - MX);
+}
+
+function fmtDate(d) {
+  const M = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  return `Jueves, ${d.getDate()} de ${M[d.getMonth()]} ${d.getFullYear()}`;
+}
+function fmtShort(d) {
+  const M = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return `${d.getDate()} ${M[d.getMonth()]} · 8PM`;
+}
+
+/* ──────────────────────────────────────
+   COUNTDOWN
+────────────────────────────────────── */
+function pad(n) { return String(n).padStart(2,'0'); }
+function tick() {
+  const diff = nextThursday8PM() - new Date();
+  if (diff <= 0) { ['cd-d','cd-h','cd-m','cd-s'].forEach(id => document.getElementById(id).textContent = '00'); return; }
+  document.getElementById('cd-d').textContent = pad(Math.floor(diff / 86400000));
+  document.getElementById('cd-h').textContent = pad(Math.floor(diff % 86400000 / 3600000));
+  document.getElementById('cd-m').textContent = pad(Math.floor(diff % 3600000 / 60000));
+  document.getElementById('cd-s').textContent = pad(Math.floor(diff % 60000 / 1000));
+}
+
+/* ──────────────────────────────────────
+   STICKY CTA
+────────────────────────────────────── */
+function scrollToForm() {
+  document.getElementById('registro').scrollIntoView({ behavior: 'smooth' });
+}
+window.addEventListener('scroll', () => {
+  const h = document.getElementById('hero').offsetHeight;
+  document.getElementById('stickyCta').classList.toggle('visible', window.scrollY > h * 0.65);
+});
+
+/* ──────────────────────────────────────
+   FORM SUBMIT
+────────────────────────────────────── */
+document.getElementById('regForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const name  = document.getElementById('fname').value.trim();
+  const email = document.getElementById('femail').value.trim();
+  const code  = document.getElementById('fphonecode').value.replace(/-[A-Z]+$/, '');
+  const phone = code + document.getElementById('fphone').value.trim();
+  const v     = getVariant();
+  trackConversion(v, name, email, phone);
+  window.location.href = cfg().whatsappLink;
+});
+
+/* ──────────────────────────────────────
+   INIT
+────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  const config  = cfg();
+  const variant = getVariant();
+
+  // Set A/B title
+  document.getElementById('heroTitle').textContent = config.variants[variant];
+
+  // Track view
+  trackView(variant);
+
+  // Set dates
+  const next = nextThursday8PM();
+  const full = fmtDate(next);
+  const short = fmtShort(next);
+  document.getElementById('heroDate').textContent = full;
+  document.getElementById('stickyDate').textContent = short;
+  document.getElementById('formDateText').textContent = full + ' · 8PM Hora México';
+
+  // Countdown
+  tick(); setInterval(tick, 1000);
+
+  // Social proof counter
+  const regs = JSON.parse(localStorage.getItem('registrations') || '[]').length;
+  document.getElementById('spCount').textContent = (config.socialProofBase + regs).toLocaleString('es-MX');
+});
+</script>
+</body>
+</html>
