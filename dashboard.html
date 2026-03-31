@@ -344,6 +344,7 @@
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <input type="text" class="search-input" id="searchInput" placeholder="🔍  Buscar nombre o email…" oninput="filterRegistros()">
+          <button class="btn btn-outline btn-sm" onclick="refreshData()">🔄 Actualizar</button>
           <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ CSV</button>
           <button class="btn btn-red btn-sm" onclick="confirmReset()">🗑 Limpiar todo</button>
         </div>
@@ -486,6 +487,26 @@ function saveToStorage(cfg) {
 /* ──────────────────────────────────────
    DATA HELPERS
 ────────────────────────────────────── */
+/* ──────────────────────────────────────
+   SUPABASE CONFIG
+────────────────────────────────────── */
+const SB_URL      = 'https://xpsvkhoeedinuvwrumvu.supabase.co';
+const SB_SERVICE  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3ZraG9lZWRpbnV2d3J1bXZ1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDkzNDUzNiwiZXhwIjoyMDkwNTEwNTM2fQ.w9ij07UJ50lGwu8FcqM81tPmrU2Z7Uft7HnoAEUcBzI';
+
+async function fetchFromSupabase() {
+  try {
+    const res = await fetch(SB_URL + '/rest/v1/clase_viral_registros?select=*&order=ts.desc', {
+      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE }
+    });
+    const data = await res.json();
+    return data.map(r => ({
+      id: r.id, name: r.nombre, email: r.email,
+      phone: r.phone || '', variant: r.variante || '?',
+      ts: r.ts
+    }));
+  } catch(e) { return []; }
+}
+
 function getRegistrations() {
   return JSON.parse(localStorage.getItem('registrations') || '[]');
 }
@@ -496,7 +517,7 @@ function cvr(v, c)   { return v === 0 ? 0 : Math.round((c / v) * 1000) / 10; }
 /* ──────────────────────────────────────
    NEXT THURSDAY
 ────────────────────────────────────── */
-function nextThursday8PM() {
+function nextThursday7PM() {
   const MX = -6 * 3600000;
   const now = new Date();
   const mxNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + MX);
@@ -749,6 +770,20 @@ function copyLanding() {
 }
 
 /* ──────────────────────────────────────
+   REFRESH FROM SUPABASE
+────────────────────────────────────── */
+async function refreshData() {
+  const sbRegs = await fetchFromSupabase();
+  if (sbRegs.length > 0) {
+    localStorage.setItem('registrations', JSON.stringify(sbRegs));
+    renderOverview(); renderRegistros(); renderABTest();
+    showAlert('configAlert', '✅ Datos actualizados desde Supabase (' + sbRegs.length + ' registros).', 'success');
+  } else {
+    showAlert('configAlert', 'ℹ️ Sin registros en Supabase aún.', 'error');
+  }
+}
+
+/* ──────────────────────────────────────
    EXPORT CSV
 ────────────────────────────────────── */
 function exportCSV() {
@@ -797,9 +832,15 @@ function resetAB() {
 /* ──────────────────────────────────────
    INIT
 ────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('nc-date').textContent = fmtFull(nextThursday8PM());
+document.addEventListener('DOMContentLoaded', async function() {
+  document.getElementById('nc-date').textContent = fmtFull(nextThursday7PM());
+  // Load Supabase data and cache locally
+  const sbRegs = await fetchFromSupabase();
+  if (sbRegs.length > 0) {
+    localStorage.setItem('registrations', JSON.stringify(sbRegs));
+  }
   renderOverview();
+  renderConfig();
 });
 </script>
 </body>
