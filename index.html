@@ -6,7 +6,7 @@
   <title>Clase Gratuita con Femiliano — Contenido Viral</title>
   <meta name="description" content="Clase gratuita en vivo: aprende los 3 hacks para crear contenido viral que posiciona y vende.">
   <meta property="og:title" content="Clase Gratuita — Femiliano">
-  <meta property="og:description" content="Jueves 8PM México · Online · Gratis">
+  <meta property="og:description" content="Jueves 7PM México · Online · Gratis">
   <meta property="og:image" content="assets/femiliano.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -371,7 +371,7 @@
      STICKY CTA BAR
 ──────────────────────────────────────── -->
 <div id="stickyCta">
-  <span class="s-text">🔥 Próxima clase: <strong id="stickyDate">Jueves 2 Abril · 8PM</strong> — ¡Lugares limitados!</span>
+  <span class="s-text">🔥 Próxima clase: <strong id="stickyDate">Jueves 2 Abril · 7PM</strong> — ¡Lugares limitados!</span>
   <button class="s-btn" onclick="scrollToForm()">RESERVAR MI LUGAR</button>
 </div>
 
@@ -396,7 +396,7 @@
 
     <div class="hero-meta">
       <div class="meta-item"><span class="ico">📅</span><span id="heroDate">Jueves, 2 de Abril 2026</span></div>
-      <div class="meta-item"><span class="ico">🕗</span><span>8:00 PM · Hora México</span></div>
+      <div class="meta-item"><span class="ico">🕗</span><span>7:00 PM · Hora México</span></div>
       <div class="meta-item"><span class="ico">💻</span><span>100% Online · Gratis</span></div>
     </div>
 
@@ -555,7 +555,7 @@
 <div id="urgencia">
   <div class="container">
     <p>⏰ Los lugares para esta clase son limitados — no dejes tu registro para después</p>
-    <span>Jueves · 8PM Hora México · Totalmente Gratis · 100% Online</span>
+    <span>Jueves · 7PM Hora México · Totalmente Gratis · 100% Online</span>
   </div>
 </div>
 
@@ -570,7 +570,7 @@
 
     <div class="form-box">
       <h3 class="form-box-title">REGISTRO GRATUITO</h3>
-      <p class="form-box-sub" id="formDateText">Jueves 2 de Abril 2026 · 8PM Hora México</p>
+      <p class="form-box-sub" id="formDateText">Jueves 2 de Abril 2026 · 7PM Hora México</p>
 
       <form id="regForm">
         <div class="field">
@@ -691,17 +691,18 @@ function trackConversion(v, name, email, phone) {
 }
 
 /* ──────────────────────────────────────
-   NEXT THURSDAY 8PM MEXICO (UTC-6)
+   NEXT THURSDAY 7PM MEXICO (UTC-6)
+
 ────────────────────────────────────── */
-function nextThursday8PM() {
+function nextThursday7PM() {
   const MX = -6 * 3600000;
   const now = new Date();
   const mxNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + MX);
   let days = (4 - mxNow.getDay() + 7) % 7;
-  if (days === 0 && mxNow.getHours() >= 20) days = 7;
+  if (days === 0 && mxNow.getHours() >= 19) days = 7;
   const target = new Date(mxNow);
   target.setDate(mxNow.getDate() + days);
-  target.setHours(20, 0, 0, 0);
+  target.setHours(19, 0, 0, 0);
   return new Date(target.getTime() - now.getTimezoneOffset() * 60000 - MX);
 }
 
@@ -711,7 +712,7 @@ function fmtDate(d) {
 }
 function fmtShort(d) {
   const M = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  return `${d.getDate()} ${M[d.getMonth()]} · 8PM`;
+  return `${d.getDate()} ${M[d.getMonth()]} · 7PM`;
 }
 
 /* ──────────────────────────────────────
@@ -719,7 +720,7 @@ function fmtShort(d) {
 ────────────────────────────────────── */
 function pad(n) { return String(n).padStart(2,'0'); }
 function tick() {
-  const diff = nextThursday8PM() - new Date();
+  const diff = nextThursday7PM() - new Date();
   if (diff <= 0) { ['cd-d','cd-h','cd-m','cd-s'].forEach(id => document.getElementById(id).textContent = '00'); return; }
   document.getElementById('cd-d').textContent = pad(Math.floor(diff / 86400000));
   document.getElementById('cd-h').textContent = pad(Math.floor(diff % 86400000 / 3600000));
@@ -766,12 +767,12 @@ document.addEventListener('DOMContentLoaded', function() {
   trackView(variant);
 
   // Set dates
-  const next = nextThursday8PM();
+  const next = nextThursday7PM();
   const full = fmtDate(next);
   const short = fmtShort(next);
   document.getElementById('heroDate').textContent = full;
   document.getElementById('stickyDate').textContent = short;
-  document.getElementById('formDateText').textContent = full + ' · 8PM Hora México';
+  document.getElementById('formDateText').textContent = full + ' · 7PM Hora México';
 
   // Countdown
   tick(); setInterval(tick, 1000);

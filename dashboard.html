@@ -239,7 +239,7 @@
         <div class="nc-date" id="nc-date">—</div>
       </div>
       <div style="flex:1;">
-        <div style="font-size:0.82rem;color:var(--text);">Jueves · 8PM Hora México · Online · Gratis</div>
+        <div style="font-size:0.82rem;color:var(--text);">Jueves · 7PM Hora México · Online · Gratis</div>
         <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;">Se actualiza automáticamente cada semana</div>
       </div>
       <a href="index.html" target="_blank" class="btn btn-gold btn-sm">Abrir Landing →</a>
@@ -357,13 +357,14 @@
                 <th>#</th>
                 <th>Nombre</th>
                 <th>Email</th>
+                <th>Teléfono</th>
                 <th>Variante</th>
                 <th>Fecha</th>
                 <th>Hora</th>
               </tr>
             </thead>
             <tbody id="regBody">
-              <tr><td colspan="6"><div class="empty"><span class="empty-icon">📭</span>Aún no hay registros.<br>Comparte tu landing para empezar a capturar leads.</div></td></tr>
+              <tr><td colspan="7"><div class="empty"><span class="empty-icon">📭</span>Aún no hay registros.<br>Comparte tu landing para empezar a capturar leads.</div></td></tr>
             </tbody>
           </table>
         </div>
@@ -500,9 +501,9 @@ function nextThursday8PM() {
   const now = new Date();
   const mxNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + MX);
   let days = (4 - mxNow.getDay() + 7) % 7;
-  if (days === 0 && mxNow.getHours() >= 20) days = 7;
+  if (days === 0 && mxNow.getHours() >= 19) days = 7;
   const t = new Date(mxNow);
-  t.setDate(mxNow.getDate() + days); t.setHours(20, 0, 0, 0);
+  t.setDate(mxNow.getDate() + days); t.setHours(19, 0, 0, 0);
   return new Date(t.getTime() - now.getTimezoneOffset() * 60000 - MX);
 }
 function fmtFull(d) {
@@ -675,14 +676,14 @@ let filteredRegs = [];
 function renderRegistros(filter = '') {
   const regs = getRegistrations().slice().reverse();
   filteredRegs = filter
-    ? regs.filter(r => (r.name+r.email).toLowerCase().includes(filter.toLowerCase()))
+    ? regs.filter(r => (r.name+r.email+(r.phone||'')).toLowerCase().includes(filter.toLowerCase()))
     : regs;
 
   document.getElementById('reg-count-label').textContent = `${filteredRegs.length} registro${filteredRegs.length !== 1 ? 's' : ''}`;
 
   const tbody = document.getElementById('regBody');
   if (filteredRegs.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><span class="empty-icon">📭</span>Sin resultados.</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><span class="empty-icon">📭</span>Sin resultados.</div></td></tr>';
     return;
   }
 
@@ -694,6 +695,7 @@ function renderRegistros(filter = '') {
       <td style="color:var(--muted)">${i+1}</td>
       <td class="bold">${esc(r.name)}</td>
       <td>${esc(r.email)}</td>
+      <td>${r.phone ? esc(r.phone) : '<span style="color:var(--muted)">—</span>'}</td>
       <td><span class="var-badge var-${r.variant || 'A'}">${r.variant || '?'}</span></td>
       <td>${date}</td>
       <td>${time}</td>
@@ -752,11 +754,11 @@ function copyLanding() {
 function exportCSV() {
   const regs = getRegistrations();
   if (!regs.length) { alert('No hay registros para exportar.'); return; }
-  const rows = [['#','Nombre','Email','Variante','Fecha','Hora']];
+  const rows = [['#','Nombre','Email','Teléfono','Variante','Fecha','Hora']];
   regs.forEach((r, i) => {
     const d = r.ts ? new Date(r.ts) : null;
     rows.push([
-      i+1, r.name, r.email, r.variant || '?',
+      i+1, r.name, r.email, r.phone || '', r.variant || '?',
       d ? d.toLocaleDateString('es-MX') : '',
       d ? d.toLocaleTimeString('es-MX') : ''
     ]);
