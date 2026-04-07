@@ -5,6 +5,15 @@
     },
     "api/zoom-transcript.js": {
       "maxDuration": 60
+    },
+    "api/auto-sync.js": {
+      "maxDuration": 60
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/auto-sync",
+      "schedule": "0 4 * * 5"
+    }
+  ]
 }
