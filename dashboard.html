@@ -210,13 +210,42 @@
       .tab { padding: 10px 12px; font-size: 0.78rem; }
     }
   </style>
+  <style>
+    #dashLogin {
+      display:flex; align-items:center; justify-content:center; min-height:100vh;
+    }
+    .dash-login-box {
+      background:var(--card); border:1px solid var(--border); border-radius:12px;
+      padding:40px; width:100%; max-width:360px; text-align:center;
+    }
+    .dash-login-box .dl-logo { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--gold); letter-spacing:0.05em; margin-bottom:6px; }
+    .dash-login-box .dl-sub  { color:var(--muted); font-size:0.85rem; margin-bottom:28px; }
+    .dash-login-box input {
+      width:100%; padding:12px 14px; border-radius:6px; background:var(--dark);
+      border:1px solid var(--border); color:var(--white); font-family:'Inter',sans-serif;
+      font-size:0.9rem; margin-bottom:12px; outline:none;
+    }
+    .dash-login-box input:focus { border-color:var(--gold); }
+    .dl-error { color:var(--red); font-size:0.82rem; margin-bottom:10px; display:none; }
+  </style>
 </head>
 <body>
+
+<!-- LOGIN -->
+<div id="dashLogin">
+  <div class="dash-login-box">
+    <div class="dl-logo">FEMILIANO</div>
+    <div class="dl-sub">Dashboard Admin</div>
+    <input type="password" id="dashPass" placeholder="Contraseña" onkeydown="if(event.key==='Enter')dashLogin()">
+    <div class="dl-error" id="dlError">Contraseña incorrecta.</div>
+    <button class="btn btn-gold" style="width:100%;justify-content:center;" onclick="dashLogin()">Entrar →</button>
+  </div>
+</div>
 
 <!-- ────────────────────────────────────────
      HEADER
 ──────────────────────────────────────── -->
-<header>
+<header id="dashApp" style="display:none">
   <div class="header-inner">
     <a href="index.html" class="logo">FEMILIANO <span>Dashboard</span></a>
     <div class="header-actions">
@@ -229,7 +258,7 @@
 <!-- ────────────────────────────────────────
      MAIN
 ──────────────────────────────────────── -->
-<main style="padding: 28px 24px 60px;">
+<main id="dashMain" style="padding: 28px 24px 60px; display:none;">
   <div class="wrap">
 
     <!-- NEXT CLASS BOX -->
@@ -250,12 +279,63 @@
       <button class="tab active" data-tab="overview">📊 Resumen</button>
       <button class="tab" data-tab="abtest">🧪 A/B Test</button>
       <button class="tab" data-tab="registros">📋 Registros</button>
+      <button class="tab" data-tab="miembros">🏆 Miembros</button>
+      <button class="tab" data-tab="vendedores">👥 Vendedores</button>
+      <button class="tab" data-tab="aprobaciones">✅ Aprobaciones <span id="aprobBadge" style="display:none;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:0.72rem;margin-left:4px;">0</span></button>
+      <button class="tab" data-tab="analisis">🧠 Análisis</button>
       <button class="tab" data-tab="config">⚙️ Configuración</button>
     </div>
 
     <!-- ════════════ OVERVIEW ════════════ -->
     <div class="panel active" id="tab-overview">
 
+      <!-- ── NEGOCIO ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;">💰 Negocio</div>
+      <div class="stats-row" style="margin-bottom:8px;grid-template-columns:repeat(8,1fr);">
+        <div class="stat-card" style="border-color:rgba(255,229,0,0.5);background:rgba(255,229,0,0.07);grid-column:span 1;">
+          <div class="s-label" style="color:var(--gold);">💰 Este mes</div>
+          <div class="s-value" id="ov-facturacion-mes" style="color:var(--gold);font-size:2.2rem;">$0</div>
+          <div class="s-sub" id="ov-facturacion-mes-label">Cargando…</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(255,229,0,0.2);">
+          <div class="s-label">Facturación Total</div>
+          <div class="s-value" id="ov-facturacion" style="color:rgba(255,229,0,0.6);font-size:1.6rem;">$0</div>
+          <div class="s-sub">Histórico acumulado</div>
+        </div>
+        <div class="stat-card green">
+          <div class="s-label">Ventas (vendedores)</div>
+          <div class="s-value" id="ov-ventas">0</div>
+          <div class="s-sub" id="ov-ventas-sub">ventas de vendedores</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(168,85,247,0.3);">
+          <div class="s-label">Registrados</div>
+          <div class="s-value" id="ov-registrados" style="color:#a855f7;">0</div>
+          <div class="s-sub">Próximo jueves</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(4,80,224,0.3);">
+          <div class="s-label">Confirmados</div>
+          <div class="s-value" id="ov-confirmados" style="color:#0450E0;">0</div>
+          <div class="s-sub">Dijeron que sí</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(34,197,94,0.25);">
+          <div class="s-label">Esperados</div>
+          <div class="s-value" id="ov-esperados" style="color:#22c55e;">0</div>
+          <div class="s-sub" id="ov-esperados-sub">est. 25% de registrados</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(249,115,22,0.3);">
+          <div class="s-label">Miembros</div>
+          <div class="s-value" id="ov-miembros" style="color:var(--orange);">0</div>
+          <div class="s-sub">Compraron acceso</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(239,68,68,0.3);">
+          <div class="s-label">Comisiones a Pagar</div>
+          <div class="s-value" id="ov-comisiones" style="color:var(--red);font-size:1.6rem;">$0</div>
+          <div class="s-sub" id="ov-comisiones-sub">Este mes · aprobadas</div>
+        </div>
+      </div>
+
+      <!-- ── LANDING ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:20px;">📊 Landing Page</div>
       <div class="stats-row">
         <div class="stat-card">
           <div class="s-label">Total Registros</div>
@@ -356,16 +436,282 @@
             <thead>
               <tr>
                 <th>#</th>
+                <th></th>
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Teléfono</th>
                 <th>Variante</th>
+                <th>Interés</th>
                 <th>Fecha</th>
                 <th>Hora</th>
               </tr>
             </thead>
             <tbody id="regBody">
-              <tr><td colspan="7"><div class="empty"><span class="empty-icon">📭</span>Aún no hay registros.<br>Comparte tu landing para empezar a capturar leads.</div></td></tr>
+              <tr><td colspan="9"><div class="empty"><span class="empty-icon">📭</span>Aún no hay registros.<br>Comparte tu landing para empezar a capturar leads.</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════════════ MIEMBROS ════════════ -->
+    <div class="panel" id="tab-miembros">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h2 style="font-size:1.2rem;font-weight:700;">Base de Miembros</h2>
+          <p style="font-size:0.82rem;color:var(--muted);margin-top:4px;">Personas que compraron acceso — en el evento o por seguimiento.</p>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="loadMiembros()">🔄 Actualizar</button>
+      </div>
+
+      <div id="miembrosAlert"></div>
+
+      <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stat-card green"><div class="s-label">Total Miembros</div><div class="s-value" id="mb-total">0</div><div class="s-sub">Histórico</div></div>
+        <div class="stat-card white"><div class="s-label">Esta Semana</div><div class="s-value" id="mb-semana">0</div><div class="s-sub">Últimos 7 días</div></div>
+        <div class="stat-card" style="border-color:rgba(255,229,0,0.3)"><div class="s-label">Este Mes</div><div class="s-value" id="mb-mes" style="color:var(--gold)">0</div><div class="s-sub">Últimos 30 días</div></div>
+      </div>
+
+      <!-- Agregar manualmente -->
+      <div class="card">
+        <div class="card-title">➕ Agregar miembro manualmente</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div class="field-group" style="margin:0;"><label>Nombre</label><input type="text" id="mbNombre" placeholder="Nombre completo"></div>
+          <div class="field-group" style="margin:0;"><label>Email</label><input type="email" id="mbEmail" placeholder="correo@ejemplo.com"></div>
+          <div class="field-group" style="margin:0;"><label>WhatsApp</label><input type="text" id="mbPhone" placeholder="+52..."></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end;">
+          <div class="field-group" style="margin:0;"><label>Monto pagado (MXN)</label><input type="number" id="mbMonto" placeholder="Ej: 4500" min="0"></div>
+          <div class="field-group" style="margin:0;"><label>Fecha de inicio</label><input type="date" id="mbFechaInicio" onchange="calcFechaFin()"></div>
+          <div class="field-group" style="margin:0;"><label>Fecha de vencimiento</label><input type="date" id="mbFechaFin" placeholder="Se calcula solo"></div>
+          <div class="field-group" style="margin:0;"><label>Notas</label><input type="text" id="mbNotas" placeholder="Ej: Paquete premium"></div>
+          <button class="btn btn-gold" style="height:42px;" onclick="addMiembro()">Agregar →</button>
+        </div>
+        <p style="font-size:0.75rem;color:var(--muted);margin-top:8px;">La fecha de vencimiento se calcula automáticamente 1 año después del inicio.</p>
+      </div>
+
+      <!-- Tabla de miembros -->
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Monto</th><th>Tipo</th><th>Inicio</th><th>Vencimiento</th><th>Estado</th><th>Vendedor</th><th>Notas</th><th></th></tr>
+            </thead>
+            <tbody id="miembrosBody">
+              <tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════════════ VENDEDORES ════════════ -->
+    <div class="panel" id="tab-vendedores">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h2 style="font-size:1.2rem;font-weight:700;">Equipo de Vendedores</h2>
+          <p style="font-size:0.82rem;color:var(--muted);margin-top:4px;">Crea y administra los accesos de tu equipo de ventas.</p>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="loadVendedoresAdmin()">🔄 Actualizar</button>
+      </div>
+
+      <div id="vendAlert"></div>
+
+      <!-- Crear nuevo vendedor -->
+      <div class="card">
+        <div class="card-title">➕ Crear nuevo vendedor</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;flex-wrap:wrap;">
+          <div class="field-group" style="margin:0;">
+            <label>Nombre completo</label>
+            <input type="text" id="newVendNombre" placeholder="Ej: Ana García">
+          </div>
+          <div class="field-group" style="margin:0;">
+            <label>Contraseña</label>
+            <input type="text" id="newVendPass" placeholder="Ej: ana2024">
+          </div>
+          <button class="btn btn-gold" onclick="crearVendedor()">Crear →</button>
+        </div>
+        <p style="font-size:0.75rem;color:var(--muted);margin-top:10px;">La contraseña es temporal — el vendedor puede pedirte que la cambies cuando quiera.</p>
+      </div>
+
+      <!-- Lista de vendedores -->
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Contraseña</th>
+                <th>Leads Asignados</th>
+                <th>Ventas</th>
+                <th>Comisión Total</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="vendBody">
+              <tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Asignar leads -->
+      <div class="card">
+        <div class="card-title">📋 Asignar leads a vendedores</div>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;">Cada lead sin asignar es visible para todos. Asigna leads específicos a un vendedor para dividir el trabajo.</p>
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <input type="text" class="search-input" id="assignSearch" placeholder="🔍 Buscar lead…" oninput="renderAssignTable()">
+          <select id="assignFilterVend" class="search-input" style="min-width:160px;" onchange="renderAssignTable()">
+            <option value="">Todos los leads</option>
+          </select>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;margin-bottom:0;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>#</th><th>Nombre</th><th>Email</th><th>Registro</th><th>Asignado a</th></tr>
+              </thead>
+              <tbody id="assignBody">
+                <tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════════════ APROBACIONES ════════════ -->
+    <div class="panel" id="tab-aprobaciones">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h2 style="font-size:1.2rem;font-weight:700;">Aprobaciones de Ventas</h2>
+          <p style="font-size:0.82rem;color:var(--muted);margin-top:4px;">Revisa y aprueba o rechaza las ventas registradas por los vendedores.</p>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="loadAprobaciones()">🔄 Actualizar</button>
+      </div>
+
+      <div id="aprobAlert"></div>
+
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Lead</th>
+                <th>Vendedor</th>
+                <th>Monto</th>
+                <th>Tipo</th>
+                <th>Comisión</th>
+                <th>Comprobante</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="aprobBody">
+              <tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════════════ ANÁLISIS ════════════ -->
+    <div class="panel" id="tab-analisis">
+
+      <!-- ── ZOOM SYNC ── -->
+      <div style="background:linear-gradient(135deg,rgba(37,111,255,0.08),rgba(37,111,255,0.03));border:1px solid rgba(37,111,255,0.25);border-radius:12px;padding:20px 24px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+          <div>
+            <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;">🎥 Sincronizar asistencia de Zoom</div>
+            <div style="font-size:0.82rem;color:var(--muted);">Ingresa el Meeting ID de la clase para importar quién realmente asistió.</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <input type="text" id="zoomMeetingId" placeholder="Meeting ID (ej. 123 456 7890)"
+              style="padding:9px 14px;border-radius:6px;border:1px solid var(--border);background:var(--dark);color:var(--white);font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;width:220px;">
+            <button class="btn btn-gold" onclick="syncZoom()" id="zoomSyncBtn">Sincronizar →</button>
+          </div>
+        </div>
+        <div id="zoomSyncResult" style="margin-top:12px;display:none;font-size:0.85rem;padding:10px 14px;border-radius:6px;"></div>
+
+        <!-- Historial de clases sincronizadas -->
+        <div id="zoomHistorial" style="margin-top:16px;display:none;">
+          <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:10px;">Clases sincronizadas</div>
+          <div id="zoomHistorialList"></div>
+        </div>
+      </div>
+
+      <!-- Stats Zoom -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;" id="zoom-stats-row">
+        <div class="stat-card"><div class="s-label">Total asistentes</div><div class="s-value" id="zm-total">—</div><div class="s-sub">todas las clases</div></div>
+        <div class="stat-card green"><div class="s-label">% Asistencia real</div><div class="s-value" id="zm-pct">—</div><div class="s-sub">asistentes / confirmados</div></div>
+        <div class="stat-card gold"><div class="s-label">Tiempo promedio</div><div class="s-value" id="zm-tiempo">—</div><div class="s-sub">minutos en clase</div></div>
+        <div class="stat-card" style="border-color:rgba(168,85,247,0.3)"><div class="s-label">Cruzados</div><div class="s-value" id="zm-match" style="color:#a855f7">—</div><div class="s-sub">emails identificados</div></div>
+      </div>
+
+      <!-- ── TRANSCRIPT ANALYSIS ── -->
+      <div style="background:linear-gradient(135deg,rgba(168,85,247,0.08),rgba(168,85,247,0.03));border:1px solid rgba(168,85,247,0.25);border-radius:12px;padding:20px 24px;margin-bottom:24px;" id="transcriptSection">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:16px;">
+          <div>
+            <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;">📊 Análisis de Clase — Curva de Retención</div>
+            <div style="font-size:0.82rem;color:var(--muted);">Correlaciona en qué minuto se salen las personas con lo que se estaba diciendo en la transcripción.</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <input type="text" id="transcriptMeetingId" placeholder="Meeting ID"
+              style="padding:9px 14px;border-radius:6px;border:1px solid rgba(168,85,247,0.4);background:var(--dark);color:var(--white);font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;width:200px;">
+            <button class="btn" style="background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.4);color:#c084fc;" onclick="analyzeTranscript()" id="transcriptBtn">Analizar →</button>
+          </div>
+        </div>
+        <div id="transcriptResult" style="display:none;"></div>
+      </div>
+
+      <!-- Stats resumen -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;" id="bhv-stats-row">
+        <div class="stat-card"><div class="s-label">Sesiones totales</div><div class="s-value" id="bhv-total">—</div><div class="s-sub">visitantes rastreados</div></div>
+        <div class="stat-card green"><div class="s-label">Se registraron</div><div class="s-value" id="bhv-conv">—</div><div class="s-sub">conversión</div></div>
+        <div class="stat-card gold"><div class="s-label">Scroll promedio</div><div class="s-value" id="bhv-scroll">—</div><div class="s-sub">% de la página</div></div>
+        <div class="stat-card orange"><div class="s-label">Tiempo promedio</div><div class="s-value" id="bhv-time">—</div><div class="s-sub">segundos en la página</div></div>
+      </div>
+
+      <!-- Tabla sesiones -->
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div style="font-weight:700;font-size:0.88rem;">Sesiones de visitantes</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('todos')" id="af-todos">Todos</button>
+            <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('no_reg')" id="af-noreg">Sin registrar</button>
+            <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('reg')" id="af-reg">Registrados</button>
+            <button class="btn btn-outline btn-sm" onclick="loadAnalisis()">🔄</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Email</th>
+                <th>Interés</th>
+                <th>Scroll</th>
+                <th>Tiempo</th>
+                <th>CTAs</th>
+                <th>Formulario</th>
+                <th>Registrado</th>
+                <th>Variante</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="analisisBody">
+              <tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
             </tbody>
           </table>
         </div>
@@ -463,6 +809,30 @@
 ════════════════════════════════════════ -->
 <script>
 /* ──────────────────────────────────────
+   DASHBOARD LOGIN
+────────────────────────────────────── */
+const DASH_PASS = 'F12345';
+
+function dashLogin() {
+  if (document.getElementById('dashPass').value === DASH_PASS) {
+    sessionStorage.setItem('dashAuth', '1');
+    showDash();
+  } else {
+    document.getElementById('dlError').style.display = 'block';
+  }
+}
+
+function showDash() {
+  document.getElementById('dashLogin').style.display = 'none';
+  document.getElementById('dashApp').style.display = '';
+  document.getElementById('dashMain').style.display = '';
+}
+
+(function() {
+  if (sessionStorage.getItem('dashAuth') === '1') showDash();
+})();
+
+/* ──────────────────────────────────────
    DEFAULTS
 ────────────────────────────────────── */
 const DEFAULTS = {
@@ -544,7 +914,11 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.getElementById('tab-' + this.dataset.tab).classList.add('active');
     if (this.dataset.tab === 'overview') renderOverview();
     if (this.dataset.tab === 'abtest') renderABTest();
-    if (this.dataset.tab === 'registros') renderRegistros();
+    if (this.dataset.tab === 'registros') { loadBehaviorData().then(() => renderRegistros()); }
+    if (this.dataset.tab === 'analisis')  { loadAnalisis(); setAnalisisFilter('todos'); loadZoomStats(); loadCachedAnalysis(); }
+    if (this.dataset.tab === 'miembros') loadMiembros();
+    if (this.dataset.tab === 'vendedores') loadVendedoresAdmin();
+    if (this.dataset.tab === 'aprobaciones') loadAprobaciones();
     if (this.dataset.tab === 'config') renderConfig();
   });
 });
@@ -554,7 +928,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 ────────────────────────────────────── */
 let chartRegistros = null;
 
-function renderOverview() {
+async function renderOverview() {
   const regs = getRegistrations();
   const totalViews = ['A','B','C','D'].reduce((s,v) => s + getViews(v), 0);
   const totalConv  = regs.length;
@@ -572,6 +946,52 @@ function renderOverview() {
   });
   document.getElementById('ov-winner').textContent     = best || '—';
   document.getElementById('ov-winner-cvr').textContent = best ? `CVR: ${bestCVR}%` : 'Sin datos aún';
+
+  // ── Business metrics from Supabase ──
+  try {
+    const [ventas, estados, miembros, sbRegs] = await Promise.all([
+      fetchSB('/rest/v1/ventas?select=monto,tipo,aprobado,comision_porcentaje,created_at&order=created_at.desc'),
+      fetchSB('/rest/v1/lead_estados?select=estado,registro_email'),
+      fetchSB('/rest/v1/miembros?select=id,monto_pagado,fecha_ingreso'),
+      fetchSB('/rest/v1/clase_viral_registros?select=id'),
+    ]);
+
+    const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const ahora = new Date();
+    const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+
+    // Facturación = monto_pagado de miembros (fuente real de ingresos)
+    const mbList = miembros || [];
+    const facturacionTotal = mbList.reduce((s,m) => s + Number(m.monto_pagado||0), 0);
+    const mbMes = mbList.filter(m => m.fecha_ingreso && new Date(m.fecha_ingreso) >= inicioMes);
+    const facturacionMes = mbMes.reduce((s,m) => s + Number(m.monto_pagado||0), 0);
+
+    // Comisiones = ventas aprobadas (proceso de vendedores)
+    const aprobadas = (ventas||[]).filter(v => v.aprobado);
+    const aprobMes = aprobadas.filter(v => v.created_at && new Date(v.created_at) >= inicioMes);
+    const comisionesMes = aprobMes.reduce((s,v) => {
+      const r = (v.comision_porcentaje != null ? v.comision_porcentaje : (v.tipo === 'compro_evento' ? 5 : 10)) / 100;
+      return s + Number(v.monto) * r;
+    }, 0);
+
+    // Próximo evento: todos los registros + confirmados por vendedores
+    const totalRegistrados = (sbRegs||[]).length;
+    const confirmados = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado)).length;
+    const esperados = Math.round(totalRegistrados * 0.25);
+
+    document.getElementById('ov-facturacion-mes').textContent = '$' + facturacionMes.toLocaleString('es-MX', {maximumFractionDigits:0});
+    document.getElementById('ov-facturacion-mes-label').textContent = MESES[ahora.getMonth()] + ' ' + ahora.getFullYear() + ' · ' + mbMes.length + ' miembros';
+    document.getElementById('ov-facturacion').textContent = '$' + facturacionTotal.toLocaleString('es-MX', {maximumFractionDigits:0});
+    document.getElementById('ov-ventas').textContent = aprobadas.length;
+    document.getElementById('ov-ventas-sub').textContent = `ventas de vendedores`;
+    document.getElementById('ov-registrados').textContent = totalRegistrados;
+    document.getElementById('ov-confirmados').textContent = confirmados;
+    document.getElementById('ov-esperados').textContent = esperados;
+    document.getElementById('ov-esperados-sub').textContent = `est. 25% de ${totalRegistrados} registrados`;
+    document.getElementById('ov-miembros').textContent = mbList.length;
+    document.getElementById('ov-comisiones').textContent = '$' + comisionesMes.toLocaleString('es-MX', {maximumFractionDigits:0});
+    document.getElementById('ov-comisiones-sub').textContent = MESES[ahora.getMonth()] + ' · ' + aprobMes.length + ' ventas';
+  } catch(e) { /* silent fail — tables may not exist yet */ }
 
   // Mini AB table
   const tbody = document.getElementById('abMiniBody');
@@ -694,6 +1114,33 @@ function renderABTest() {
 ────────────────────────────────────── */
 let filteredRegs = [];
 
+let behaviorMap = {}; // email → behavior row
+
+async function loadBehaviorData() {
+  try {
+    const rows = await fetchSB('/rest/v1/page_behavior?registered=eq.true&select=email,scroll_depth,time_on_page,cta_clicks,form_started&order=updated_at.desc');
+    behaviorMap = {};
+    (rows || []).forEach(b => {
+      if (b.email && !behaviorMap[b.email]) behaviorMap[b.email] = b; // keep latest
+    });
+  } catch(e) {}
+}
+
+function interestBadge(email) {
+  const b = behaviorMap[email];
+  if (!b) return '<span style="color:var(--muted);font-size:0.8rem">—</span>';
+  const score = Math.min(100, Math.round(
+    (b.scroll_depth || 0) * 0.35 +
+    Math.min((b.time_on_page || 0) / 10, 20) +
+    (b.cta_clicks || 0) * 5 +
+    (b.form_started ? 10 : 0)
+  ));
+  const tip = `Scroll: ${b.scroll_depth||0}% · Tiempo: ${b.time_on_page||0}s · CTAs: ${b.cta_clicks||0}`;
+  if (score >= 65) return `<span title="${tip}" style="font-size:0.82rem;cursor:default">🔥 <span style="color:#22c55e;font-weight:700">${score}</span></span>`;
+  if (score >= 35) return `<span title="${tip}" style="font-size:0.82rem;cursor:default">🟡 <span style="color:#eab308;font-weight:700">${score}</span></span>`;
+  return `<span title="${tip}" style="font-size:0.82rem;cursor:default">🔵 <span style="color:var(--muted);font-weight:700">${score}</span></span>`;
+}
+
 function renderRegistros(filter = '') {
   const regs = getRegistrations().slice().reverse();
   filteredRegs = filter
@@ -704,7 +1151,7 @@ function renderRegistros(filter = '') {
 
   const tbody = document.getElementById('regBody');
   if (filteredRegs.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><span class="empty-icon">📭</span>Sin resultados.</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty"><span class="empty-icon">📭</span>Sin resultados.</div></td></tr>';
     return;
   }
 
@@ -714,14 +1161,39 @@ function renderRegistros(filter = '') {
     const time = d ? d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '—';
     return `<tr>
       <td style="color:var(--muted)">${i+1}</td>
+      <td>
+        <button onclick="deleteRegistro('${esc(r.id)}','${esc(r.name)}')" title="Eliminar lead"
+          style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
+          border-radius:4px;background:transparent;border:1px solid transparent;
+          color:var(--muted);font-size:0.72rem;cursor:pointer;transition:all 0.15s;"
+          onmouseover="this.style.color='#ef4444';this.style.borderColor='rgba(239,68,68,0.3)'"
+          onmouseout="this.style.color='var(--muted)';this.style.borderColor='transparent'">🗑</button>
+      </td>
       <td class="bold">${esc(r.name)}</td>
       <td>${esc(r.email)}</td>
       <td>${r.phone ? esc(r.phone) : '<span style="color:var(--muted)">—</span>'}</td>
       <td><span class="var-badge var-${r.variant || 'A'}">${r.variant || '?'}</span></td>
+      <td>${interestBadge(r.email)}</td>
       <td>${date}</td>
       <td>${time}</td>
     </tr>`;
   }).join('');
+}
+
+async function deleteRegistro(id, nombre) {
+  if (!confirm(`¿Eliminar a "${nombre}"? Esta acción no se puede deshacer.`)) return;
+  const res = await fetch(SB_URL + `/rest/v1/clase_viral_registros?id=eq.${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+  });
+  if (res.ok) {
+    const updated = getRegistrations().filter(r => String(r.id) !== String(id));
+    localStorage.setItem('registrations', JSON.stringify(updated));
+    renderRegistros(document.getElementById('searchInput').value);
+    renderOverview();
+  } else {
+    alert('Error al eliminar. Intenta de nuevo.');
+  }
 }
 
 function filterRegistros() {
@@ -729,6 +1201,402 @@ function filterRegistros() {
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ──────────────────────────────────────
+   ZOOM SYNC
+────────────────────────────────────── */
+const DASHBOARD_SECRET = 'proximity-dash-2026';
+
+async function syncZoom() {
+  const meetingId = document.getElementById('zoomMeetingId').value.trim().replace(/\s/g,'');
+  if (!meetingId) { alert('Ingresa el Meeting ID'); return; }
+
+  const btn = document.getElementById('zoomSyncBtn');
+  const resultEl = document.getElementById('zoomSyncResult');
+  btn.textContent = 'Sincronizando…'; btn.disabled = true;
+  resultEl.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/zoom-sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DASHBOARD_SECRET}` },
+      body: JSON.stringify({ meetingId })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      resultEl.style.cssText = 'margin-top:12px;display:block;font-size:0.85rem;padding:10px 14px;border-radius:6px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;';
+      resultEl.innerHTML = `✅ <strong>${data.synced} participantes</strong> sincronizados · <strong>${data.matched}</strong> cruzados con tus registrados`;
+      document.getElementById('zoomMeetingId').value = '';
+      loadZoomStats();
+    } else {
+      resultEl.style.cssText = 'margin-top:12px;display:block;font-size:0.85rem;padding:10px 14px;border-radius:6px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;';
+      resultEl.innerHTML = `❌ Error: ${data.error || 'Intenta de nuevo'}${data.detail ? '<br><span style="opacity:0.7;font-size:0.78rem">' + JSON.stringify(data.detail) + '</span>' : ''}`;
+    }
+  } catch(e) {
+    resultEl.style.cssText = 'margin-top:12px;display:block;font-size:0.85rem;padding:10px 14px;border-radius:6px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;';
+    resultEl.textContent = '❌ Error de conexión. Verifica que el servidor esté activo.';
+  } finally {
+    btn.textContent = 'Sincronizar →'; btn.disabled = false;
+  }
+}
+
+async function loadZoomStats() {
+  try {
+    const [asistencias, estados] = await Promise.all([
+      fetchSB('/rest/v1/asistencias?select=email,duracion_minutos,meeting_id,clase_fecha'),
+      fetchSB('/rest/v1/lead_estados?select=estado')
+    ]);
+
+    const total = asistencias.length;
+    const confirmados = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado)).length;
+    const asistieron = (estados||[]).filter(e => e.estado === 'asistio').length;
+    const pct = confirmados > 0 ? Math.round(asistieron / confirmados * 100) : 0;
+    const avgMin = total > 0 ? Math.round(asistencias.reduce((s,a) => s + (a.duracion_minutos||0), 0) / total) : 0;
+    const conEmail = asistencias.filter(a => a.email).length;
+
+    document.getElementById('zm-total').textContent = total;
+    document.getElementById('zm-pct').textContent = pct + '%';
+    document.getElementById('zm-tiempo').textContent = avgMin + 'min';
+    document.getElementById('zm-match').textContent = conEmail;
+
+    // Historial por meeting
+    const byMeeting = {};
+    asistencias.forEach(a => {
+      if (!byMeeting[a.meeting_id]) byMeeting[a.meeting_id] = { count: 0, fecha: a.clase_fecha };
+      byMeeting[a.meeting_id].count++;
+    });
+    const meetings = Object.entries(byMeeting);
+    if (meetings.length > 0) {
+      document.getElementById('zoomHistorial').style.display = 'block';
+      document.getElementById('zoomHistorialList').innerHTML = meetings.map(([id, d]) =>
+        `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--card);border-radius:6px;margin-bottom:6px;font-size:0.82rem;">
+          <span style="color:var(--muted)">Meeting <strong style="color:var(--text)">${id}</strong></span>
+          <span style="color:var(--text)">${d.fecha || '—'}</span>
+          <span style="color:var(--gold);font-weight:700">${d.count} asistentes</span>
+        </div>`
+      ).join('');
+    }
+  } catch(e) {}
+}
+
+/* ──────────────────────────────────────
+   ANÁLISIS DE COMPORTAMIENTO
+────────────────────────────────────── */
+let analisisData = [];
+let analisisFilter = 'todos';
+
+function scoreOf(b) {
+  return Math.min(100, Math.round(
+    (b.scroll_depth || 0) * 0.35 +
+    Math.min((b.time_on_page || 0) / 10, 20) +
+    (b.cta_clicks || 0) * 5 +
+    (b.form_started ? 10 : 0)
+  ));
+}
+
+function scoreBadge(score) {
+  if (score >= 65) return `🔥 <strong style="color:#22c55e">${score}</strong>`;
+  if (score >= 35) return `🟡 <strong style="color:#eab308">${score}</strong>`;
+  return `🔵 <span style="color:var(--muted)">${score}</span>`;
+}
+
+function setAnalisisFilter(f) {
+  analisisFilter = f;
+  ['todos','noreg','reg'].forEach(x => document.getElementById('af-'+x).classList.remove('active'));
+  const map = { todos:'todos', no_reg:'noreg', reg:'reg' };
+  document.getElementById('af-' + (map[f] || f)).classList.add('active');
+  renderAnalisis();
+}
+
+async function loadAnalisis() {
+  document.getElementById('analisisBody').innerHTML = '<tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+  try {
+    const rows = await fetchSB('/rest/v1/page_behavior?select=*&order=updated_at.desc');
+    analisisData = rows || [];
+    updateAnalisisStats();
+    renderAnalisis();
+  } catch(e) {
+    document.getElementById('analisisBody').innerHTML = '<tr><td colspan="10"><div class="empty">Error cargando datos.</div></td></tr>';
+  }
+}
+
+function updateAnalisisStats() {
+  const total = analisisData.length;
+  const regs  = analisisData.filter(b => b.registered).length;
+  const convPct = total > 0 ? Math.round(regs / total * 100) : 0;
+  const avgScroll = total > 0 ? Math.round(analisisData.reduce((s,b) => s + (b.scroll_depth||0), 0) / total) : 0;
+  const avgTime   = total > 0 ? Math.round(analisisData.reduce((s,b) => s + (b.time_on_page||0), 0) / total) : 0;
+
+  document.getElementById('bhv-total').textContent  = total;
+  document.getElementById('bhv-conv').textContent   = `${regs} (${convPct}%)`;
+  document.getElementById('bhv-scroll').textContent = avgScroll + '%';
+  document.getElementById('bhv-time').textContent   = avgTime + 's';
+}
+
+function renderAnalisis() {
+  let rows = analisisData;
+  if (analisisFilter === 'reg')    rows = rows.filter(b => b.registered);
+  if (analisisFilter === 'no_reg') rows = rows.filter(b => !b.registered);
+
+  if (!rows.length) {
+    document.getElementById('analisisBody').innerHTML = '<tr><td colspan="10"><div class="empty"><span class="empty-icon">📭</span>Sin datos aún.<br>Los datos aparecen cuando alguien visita la landing.</div></td></tr>';
+    return;
+  }
+
+  document.getElementById('analisisBody').innerHTML = rows.map((b, i) => {
+    const score = scoreOf(b);
+    const fecha = b.created_at ? new Date(b.created_at).toLocaleDateString('es-MX') : '—';
+    const emailCell = b.email
+      ? `<span style="color:var(--text)">${esc(b.email)}</span>`
+      : `<span style="color:var(--muted);font-size:0.78rem">Sin registrar</span>`;
+    const regBadge = b.registered
+      ? '<span style="color:#22c55e;font-weight:700">✓ Sí</span>'
+      : '<span style="color:var(--muted)">No</span>';
+    const formBadge = b.form_started
+      ? '<span style="color:#eab308">Sí</span>'
+      : '<span style="color:var(--muted)">No</span>';
+    return `<tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td>${emailCell}</td>
+      <td>${scoreBadge(score)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:50px;height:5px;border-radius:3px;background:var(--border);overflow:hidden;">
+            <div style="width:${b.scroll_depth||0}%;height:100%;background:${score>=65?'#22c55e':score>=35?'#eab308':'#6b7280'};border-radius:3px;"></div>
+          </div>
+          <span style="font-size:0.78rem;color:var(--text)">${b.scroll_depth||0}%</span>
+        </div>
+      </td>
+      <td style="font-size:0.82rem;color:var(--text)">${b.time_on_page||0}s</td>
+      <td style="font-size:0.82rem;color:var(--text)">${b.cta_clicks||0}</td>
+      <td>${formBadge}</td>
+      <td>${regBadge}</td>
+      <td><span class="var-badge var-${b.variant||'?'}">${b.variant||'?'}</span></td>
+      <td style="color:var(--muted);font-size:0.78rem">${fecha}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ──────────────────────────────────────
+   TRANSCRIPT ANALYSIS
+────────────────────────────────────── */
+let retentionChart = null;
+
+async function loadCachedAnalysis() {
+  // Load the most recent cached analysis from Supabase
+  try {
+    const rows = await fetchSB('/rest/v1/clase_analisis?select=*&order=updated_at.desc&limit=1');
+    if (!rows || rows.length === 0) return;
+
+    const cached = rows[0];
+    // Pre-fill the meeting ID
+    document.getElementById('transcriptMeetingId').value = cached.meeting_id;
+
+    const container = document.getElementById('transcriptResult');
+    container.style.display = 'block';
+
+    renderTranscriptAnalysis({
+      meetingId: cached.meeting_id,
+      startTime: cached.start_time,
+      totalParticipants: cached.total_participants,
+      retention: cached.retention_data || [],
+      criticalMoments: cached.critical_moments || [],
+      transcript: cached.transcript_segments || [],
+      transcriptWarning: (!cached.transcript_segments || !cached.transcript_segments.length)
+        ? 'Sin transcripción guardada para este análisis.' : null
+    }, container);
+
+  } catch (e) {
+    // Silently ignore — table may not exist yet or no rows
+  }
+}
+
+async function analyzeTranscript() {
+  const meetingId = document.getElementById('transcriptMeetingId').value.trim().replace(/\s+/g, '');
+  if (!meetingId) { alert('Ingresa el Meeting ID'); return; }
+
+  const btn = document.getElementById('transcriptBtn');
+  const resultEl = document.getElementById('transcriptResult');
+  btn.disabled = true; btn.textContent = 'Analizando…';
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = `<div style="padding:12px;text-align:center;color:var(--muted);font-size:0.85rem;">⏳ Descargando grabación y procesando datos… puede tardar 15-30 segundos.</div>`;
+
+  try {
+    const res = await fetch('/api/zoom-transcript', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DASHBOARD_SECRET}` },
+      body: JSON.stringify({ meetingId })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      resultEl.innerHTML = `<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:12px 16px;font-size:0.85rem;color:#fca5a5;">❌ ${data.error || 'Error desconocido'}</div>`;
+      return;
+    }
+
+    renderTranscriptAnalysis(data, resultEl);
+
+  } catch (err) {
+    resultEl.innerHTML = `<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:12px 16px;font-size:0.85rem;color:#fca5a5;">❌ Error de red: ${err.message}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Analizar →';
+  }
+}
+
+function renderTranscriptAnalysis(data, container) {
+  const { retention, criticalMoments, transcript, totalParticipants, startTime, transcriptWarning } = data;
+
+  let html = '';
+
+  // Warning if no transcript
+  if (transcriptWarning) {
+    html += `<div style="background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.3);border-radius:8px;padding:10px 14px;font-size:0.82rem;color:#fde047;margin-bottom:16px;">⚠️ ${transcriptWarning}</div>`;
+  }
+
+  // Summary stats
+  const fecha = startTime ? new Date(startTime).toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—';
+  const lastPct = retention.length ? retention[retention.length-1].pct : 0;
+  const halfwayPt = retention.find(r => r.pct <= 50);
+  const halfwayMin = halfwayPt ? halfwayPt.minute : null;
+
+  html += `
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:12px 16px;text-align:center;">
+      <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Asistentes analizados</div>
+      <div style="font-size:1.6rem;font-weight:800;color:#c084fc">${totalParticipants}</div>
+      <div style="font-size:0.72rem;color:var(--muted)">${fecha}</div>
+    </div>
+    <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:12px 16px;text-align:center;">
+      <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Retención al final</div>
+      <div style="font-size:1.6rem;font-weight:800;color:${lastPct>=60?'#22c55e':lastPct>=40?'#eab308':'#ef4444'}">${lastPct}%</div>
+      <div style="font-size:0.72rem;color:var(--muted)">de los asistentes llegaron al final</div>
+    </div>
+    <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:12px 16px;text-align:center;">
+      <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Abandono 50%</div>
+      <div style="font-size:1.6rem;font-weight:800;color:#eab308">${halfwayMin !== null ? `min ${halfwayMin}` : '> final'}</div>
+      <div style="font-size:0.72rem;color:var(--muted)">cuando la mitad ya se fue</div>
+    </div>
+  </div>`;
+
+  // Retention chart
+  html += `<div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:16px;margin-bottom:20px;">
+    <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;color:var(--text);">Curva de retención por minuto</div>
+    <canvas id="retentionCanvas" height="80"></canvas>
+  </div>`;
+
+  // Critical moments
+  if (criticalMoments.length > 0) {
+    html += `<div style="margin-bottom:20px;">
+      <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;color:var(--text);">🚨 Momentos críticos — donde más personas se van</div>
+      <div style="display:flex;flex-direction:column;gap:10px;" id="criticalList">`;
+
+    for (const cm of criticalMoments) {
+      const severity = cm.drop >= 25 ? 'rgba(239,68,68,0.15)' : cm.drop >= 15 ? 'rgba(234,179,8,0.1)' : 'rgba(168,85,247,0.08)';
+      const border   = cm.drop >= 25 ? 'rgba(239,68,68,0.35)' : cm.drop >= 15 ? 'rgba(234,179,8,0.3)' : 'rgba(168,85,247,0.25)';
+      const icon     = cm.drop >= 25 ? '🔴' : cm.drop >= 15 ? '🟡' : '🟣';
+      const transcriptHtml = cm.transcript
+        ? `<div style="margin-top:10px;padding:10px 14px;background:rgba(0,0,0,0.3);border-radius:6px;font-size:0.8rem;color:var(--text);line-height:1.6;font-style:italic;">"${esc(cm.transcript.substring(0, 400))}${cm.transcript.length>400?'…':''}"</div>`
+        : `<div style="margin-top:8px;font-size:0.78rem;color:var(--muted);">Sin transcripción disponible para este momento.</div>`;
+
+      html += `<div style="background:${severity};border:1px solid ${border};border-radius:8px;padding:14px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+          <span style="font-size:1rem;">${icon}</span>
+          <span style="font-weight:700;font-size:0.92rem;">Minuto ${cm.minute}</span>
+          <span style="font-size:0.8rem;color:var(--muted);">${cm.prevPct}% → ${cm.pct}% &nbsp;|&nbsp; <strong style="color:#fca5a5;">−${cm.drop}%</strong> se fueron en 5 minutos</span>
+        </div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:2px;">Lo que se decía en ese momento:</div>
+        ${transcriptHtml}
+      </div>`;
+    }
+
+    html += `</div></div>`;
+  } else if (retention.length > 0) {
+    html += `<div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:12px 16px;font-size:0.85rem;color:#86efac;margin-bottom:20px;">✅ No hay momentos de abandono masivo. ¡Buena retención en toda la clase!</div>`;
+  }
+
+  // Transcript timeline (collapsible)
+  if (transcript && transcript.length > 0) {
+    html += `<details style="background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      <summary style="padding:12px 18px;cursor:pointer;font-size:0.85rem;font-weight:700;color:var(--text);user-select:none;">📝 Transcripción completa por minuto (${transcript.length} segmentos)</summary>
+      <div style="max-height:400px;overflow-y:auto;padding:0 18px 16px;">
+        <table style="width:100%;border-collapse:collapse;font-size:0.8rem;margin-top:8px;">
+          <thead><tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:6px 8px;color:var(--muted);font-weight:600;width:70px;">Min</th>
+            <th style="text-align:left;padding:6px 8px;color:var(--muted);font-weight:600;">Texto</th>
+          </tr></thead>
+          <tbody>
+            ${transcript.map(s => {
+              const isCritical = criticalMoments.some(cm => Math.abs(cm.minute - s.minute) <= 2);
+              return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);${isCritical?'background:rgba(239,68,68,0.06);':''}">
+                <td style="padding:6px 8px;color:${isCritical?'#fca5a5':'var(--muted)'};font-weight:${isCritical?700:400};white-space:nowrap;">${isCritical?'🔴 ':''} ${s.minute}:00</td>
+                <td style="padding:6px 8px;color:var(--text);line-height:1.5;">${esc(s.text)}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </details>`;
+  }
+
+  container.innerHTML = html;
+
+  // Render Chart.js retention curve
+  if (retention.length > 1) {
+    const ctx = document.getElementById('retentionCanvas').getContext('2d');
+    if (retentionChart) retentionChart.destroy();
+
+    // Mark critical moment minutes
+    const criticalMinutes = new Set(criticalMoments.map(cm => cm.minute));
+
+    retentionChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: retention.map(r => `${r.minute}min`),
+        datasets: [{
+          label: '% en clase',
+          data: retention.map(r => r.pct),
+          borderColor: '#c084fc',
+          backgroundColor: 'rgba(192,132,252,0.08)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: retention.map(r =>
+            criticalMinutes.has(r.minute) ? '#ef4444' : '#c084fc'
+          ),
+          pointRadius: retention.map(r =>
+            criticalMinutes.has(r.minute) ? 7 : 3
+          ),
+          pointHoverRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.raw}% (${retention[ctx.dataIndex].count} personas)`,
+              afterLabel: ctx => {
+                if (criticalMinutes.has(retention[ctx.dataIndex].minute)) return '⚠️ Momento crítico';
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#666', font: { size: 11 } }
+          },
+          y: {
+            min: 0, max: 100,
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#666', font: { size: 11 }, callback: v => v + '%' }
+          }
+        }
+      }
+    });
+  }
+}
 
 /* ──────────────────────────────────────
    CONFIG
@@ -770,13 +1638,437 @@ function copyLanding() {
 }
 
 /* ──────────────────────────────────────
+   MIEMBROS
+────────────────────────────────────── */
+let ventasCache = []; // used by aprobarVenta to auto-add miembros
+
+async function loadMiembros() {
+  document.getElementById('miembrosBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+  const miembros = await fetchSB('/rest/v1/miembros?select=*&order=fecha_ingreso.desc');
+  renderMiembros(miembros || []);
+}
+
+function renderMiembros(miembros) {
+  const now = Date.now();
+  const semana = miembros.filter(m => (now - new Date(m.fecha_ingreso)) < 7*86400000).length;
+  const mes    = miembros.filter(m => (now - new Date(m.fecha_ingreso)) < 30*86400000).length;
+  document.getElementById('mb-total').textContent  = miembros.length;
+  document.getElementById('mb-semana').textContent = semana;
+  document.getElementById('mb-mes').textContent    = mes;
+
+  if (!miembros.length) {
+    document.getElementById('miembrosBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">🏆</span>Aún no hay miembros registrados.</div></td></tr>';
+    return;
+  }
+
+  window._miembrosMap = {};
+  miembros.forEach(m => { window._miembrosMap[m.id] = m; });
+  const TIPO_LABEL = { evento: '🎟 Evento', seguimiento: '📞 Seguimiento', manual: '✍️ Manual' };
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  document.getElementById('miembrosBody').innerHTML = miembros.map((m, i) => {
+    const fInicio = m.fecha_ingreso ? new Date(m.fecha_ingreso) : null;
+    const fFin    = m.fecha_fin    ? new Date(m.fecha_fin)    : (fInicio ? new Date(new Date(fInicio).setFullYear(fInicio.getFullYear()+1)) : null);
+    const fmtDate = d => d ? d.toLocaleDateString('es-MX') : '—';
+    const clean = (m.phone || '').replace(/\D/g,'');
+    const wa = clean ? `<a href="https://wa.me/${clean}" target="_blank" style="color:var(--green);font-size:0.82rem">💬 ${esc(m.phone)}</a>` : '<span style="color:var(--muted)">—</span>';
+
+    // Estado de membresía
+    let estadoBadge;
+    if (!fFin) {
+      estadoBadge = '<span style="color:var(--muted);font-size:0.78rem">—</span>';
+    } else {
+      const diasRestantes = Math.ceil((fFin - hoy) / 86400000);
+      if (diasRestantes < 0) {
+        estadoBadge = '<span style="background:rgba(239,68,68,0.15);color:var(--red);padding:2px 8px;border-radius:10px;font-size:0.72rem;font-weight:700;">Vencido</span>';
+      } else if (diasRestantes <= 30) {
+        estadoBadge = `<span style="background:rgba(249,115,22,0.15);color:var(--orange);padding:2px 8px;border-radius:10px;font-size:0.72rem;font-weight:700;">⚠️ ${diasRestantes}d</span>`;
+      } else {
+        estadoBadge = `<span style="background:rgba(34,197,94,0.15);color:var(--green);padding:2px 8px;border-radius:10px;font-size:0.72rem;font-weight:700;">Activo · ${diasRestantes}d</span>`;
+      }
+    }
+
+    return `<tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td class="bold">${esc(m.nombre)}</td>
+      <td style="font-size:0.82rem;color:var(--text)">${esc(m.email)}</td>
+      <td>${wa}</td>
+      <td style="color:var(--gold);font-weight:700">${m.monto_pagado ? '$'+Number(m.monto_pagado).toLocaleString('es-MX') : '<span style="color:var(--muted)">—</span>'}</td>
+      <td><span style="font-size:0.78rem;font-weight:600;color:var(--gold)">${TIPO_LABEL[m.tipo_acceso]||m.tipo_acceso}</span></td>
+      <td style="color:var(--muted);font-size:0.8rem">${fmtDate(fInicio)}</td>
+      <td style="color:var(--muted);font-size:0.8rem">${fmtDate(fFin)}</td>
+      <td>${estadoBadge}</td>
+      <td style="color:var(--muted);font-size:0.82rem">${esc(m.vendedor||'—')}</td>
+      <td style="color:var(--muted);font-size:0.8rem">${esc(m.notas||'—')}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="editMiembro('${m.id}')">✏️</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function editMiembro(id) {
+  const m = (window._miembrosMap || {})[id];
+  if (!m) return;
+  document.getElementById('edit-mb-id').value     = m.id;
+  document.getElementById('edit-mb-nombre').value = m.nombre || '';
+  document.getElementById('edit-mb-email').value  = m.email  || '';
+  document.getElementById('edit-mb-phone').value  = m.phone  || '';
+  document.getElementById('edit-mb-monto').value  = m.monto_pagado || '';
+  document.getElementById('edit-mb-notas').value  = m.notas  || '';
+  document.getElementById('edit-mb-inicio').value = m.fecha_ingreso ? m.fecha_ingreso.slice(0,10) : '';
+  document.getElementById('edit-mb-fin').value    = m.fecha_fin     ? m.fecha_fin.slice(0,10)     : '';
+  document.getElementById('editMiembroModal').style.display = 'flex';
+}
+
+async function saveMiembroEdit() {
+  const id = document.getElementById('edit-mb-id').value;
+  const inicio = document.getElementById('edit-mb-inicio').value;
+  const fin    = document.getElementById('edit-mb-fin').value;
+  const body = {
+    nombre:        document.getElementById('edit-mb-nombre').value.trim(),
+    email:         document.getElementById('edit-mb-email').value.trim(),
+    phone:         document.getElementById('edit-mb-phone').value.trim(),
+    monto_pagado:  parseFloat(document.getElementById('edit-mb-monto').value) || null,
+    notas:         document.getElementById('edit-mb-notas').value.trim(),
+    fecha_ingreso: inicio ? new Date(inicio).toISOString() : null,
+    fecha_fin:     fin    ? new Date(fin).toISOString()    : null,
+  };
+  const res = await fetch(SB_URL + `/rest/v1/miembros?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    body: JSON.stringify(body)
+  });
+  document.getElementById('editMiembroModal').style.display = 'none';
+  if (res.ok) { loadMiembros(); }
+  else { showAlert('miembrosAlert', 'Error al guardar. Intenta de nuevo.', 'error'); }
+}
+
+function calcFechaFin() {
+  const inicio = document.getElementById('mbFechaInicio').value;
+  if (!inicio) return;
+  const fin = new Date(inicio);
+  fin.setFullYear(fin.getFullYear() + 1);
+  document.getElementById('mbFechaFin').value = fin.toISOString().slice(0,10);
+}
+
+async function addMiembro() {
+  const nombre  = document.getElementById('mbNombre').value.trim();
+  const email   = document.getElementById('mbEmail').value.trim();
+  const phone   = document.getElementById('mbPhone').value.trim();
+  const notas   = document.getElementById('mbNotas').value.trim();
+  const monto   = parseFloat(document.getElementById('mbMonto').value) || null;
+  const inicio  = document.getElementById('mbFechaInicio').value;
+  const fin     = document.getElementById('mbFechaFin').value;
+  if (!nombre || !email) { showAlert('miembrosAlert','Nombre y email son obligatorios.','error'); return; }
+
+  const fechaIngreso = inicio ? new Date(inicio).toISOString() : new Date().toISOString();
+  const fechaFin = fin ? new Date(fin).toISOString()
+    : new Date(new Date(fechaIngreso).setFullYear(new Date(fechaIngreso).getFullYear()+1)).toISOString();
+
+  const res = await fetch(SB_URL + '/rest/v1/miembros', {
+    method: 'POST',
+    headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ nombre, email, phone, notas, monto_pagado: monto, tipo_acceso: 'manual', fecha_ingreso: fechaIngreso, fecha_fin: fechaFin })
+  });
+  if (res.ok) {
+    ['mbNombre','mbEmail','mbPhone','mbNotas','mbMonto','mbFechaInicio','mbFechaFin'].forEach(id => document.getElementById(id).value = '');
+    showAlert('miembrosAlert', `✅ Miembro "${nombre}" agregado.`, 'success');
+    loadMiembros();
+  } else {
+    showAlert('miembrosAlert', 'Error al agregar. Intenta de nuevo.', 'error');
+  }
+}
+
+/* ──────────────────────────────────────
+   VENDEDORES ADMIN
+────────────────────────────────────── */
+let vendedoresList = [];
+let allLeadsAdmin = [];
+let estadosAdmin = {};
+
+async function loadVendedoresAdmin() {
+  document.getElementById('vendBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+
+  const [vends, ventas, leads, estados] = await Promise.all([
+    fetchSB('/rest/v1/vendedores?select=*&order=nombre'),
+    fetchSB('/rest/v1/ventas?select=*'),
+    fetchSB('/rest/v1/clase_viral_registros?select=id,nombre,email,ts&order=ts.desc'),
+    fetchSB('/rest/v1/lead_estados?select=*'),
+  ]);
+
+  vendedoresList = vends || [];
+  allLeadsAdmin = (leads || []).map(r => ({ id: r.id, nombre: r.nombre || r.name || '', email: r.email || '', ts: r.ts }));
+  estadosAdmin = {};
+  (estados || []).forEach(e => { estadosAdmin[e.registro_email] = e; });
+
+  // Populate vendor filter select
+  const sel = document.getElementById('assignFilterVend');
+  sel.innerHTML = '<option value="">Todos los leads</option>';
+  vendedoresList.forEach(v => {
+    sel.innerHTML += `<option value="${esc(v.nombre)}">${esc(v.nombre)}</option>`;
+  });
+
+  // Render vendor table
+  if (!vendedoresList.length) {
+    document.getElementById('vendBody').innerHTML = '<tr><td colspan="8"><div class="empty">No hay vendedores aún.</div></td></tr>';
+  } else {
+    document.getElementById('vendBody').innerHTML = vendedoresList.map((v, i) => {
+      const myVentas = (ventas || []).filter(vv => vv.vendedor === v.nombre);
+      const myLeads = Object.values(estadosAdmin).filter(e => e.asignado_a === v.nombre).length;
+      const aprobadas = myVentas.filter(vv => vv.aprobado);
+      const totalComision = aprobadas.reduce((s, vv) => {
+        const r = (vv.comision_porcentaje != null ? vv.comision_porcentaje : (vv.tipo === 'compro_evento' ? 5 : 10)) / 100;
+        return s + Number(vv.monto) * r;
+      }, 0);
+      const badge = v.activo
+        ? '<span style="color:var(--green);font-size:0.8rem;">● Activo</span>'
+        : '<span style="color:var(--muted);font-size:0.8rem;">● Inactivo</span>';
+      return `<tr>
+        <td style="color:var(--muted)">${i+1}</td>
+        <td class="bold">${esc(v.nombre)}</td>
+        <td style="color:var(--muted);font-family:monospace;font-size:0.82rem">${esc(v.password)}</td>
+        <td style="color:var(--text)">${myLeads} asignados</td>
+        <td style="color:var(--text)">${myVentas.length} total</td>
+        <td style="color:var(--gold);font-weight:600">$${Number(totalComision).toLocaleString('es-MX',{maximumFractionDigits:2})}</td>
+        <td>${badge}</td>
+        <td style="display:flex;gap:6px;">
+          <button class="btn btn-outline btn-sm" onclick="cambiarPass('${esc(v.id)}','${esc(v.nombre)}')">🔑</button>
+          <button class="btn btn-${v.activo ? 'red' : 'outline'} btn-sm" onclick="toggleVendedor('${esc(v.id)}',${!v.activo})">${v.activo ? 'Desactivar' : 'Activar'}</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  renderAssignTable();
+}
+
+async function crearVendedor() {
+  const nombre = document.getElementById('newVendNombre').value.trim();
+  const pass = document.getElementById('newVendPass').value.trim();
+  if (!nombre || !pass) { showAlert('vendAlert', 'Ingresa nombre y contraseña.', 'error'); return; }
+
+  const res = await fetch(SB_URL + '/rest/v1/vendedores', {
+    method: 'POST',
+    headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+    body: JSON.stringify({ nombre, password: pass, activo: true })
+  });
+  if (res.ok) {
+    document.getElementById('newVendNombre').value = '';
+    document.getElementById('newVendPass').value = '';
+    showAlert('vendAlert', `✅ Vendedor "${nombre}" creado. Contraseña: ${pass}`, 'success');
+    loadVendedoresAdmin();
+  } else {
+    const err = await res.json();
+    showAlert('vendAlert', 'Error: ' + (err.message || 'No se pudo crear.'), 'error');
+  }
+}
+
+async function cambiarPass(id, nombre) {
+  const newPass = prompt(`Nueva contraseña para ${nombre}:`);
+  if (!newPass) return;
+  await fetch(SB_URL + `/rest/v1/vendedores?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: newPass })
+  });
+  showAlert('vendAlert', `✅ Contraseña de ${nombre} actualizada a: ${newPass}`, 'success');
+  loadVendedoresAdmin();
+}
+
+async function toggleVendedor(id, activo) {
+  await fetch(SB_URL + `/rest/v1/vendedores?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ activo })
+  });
+  loadVendedoresAdmin();
+}
+
+function renderAssignTable() {
+  const search = (document.getElementById('assignSearch').value || '').toLowerCase();
+  const filterVend = document.getElementById('assignFilterVend').value;
+
+  let leads = allLeadsAdmin;
+  if (search) leads = leads.filter(l => (l.nombre + l.email).toLowerCase().includes(search));
+  if (filterVend) leads = leads.filter(l => (estadosAdmin[l.email] || {}).asignado_a === filterVend);
+
+  if (!leads.length) {
+    document.getElementById('assignBody').innerHTML = '<tr><td colspan="5"><div class="empty">Sin resultados.</div></td></tr>';
+    return;
+  }
+
+  document.getElementById('assignBody').innerHTML = leads.slice(0, 100).map((l, i) => {
+    const asignado = (estadosAdmin[l.email] || {}).asignado_a || '';
+    const fecha = l.ts ? new Date(l.ts).toLocaleDateString('es-MX') : '—';
+    const vendOptions = ['<option value="">Sin asignar</option>']
+      .concat(vendedoresList.map(v => `<option value="${esc(v.nombre)}" ${v.nombre === asignado ? 'selected' : ''}>${esc(v.nombre)}</option>`))
+      .join('');
+    return `<tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td class="bold">${esc(l.nombre)}</td>
+      <td style="color:var(--text);font-size:0.82rem">${esc(l.email)}</td>
+      <td style="color:var(--muted);font-size:0.8rem">${fecha}</td>
+      <td>
+        <select style="background:var(--card2);border:1px solid var(--border);color:var(--white);padding:5px 8px;border-radius:5px;font-size:0.8rem;cursor:pointer;"
+          onchange="asignarLead('${esc(l.email)}', this.value)">
+          ${vendOptions}
+        </select>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function asignarLead(email, vendedor) {
+  const existing = estadosAdmin[email];
+  if (existing) {
+    await fetch(SB_URL + `/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ asignado_a: vendedor || null })
+    });
+  } else {
+    await fetch(SB_URL + '/rest/v1/lead_estados', {
+      method: 'POST',
+      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ registro_email: email, vendedor: '', estado: 'por_confirmar', asignado_a: vendedor || null })
+    });
+  }
+  estadosAdmin[email] = { ...(estadosAdmin[email] || { registro_email: email }), asignado_a: vendedor || null };
+}
+
+function fetchSB(path) {
+  return fetch(SB_URL + path, { headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE } })
+    .then(r => r.ok ? r.json() : []);
+}
+
+/* ──────────────────────────────────────
+   APROBACIONES
+────────────────────────────────────── */
+const COMMISSION_RATES = { compro_evento: 0.05, seguimiento_exitoso: 0.10 };
+
+async function loadAprobaciones() {
+  document.getElementById('aprobBody').innerHTML = '<tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+  try {
+    const res = await fetch(SB_URL + '/rest/v1/ventas?select=*&order=created_at.desc', {
+      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE }
+    });
+    const ventas = await res.json();
+    ventasCache = ventas || [];
+    renderAprobaciones(ventas);
+
+    const pending = ventas.filter(v => !v.aprobado && !v.rechazado).length;
+    const badge = document.getElementById('aprobBadge');
+    badge.style.display = pending > 0 ? 'inline' : 'none';
+    badge.textContent = pending;
+  } catch(e) {
+    document.getElementById('aprobBody').innerHTML = '<tr><td colspan="10"><div class="empty">Error al cargar.</div></td></tr>';
+  }
+}
+
+function renderAprobaciones(ventas) {
+  if (!ventas.length) {
+    document.getElementById('aprobBody').innerHTML = '<tr><td colspan="10"><div class="empty"><span class="empty-icon">✅</span>No hay ventas registradas aún.</div></td></tr>';
+    return;
+  }
+  const TIPO_LABEL = { compro_evento: 'Evento (5%)', seguimiento_exitoso: 'Seguimiento (10%)' };
+  document.getElementById('aprobBody').innerHTML = ventas.map((v, i) => {
+    const comision = Number(v.monto) * (COMMISSION_RATES[v.tipo] || 0);
+    const fecha = v.created_at ? new Date(v.created_at).toLocaleDateString('es-MX') : '—';
+    const comp = v.comprobante_url
+      ? `<a href="${esc(v.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.82rem">Ver →</a>`
+      : '<span style="color:var(--red);font-size:0.78rem">Sin comprobante</span>';
+    const badge = v.aprobado
+      ? '<span style="color:var(--green);font-weight:700;font-size:0.82rem">✅ Aprobado</span>'
+      : v.rechazado
+        ? '<span style="color:var(--red);font-weight:700;font-size:0.82rem">❌ Rechazado</span>'
+        : '<span style="color:var(--orange);font-size:0.82rem">⏳ Pendiente</span>';
+    const actions = (!v.aprobado && !v.rechazado)
+      ? `<div style="display:flex;gap:6px;align-items:center;">
+           <button class="btn btn-green btn-sm" onclick="aprobarVenta('${v.id}', true)">✓ Aprobar</button>
+           <button class="btn btn-red btn-sm" onclick="aprobarVenta('${v.id}', false)">✗ Rechazar</button>
+           <button onclick="deleteVenta('${v.id}','${esc(v.nombre_lead||'')}')" title="Eliminar"
+             style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
+             border-radius:4px;background:transparent;border:1px solid transparent;
+             color:var(--muted);font-size:0.72rem;cursor:pointer;transition:all 0.15s;"
+             onmouseover="this.style.color='#ef4444';this.style.borderColor='rgba(239,68,68,0.3)'"
+             onmouseout="this.style.color='var(--muted)';this.style.borderColor='transparent'">🗑</button>
+         </div>`
+      : `<button onclick="deleteVenta('${v.id}','${esc(v.nombre_lead||'')}')" title="Eliminar"
+           style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
+           border-radius:4px;background:transparent;border:1px solid transparent;
+           color:var(--muted);font-size:0.72rem;cursor:pointer;transition:all 0.15s;"
+           onmouseover="this.style.color='#ef4444';this.style.borderColor='rgba(239,68,68,0.3)'"
+           onmouseout="this.style.color='var(--muted)';this.style.borderColor='transparent'">🗑</button>`;
+    return `<tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td class="bold">${esc(v.nombre_lead || v.registro_email || '—')}</td>
+      <td style="color:var(--text)">${esc(v.vendedor || '—')}</td>
+      <td style="color:var(--green);font-weight:700">$${Number(v.monto||0).toLocaleString('es-MX')}</td>
+      <td style="font-size:0.8rem;color:var(--text)">${TIPO_LABEL[v.tipo] || v.tipo}</td>
+      <td style="color:var(--gold);font-weight:600">$${comision.toLocaleString('es-MX', {maximumFractionDigits:2})}</td>
+      <td>${comp}</td>
+      <td style="color:var(--muted);font-size:0.8rem">${fecha}</td>
+      <td>${badge}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function aprobarVenta(id, aprobar) {
+  if (!confirm(`¿${aprobar ? 'Aprobar' : 'Rechazar'} esta venta?`)) return;
+  try {
+    await fetch(SB_URL + `/rest/v1/ventas?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ aprobado: aprobar, rechazado: !aprobar })
+    });
+
+    // Auto-agregar a miembros si es una venta aprobada de compra
+    if (aprobar) {
+      const venta = (ventasCache || []).find(v => v.id === id);
+      if (venta && ['compro_evento','seguimiento_exitoso'].includes(venta.tipo)) {
+        await fetch(SB_URL + '/rest/v1/miembros', {
+          method: 'POST',
+          headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+          body: JSON.stringify({
+            nombre: venta.nombre_lead || venta.registro_email,
+            email: venta.registro_email,
+            vendedor: venta.vendedor,
+            monto_pagado: venta.monto,
+            tipo_acceso: venta.tipo === 'compro_evento' ? 'evento' : 'seguimiento',
+            fecha_ingreso: new Date().toISOString(),
+            fecha_fin: new Date(new Date().setFullYear(new Date().getFullYear()+1)).toISOString()
+          })
+        });
+      }
+    }
+
+    showAlert('aprobAlert', `✅ Venta ${aprobar ? 'aprobada' : 'rechazada'} correctamente.`, 'success');
+    loadAprobaciones();
+  } catch(e) {
+    showAlert('aprobAlert', 'Error al actualizar. Intenta de nuevo.', 'error');
+  }
+}
+
+async function deleteVenta(id, nombre) {
+  if (!confirm(`¿Eliminar la venta de "${nombre || id}"? Esta acción no se puede deshacer.`)) return;
+  try {
+    await fetch(SB_URL + `/rest/v1/ventas?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+    });
+    loadAprobaciones();
+  } catch(e) {
+    alert('Error al eliminar. Intenta de nuevo.');
+  }
+}
+
+/* ──────────────────────────────────────
    REFRESH FROM SUPABASE
 ────────────────────────────────────── */
 async function refreshData() {
   const sbRegs = await fetchFromSupabase();
   if (sbRegs.length > 0) {
     localStorage.setItem('registrations', JSON.stringify(sbRegs));
-    renderOverview(); renderRegistros(); renderABTest();
+    renderOverview(); loadBehaviorData().then(() => renderRegistros()); renderABTest();
     showAlert('configAlert', '✅ Datos actualizados desde Supabase (' + sbRegs.length + ' registros).', 'success');
   } else {
     showAlert('configAlert', 'ℹ️ Sin registros en Supabase aún.', 'error');
@@ -843,5 +2135,26 @@ document.addEventListener('DOMContentLoaded', async function() {
   renderConfig();
 });
 </script>
+
+<!-- Modal editar miembro (fuera de los panels) -->
+<div id="editMiembroModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#141414;border:1px solid #272727;border-radius:12px;padding:28px;width:100%;max-width:500px;">
+    <div style="font-weight:700;font-size:1rem;margin-bottom:20px;">✏️ Editar Miembro</div>
+    <input type="hidden" id="edit-mb-id">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div class="field-group" style="margin:0;"><label>Nombre</label><input type="text" id="edit-mb-nombre"></div>
+      <div class="field-group" style="margin:0;"><label>Email</label><input type="email" id="edit-mb-email"></div>
+      <div class="field-group" style="margin:0;"><label>WhatsApp</label><input type="text" id="edit-mb-phone"></div>
+      <div class="field-group" style="margin:0;"><label>Monto pagado</label><input type="number" id="edit-mb-monto"></div>
+      <div class="field-group" style="margin:0;"><label>Fecha inicio</label><input type="date" id="edit-mb-inicio"></div>
+      <div class="field-group" style="margin:0;"><label>Fecha vencimiento</label><input type="date" id="edit-mb-fin"></div>
+    </div>
+    <div class="field-group" style="margin:0 0 16px;"><label>Notas</label><input type="text" id="edit-mb-notas"></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-outline" style="flex:1;justify-content:center;" onclick="document.getElementById('editMiembroModal').style.display='none'">Cancelar</button>
+      <button class="btn btn-gold" style="flex:1;justify-content:center;" onclick="saveMiembroEdit()">Guardar →</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

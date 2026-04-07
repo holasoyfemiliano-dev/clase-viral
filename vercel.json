@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/zoom-sync.js": {
+      "maxDuration": 30
+    },
+    "api/zoom-transcript.js": {
+      "maxDuration": 60
+    }
+  }
+}
