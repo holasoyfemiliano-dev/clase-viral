@@ -75,6 +75,15 @@
     .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
     .tab:hover:not(.active) { color: var(--text); }
 
+    /* ── SUB-TABS ── */
+    .sub-tab {
+      padding: 7px 16px; font-size: 0.82rem; font-weight: 600; border-radius: 6px;
+      background: transparent; border: none; color: var(--muted); cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: background 0.15s, color 0.15s;
+    }
+    .sub-tab.active { background: var(--card2); color: var(--white); }
+    .sub-tab:hover:not(.active) { color: var(--text); }
+
     /* ── PANELS ── */
     .panel { display: none; }
     .panel.active { display: block; }
@@ -277,12 +286,10 @@
     <!-- TABS -->
     <div class="tabs">
       <button class="tab active" data-tab="overview">📊 Resumen</button>
-      <button class="tab" data-tab="abtest">🧪 A/B Test</button>
-      <button class="tab" data-tab="registros">📋 Registros</button>
-      <button class="tab" data-tab="miembros">🏆 Miembros</button>
-      <button class="tab" data-tab="vendedores">👥 Vendedores</button>
-      <button class="tab" data-tab="aprobaciones">✅ Aprobaciones <span id="aprobBadge" style="display:none;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:0.72rem;margin-left:4px;">0</span></button>
+      <button class="tab" data-tab="landing">📋 Landing & Ventas <span id="aprobBadge" style="display:none;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:0.72rem;margin-left:4px;">0</span></button>
       <button class="tab" data-tab="analisis">🧠 Análisis</button>
+      <button class="tab" data-tab="pauta">📣 Pauta</button>
+      <button class="tab" data-tab="miembros">🏆 Miembros</button>
       <button class="tab" data-tab="config">⚙️ Configuración</button>
     </div>
 
@@ -359,66 +366,52 @@
         </div>
       </div>
 
-      <!-- Chart registros por día -->
-      <div class="card">
-        <div class="card-title">Registros por día <span style="font-size:0.75rem;font-weight:500;color:var(--muted);">Últimos 14 días</span></div>
-        <div class="chart-wrap"><canvas id="chartRegistros"></canvas></div>
-      </div>
-
-      <!-- AB mini table -->
-      <div class="card">
-        <div class="card-title">Rendimiento A/B por variante</div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Variante</th>
-                <th>Visitas</th>
-                <th>Registros</th>
-                <th>CVR %</th>
-                <th>Progreso</th>
-              </tr>
-            </thead>
-            <tbody id="abMiniBody"></tbody>
-          </table>
-        </div>
+      <!-- ── EQUIPO ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:20px;">👥 Equipo esta semana</div>
+      <div class="card" style="padding:0;overflow:hidden;" id="ov-vendedores-card">
+        <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);">
+              <th style="text-align:left;padding:10px 16px;color:var(--muted);font-weight:600;">Vendedor</th>
+              <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">Sesiones</th>
+              <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">Tiempo</th>
+              <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">WA abiertos</th>
+              <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">Confirmaciones</th>
+              <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">Eficiencia</th>
+              <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="ov-vend-body">
+            <tr><td colspan="7" style="padding:20px;text-align:center;color:var(--muted);font-size:0.82rem;">Cargando…</td></tr>
+          </tbody>
+        </table>
       </div>
 
     </div>
 
-    <!-- ════════════ A/B TEST ════════════ -->
-    <div class="panel" id="tab-abtest">
+    <!-- ════════════ LANDING & VENTAS ════════════ -->
+    <div class="panel" id="tab-landing">
 
-      <div class="sec">
-        <h2>Test A/B — Títulos</h2>
-        <p>Cada visitante ve uno de los 4 títulos al azar. Aquí puedes comparar cuál convierte mejor.</p>
-      </div>
-
+      <!-- ── A/B Test ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">🧪 Test A/B — Títulos</div>
       <div id="abCards"></div>
-
-      <div class="card" style="margin-top:0;">
+      <div class="card" style="margin-top:0;margin-bottom:28px;">
         <div class="card-title">Comparación visual</div>
         <div class="chart-wrap"><canvas id="chartAB"></canvas></div>
       </div>
 
-      <div class="card">
-        <div class="card-title" style="color:var(--muted);font-size:0.8rem;">
-          ℹ️ Nota sobre el tracking
+      <!-- ── Registros por día ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">📈 Registros por día</div>
+      <div class="card" style="margin-bottom:28px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <span style="font-size:0.85rem;font-weight:700;">Últimos 14 días</span>
         </div>
-        <p style="font-size:0.83rem;color:var(--muted);line-height:1.7;">
-          Los datos se almacenan en el navegador de cada visitante (localStorage). Para tracking
-          real entre dispositivos, integra un servicio como <strong style="color:var(--text);">Formspree, Supabase o Google Sheets</strong>
-          — puedes configurar el endpoint en la pestaña <strong style="color:var(--gold);">Configuración</strong>.
-          Mientras tanto, usa estos datos para validar la dirección de los títulos.
-        </p>
+        <div class="chart-wrap"><canvas id="chartRegistros"></canvas></div>
       </div>
 
-    </div>
-
-    <!-- ════════════ REGISTROS ════════════ -->
-    <div class="panel" id="tab-registros">
-
-      <div class="toolbar">
+      <!-- ── Lista de registros ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">📋 Registros</div>
+      <div class="toolbar" style="margin-bottom:12px;">
         <div>
           <span id="reg-count-label" style="font-size:0.88rem;color:var(--muted);">0 registros</span>
         </div>
@@ -429,25 +422,88 @@
           <button class="btn btn-red btn-sm" onclick="confirmReset()">🗑 Limpiar todo</button>
         </div>
       </div>
-
-      <div class="card" style="padding:0;overflow:hidden;">
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>#</th>
-                <th></th>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Teléfono</th>
-                <th>Variante</th>
-                <th>Interés</th>
-                <th>Fecha</th>
-                <th>Hora</th>
+                <th>#</th><th></th><th>Nombre</th><th>Email</th>
+                <th>Teléfono</th><th>Variante</th><th>Interés</th><th>Fecha</th><th>Hora</th>
               </tr>
             </thead>
             <tbody id="regBody">
-              <tr><td colspan="9"><div class="empty"><span class="empty-icon">📭</span>Aún no hay registros.<br>Comparte tu landing para empezar a capturar leads.</div></td></tr>
+              <tr><td colspan="9"><div class="empty"><span class="empty-icon">📭</span>Aún no hay registros.</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Vendedores ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">👥 Equipo de Vendedores</div>
+      <div id="vendAlert"></div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">➕ Crear nuevo vendedor</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;">
+          <div class="field-group" style="margin:0;"><label>Nombre</label><input type="text" id="newVendNombre" placeholder="Ej: Ana García"></div>
+          <div class="field-group" style="margin:0;"><label>Contraseña</label><input type="text" id="newVendPass" placeholder="Ej: ana2024"></div>
+          <button class="btn btn-gold" onclick="crearVendedor()">Crear →</button>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Nombre</th><th>Contraseña</th><th>Leads</th><th>Ventas</th>
+                <th>Comisión</th><th>Última actividad</th><th>Estado</th><th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="vendBody">
+              <tr><td colspan="9"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" id="vendReporteCard" style="display:none;margin-bottom:12px;">
+        <div class="card-title">📊 Actividad del equipo</div>
+        <div id="vendReporteBody"></div>
+      </div>
+      <div class="card" style="margin-bottom:28px;">
+        <div class="card-title">📋 Asignar leads a vendedores</div>
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <input type="text" class="search-input" id="assignSearch" placeholder="🔍 Buscar lead…" oninput="renderAssignTable()">
+          <select id="assignFilterVend" class="search-input" style="min-width:160px;" onchange="renderAssignTable()">
+            <option value="">Todos los leads</option>
+          </select>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;margin-bottom:0;">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Registro</th><th>Asignado a</th></tr></thead>
+              <tbody id="assignBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Aprobaciones ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">✅ Aprobaciones de Ventas</div>
+      <div id="aprobAlert"></div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:0.85rem;font-weight:700;">Ventas pendientes de aprobación</span>
+          <button class="btn btn-outline btn-sm" onclick="loadAprobaciones()">🔄 Actualizar</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Lead</th><th>Vendedor</th><th>Monto</th>
+                <th>Tipo</th><th>Comisión</th><th>Comprobante</th><th>Fecha</th><th>Estado</th><th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="aprobBody">
+              <tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
             </tbody>
           </table>
         </div>
@@ -508,224 +564,141 @@
 
     </div>
 
-    <!-- ════════════ VENDEDORES ════════════ -->
-    <div class="panel" id="tab-vendedores">
+    <!-- ════════════ ANÁLISIS ════════════ -->
+    <div class="panel" id="tab-analisis">
 
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-        <div>
-          <h2 style="font-size:1.2rem;font-weight:700;">Equipo de Vendedores</h2>
-          <p style="font-size:0.82rem;color:var(--muted);margin-top:4px;">Crea y administra los accesos de tu equipo de ventas.</p>
-        </div>
-        <button class="btn btn-outline btn-sm" onclick="loadVendedoresAdmin()">🔄 Actualizar</button>
+      <!-- Sub-tab nav -->
+      <div style="display:flex;gap:2px;margin-bottom:24px;background:var(--card);border-radius:8px;padding:4px;width:fit-content;">
+        <button class="sub-tab active" id="st-landing" onclick="setAnalisisSubTab('landing')">📊 Landing Page</button>
+        <button class="sub-tab" id="st-evento" onclick="setAnalisisSubTab('evento')">🎥 Evento y Conversión</button>
+        <button class="sub-tab" id="st-transcript" onclick="setAnalisisSubTab('transcript')">📝 Transcripción</button>
       </div>
 
-      <div id="vendAlert"></div>
-
-      <!-- Crear nuevo vendedor -->
-      <div class="card">
-        <div class="card-title">➕ Crear nuevo vendedor</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;flex-wrap:wrap;">
-          <div class="field-group" style="margin:0;">
-            <label>Nombre completo</label>
-            <input type="text" id="newVendNombre" placeholder="Ej: Ana García">
+      <!-- ══ SUB: LANDING PAGE ══ -->
+      <div id="ast-landing">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;" id="bhv-stats-row">
+          <div class="stat-card"><div class="s-label">Sesiones totales</div><div class="s-value" id="bhv-total">—</div><div class="s-sub">visitantes rastreados</div></div>
+          <div class="stat-card green"><div class="s-label">Se registraron</div><div class="s-value" id="bhv-conv">—</div><div class="s-sub">conversión</div></div>
+          <div class="stat-card gold"><div class="s-label">Scroll promedio</div><div class="s-value" id="bhv-scroll">—</div><div class="s-sub">% de la página</div></div>
+          <div class="stat-card orange"><div class="s-label">Tiempo promedio</div><div class="s-value" id="bhv-time">—</div><div class="s-sub">segundos en la página</div></div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div style="font-weight:700;font-size:0.88rem;">Sesiones de visitantes</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('todos')" id="af-todos">Todos</button>
+              <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('no_reg')" id="af-noreg">Sin registrar</button>
+              <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('reg')" id="af-reg">Registrados</button>
+              <button class="btn btn-outline btn-sm" onclick="loadAnalisis()">🔄</button>
+            </div>
           </div>
-          <div class="field-group" style="margin:0;">
-            <label>Contraseña</label>
-            <input type="text" id="newVendPass" placeholder="Ej: ana2024">
-          </div>
-          <button class="btn btn-gold" onclick="crearVendedor()">Crear →</button>
-        </div>
-        <p style="font-size:0.75rem;color:var(--muted);margin-top:10px;">La contraseña es temporal — el vendedor puede pedirte que la cambies cuando quiera.</p>
-      </div>
-
-      <!-- Lista de vendedores -->
-      <div class="card" style="padding:0;overflow:hidden;">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Nombre</th>
-                <th>Contraseña</th>
-                <th>Leads Asignados</th>
-                <th>Ventas</th>
-                <th>Comisión Total</th>
-                <th>Última actividad</th>
-                <th>Estado</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-            <tbody id="vendBody">
-              <tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Reporte de actividad -->
-      <div class="card" id="vendReporteCard" style="display:none;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-          <div class="card-title" style="margin:0;">📊 Reporte de actividad por vendedor</div>
-        </div>
-        <div id="vendReporteBody"></div>
-      </div>
-
-      <!-- Asignar leads -->
-      <div class="card">
-        <div class="card-title">📋 Asignar leads a vendedores</div>
-        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;">Cada lead sin asignar es visible para todos. Asigna leads específicos a un vendedor para dividir el trabajo.</p>
-        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-          <input type="text" class="search-input" id="assignSearch" placeholder="🔍 Buscar lead…" oninput="renderAssignTable()">
-          <select id="assignFilterVend" class="search-input" style="min-width:160px;" onchange="renderAssignTable()">
-            <option value="">Todos los leads</option>
-          </select>
-        </div>
-        <div class="card" style="padding:0;overflow:hidden;margin-bottom:0;">
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>#</th><th>Nombre</th><th>Email</th><th>Registro</th><th>Asignado a</th></tr>
+                <tr>
+                  <th>#</th><th>Email</th><th>Interés</th><th>Scroll</th>
+                  <th>Tiempo</th><th>CTAs</th><th>Formulario</th><th>Registrado</th><th>Variante</th><th>Fecha</th>
+                </tr>
               </thead>
-              <tbody id="assignBody">
-                <tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
+              <tbody id="analisisBody">
+                <tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
 
-    </div>
+      <!-- ══ SUB: EVENTO Y CONVERSIÓN ══ -->
+      <div id="ast-evento" style="display:none;">
 
-    <!-- ════════════ APROBACIONES ════════════ -->
-    <div class="panel" id="tab-aprobaciones">
-
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-        <div>
-          <h2 style="font-size:1.2rem;font-weight:700;">Aprobaciones de Ventas</h2>
-          <p style="font-size:0.82rem;color:var(--muted);margin-top:4px;">Revisa y aprueba o rechaza las ventas registradas por los vendedores.</p>
-        </div>
-        <button class="btn btn-outline btn-sm" onclick="loadAprobaciones()">🔄 Actualizar</button>
-      </div>
-
-      <div id="aprobAlert"></div>
-
-      <div class="card" style="padding:0;overflow:hidden;">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Lead</th>
-                <th>Vendedor</th>
-                <th>Monto</th>
-                <th>Tipo</th>
-                <th>Comisión</th>
-                <th>Comprobante</th>
-                <th>Fecha</th>
-                <th>Estado</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-            <tbody id="aprobBody">
-              <tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ════════════ ANÁLISIS ════════════ -->
-    <div class="panel" id="tab-analisis">
-
-      <!-- ── ZOOM SYNC ── -->
-      <div style="background:linear-gradient(135deg,rgba(37,111,255,0.08),rgba(37,111,255,0.03));border:1px solid rgba(37,111,255,0.25);border-radius:12px;padding:20px 24px;margin-bottom:24px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
-          <div>
-            <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;">🎥 Sincronizar asistencia de Zoom</div>
-            <div style="font-size:0.82rem;color:var(--muted);">Ingresa el Meeting ID de la clase para importar quién realmente asistió.</div>
+        <!-- YouTube-style big numbers -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:24px;">
+          <div style="padding:24px 28px;border-right:1px solid var(--border);">
+            <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;font-weight:600;">ASISTENTES</div>
+            <div style="font-size:2.4rem;font-weight:800;" id="yt-asistentes">—</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:4px;" id="yt-asistentes-sub">última clase</div>
           </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            <input type="text" id="zoomMeetingId" placeholder="Meeting ID (ej. 123 456 7890)"
-              style="padding:9px 14px;border-radius:6px;border:1px solid var(--border);background:var(--dark);color:var(--white);font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;width:220px;">
-            <button class="btn btn-gold" onclick="syncZoom()" id="zoomSyncBtn">Sincronizar →</button>
+          <div style="padding:24px 28px;border-right:1px solid var(--border);">
+            <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;font-weight:600;">RETENCIÓN PROMEDIO</div>
+            <div style="font-size:2.4rem;font-weight:800;" id="yt-retencion">—</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:4px;">del total que entró</div>
+          </div>
+          <div style="padding:24px 28px;">
+            <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;font-weight:600;">TIEMPO PROMEDIO EN CLASE</div>
+            <div style="font-size:2.4rem;font-weight:800;" id="yt-tiempo">—</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:4px;" id="yt-tiempo-sub">minutos</div>
           </div>
         </div>
-        <div id="zoomSyncResult" style="margin-top:12px;display:none;font-size:0.85rem;padding:10px 14px;border-radius:6px;"></div>
 
-        <!-- Historial de clases sincronizadas -->
-        <div id="zoomHistorial" style="margin-top:16px;display:none;">
-          <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:10px;">Clases sincronizadas</div>
-          <div id="zoomHistorialList"></div>
+        <!-- Zoom sync -->
+        <div style="background:rgba(4,80,224,0.06);border:1px solid rgba(4,80,224,0.2);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <div style="font-weight:700;font-size:0.88rem;margin-bottom:2px;">🎥 Sincronizar clase</div>
+            <div style="font-size:0.78rem;color:var(--muted);">Importa asistencia de Zoom para actualizar las métricas</div>
+          </div>
+          <input type="text" id="zoomMeetingId" placeholder="Meeting ID"
+            style="padding:9px 14px;border-radius:6px;border:1px solid var(--border);background:var(--dark);color:var(--white);font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;width:200px;">
+          <button class="btn btn-gold" onclick="syncZoom()" id="zoomSyncBtn">Sincronizar →</button>
+          <div id="zoomSyncResult" style="display:none;font-size:0.82rem;padding:8px 12px;border-radius:6px;width:100%;"></div>
+        </div>
+
+        <!-- Retention curve (existing renderTranscriptAnalysis target) -->
+        <div id="ast-evento-retention">
+          <div style="padding:40px;text-align:center;color:var(--muted);font-size:0.85rem;">Sincroniza una clase para ver la curva de retención</div>
+        </div>
+
+        <!-- Zoom stats -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px;" id="zoom-stats-row">
+          <div class="stat-card"><div class="s-label">Total asistentes</div><div class="s-value" id="zm-total">—</div><div class="s-sub">todas las clases</div></div>
+          <div class="stat-card green"><div class="s-label">% Asistencia</div><div class="s-value" id="zm-pct">—</div><div class="s-sub">asistentes / confirmados</div></div>
+          <div class="stat-card gold"><div class="s-label">Tiempo promedio</div><div class="s-value" id="zm-tiempo">—</div><div class="s-sub">minutos en clase</div></div>
+          <div class="stat-card" style="border-color:rgba(168,85,247,0.3)"><div class="s-label">Identificados</div><div class="s-value" id="zm-match" style="color:#a855f7">—</div><div class="s-sub">emails cruzados</div></div>
         </div>
       </div>
 
-      <!-- Stats Zoom -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;" id="zoom-stats-row">
-        <div class="stat-card"><div class="s-label">Total asistentes</div><div class="s-value" id="zm-total">—</div><div class="s-sub">todas las clases</div></div>
-        <div class="stat-card green"><div class="s-label">% Asistencia real</div><div class="s-value" id="zm-pct">—</div><div class="s-sub">asistentes / confirmados</div></div>
-        <div class="stat-card gold"><div class="s-label">Tiempo promedio</div><div class="s-value" id="zm-tiempo">—</div><div class="s-sub">minutos en clase</div></div>
-        <div class="stat-card" style="border-color:rgba(168,85,247,0.3)"><div class="s-label">Cruzados</div><div class="s-value" id="zm-match" style="color:#a855f7">—</div><div class="s-sub">emails identificados</div></div>
-      </div>
-
-      <!-- ── TRANSCRIPT ANALYSIS ── -->
-      <div style="background:linear-gradient(135deg,rgba(168,85,247,0.08),rgba(168,85,247,0.03));border:1px solid rgba(168,85,247,0.25);border-radius:12px;padding:20px 24px;margin-bottom:24px;" id="transcriptSection">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:16px;">
-          <div>
-            <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;">📊 Análisis de Clase — Curva de Retención</div>
-            <div style="font-size:0.82rem;color:var(--muted);">Correlaciona en qué minuto se salen las personas con lo que se estaba diciendo en la transcripción.</div>
+      <!-- ══ SUB: TRANSCRIPCIÓN ══ -->
+      <div id="ast-transcript" style="display:none;">
+        <div style="background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <div style="font-weight:700;font-size:0.88rem;margin-bottom:2px;">📊 Análisis de Transcripción</div>
+            <div style="font-size:0.78rem;color:var(--muted);">Detecta en qué minuto se va la gente y qué se estaba diciendo</div>
           </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            <input type="text" id="transcriptMeetingId" placeholder="Meeting ID"
-              style="padding:9px 14px;border-radius:6px;border:1px solid rgba(168,85,247,0.4);background:var(--dark);color:var(--white);font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;width:200px;">
-            <button class="btn" style="background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.4);color:#c084fc;" onclick="analyzeTranscript()" id="transcriptBtn">Analizar →</button>
-          </div>
+          <input type="text" id="transcriptMeetingId" placeholder="Meeting ID"
+            style="padding:9px 14px;border-radius:6px;border:1px solid rgba(168,85,247,0.4);background:var(--dark);color:var(--white);font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;width:200px;">
+          <button class="btn" style="background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.4);color:#c084fc;" onclick="analyzeTranscript()" id="transcriptBtn">Analizar →</button>
         </div>
         <div id="transcriptResult" style="display:none;"></div>
       </div>
 
-      <!-- Stats resumen -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;" id="bhv-stats-row">
-        <div class="stat-card"><div class="s-label">Sesiones totales</div><div class="s-value" id="bhv-total">—</div><div class="s-sub">visitantes rastreados</div></div>
-        <div class="stat-card green"><div class="s-label">Se registraron</div><div class="s-value" id="bhv-conv">—</div><div class="s-sub">conversión</div></div>
-        <div class="stat-card gold"><div class="s-label">Scroll promedio</div><div class="s-value" id="bhv-scroll">—</div><div class="s-sub">% de la página</div></div>
-        <div class="stat-card orange"><div class="s-label">Tiempo promedio</div><div class="s-value" id="bhv-time">—</div><div class="s-sub">segundos en la página</div></div>
-      </div>
+    </div>
 
-      <!-- Tabla sesiones -->
-      <div class="card" style="padding:0;overflow:hidden;">
-        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-          <div style="font-weight:700;font-size:0.88rem;">Sesiones de visitantes</div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('todos')" id="af-todos">Todos</button>
-            <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('no_reg')" id="af-noreg">Sin registrar</button>
-            <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('reg')" id="af-reg">Registrados</button>
-            <button class="btn btn-outline btn-sm" onclick="loadAnalisis()">🔄</button>
+    <!-- ════════════ PAUTA ════════════ -->
+    <div class="panel" id="tab-pauta">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:320px;text-align:center;gap:16px;">
+        <div style="font-size:3rem;">📣</div>
+        <div style="font-size:1.2rem;font-weight:700;">Pauta — Próximamente</div>
+        <div style="font-size:0.85rem;color:var(--muted);max-width:400px;line-height:1.7;">
+          Aquí conectaremos la API de Meta Ads para ver gasto, ROAS y resultados de campañas directamente en el dashboard.
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 20px;font-size:0.82rem;">
+            <div style="color:var(--muted);margin-bottom:4px;">Gasto del mes</div>
+            <div style="font-size:1.4rem;font-weight:700;color:var(--muted);">$—</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 20px;font-size:0.82rem;">
+            <div style="color:var(--muted);margin-bottom:4px;">ROAS</div>
+            <div style="font-size:1.4rem;font-weight:700;color:var(--muted);">—x</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 20px;font-size:0.82rem;">
+            <div style="color:var(--muted);margin-bottom:4px;">Costo por registro</div>
+            <div style="font-size:1.4rem;font-weight:700;color:var(--muted);">$—</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 20px;font-size:0.82rem;">
+            <div style="color:var(--muted);margin-bottom:4px;">Campañas activas</div>
+            <div style="font-size:1.4rem;font-weight:700;color:var(--muted);">—</div>
           </div>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Email</th>
-                <th>Interés</th>
-                <th>Scroll</th>
-                <th>Tiempo</th>
-                <th>CTAs</th>
-                <th>Formulario</th>
-                <th>Registrado</th>
-                <th>Variante</th>
-                <th>Fecha</th>
-              </tr>
-            </thead>
-            <tbody id="analisisBody">
-              <tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
-            </tbody>
-          </table>
-        </div>
       </div>
-
     </div>
 
     <!-- ════════════ CONFIG ════════════ -->
@@ -922,12 +895,9 @@ document.querySelectorAll('.tab').forEach(tab => {
     this.classList.add('active');
     document.getElementById('tab-' + this.dataset.tab).classList.add('active');
     if (this.dataset.tab === 'overview') renderOverview();
-    if (this.dataset.tab === 'abtest') renderABTest();
-    if (this.dataset.tab === 'registros') { loadBehaviorData().then(() => renderRegistros()); }
-    if (this.dataset.tab === 'analisis')  { loadAnalisis(); setAnalisisFilter('todos'); loadZoomStats(); loadCachedAnalysis(); }
+    if (this.dataset.tab === 'landing') loadLandingTab();
+    if (this.dataset.tab === 'analisis')  setAnalisisSubTab(currentAnalisisSubTab || 'landing');
     if (this.dataset.tab === 'miembros') loadMiembros();
-    if (this.dataset.tab === 'vendedores') loadVendedoresAdmin();
-    if (this.dataset.tab === 'aprobaciones') loadAprobaciones();
     if (this.dataset.tab === 'config') renderConfig();
   });
 });
@@ -1002,49 +972,41 @@ async function renderOverview() {
     document.getElementById('ov-comisiones-sub').textContent = MESES[ahora.getMonth()] + ' · ' + aprobMes.length + ' ventas';
   } catch(e) { /* silent fail — tables may not exist yet */ }
 
-  // Mini AB table
-  const tbody = document.getElementById('abMiniBody');
-  tbody.innerHTML = '';
-  ['A','B','C','D'].forEach(v => {
-    const views = getViews(v), conv = getConv(v), c = cvr(views, conv);
-    const isWinner = (v === best && totalViews > 0);
-    tbody.innerHTML += `<tr class="ab-row">
-      <td><span class="var-badge var-${v}">${v}</span>${isWinner ? ' <span class="winner-badge">🏆 Líder</span>' : ''}</td>
-      <td class="bold">${views}</td>
-      <td class="bold">${conv}</td>
-      <td class="bold" style="color:var(--gold)">${c}%</td>
-      <td><div class="cvr-row"><div class="prog-wrap"><div class="prog-fill" style="width:${Math.min(c*8,100)}%"></div></div><span style="font-size:0.78rem;color:var(--muted);min-width:36px">${c}%</span></div></td>
-    </tr>`;
-  });
-
-  // Chart registros por día
-  const last14 = getLast14Days(regs);
-  if (chartRegistros) chartRegistros.destroy();
-  const ctx = document.getElementById('chartRegistros').getContext('2d');
-  chartRegistros = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: last14.labels,
-      datasets: [{
-        label: 'Registros',
-        data: last14.data,
-        borderColor: '#FFE500',
-        backgroundColor: 'rgba(255,229,0,0.08)',
-        tension: 0.3,
-        fill: true,
-        pointBackgroundColor: '#FFE500',
-        pointRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: '#666', font: { size: 11 } }, grid: { color: '#1e1e1e' } },
-        y: { ticks: { color: '#666', font: { size: 11 }, stepSize: 1 }, grid: { color: '#1e1e1e' }, min: 0 }
-      }
+  // Vendor mini-summary
+  try {
+    const [vends, actividad] = await Promise.all([
+      fetchSB('/rest/v1/vendedores?select=nombre,activo,last_active&order=nombre'),
+      fetchSB('/rest/v1/vendedor_actividad?select=vendedor,accion,ts&order=ts.desc&limit=500'),
+    ]);
+    const byVend = {};
+    (vends||[]).forEach(v => { byVend[v.nombre] = { nombre: v.nombre, activo: v.activo, last_active: v.last_active, sessions:0, tiempoMin:0, waClicks:0, confirmaciones:0 }; });
+    const sessions = {};
+    for (const a of (actividad||[])) {
+      if (!byVend[a.vendedor]) byVend[a.vendedor] = { nombre: a.vendedor, activo: false, sessions:0, tiempoMin:0, waClicks:0, confirmaciones:0 };
+      const vd = byVend[a.vendedor];
+      if (a.accion === 'session_start') { vd.sessions++; sessions[a.vendedor] = new Date(a.ts); }
+      else if (a.accion === 'session_end' && sessions[a.vendedor]) { vd.tiempoMin += (new Date(a.ts) - sessions[a.vendedor]) / 60000; delete sessions[a.vendedor]; }
+      else if (a.accion === 'wa_click') vd.waClicks++;
+      else if (a.accion === 'confirmacion') vd.confirmaciones++;
     }
-  });
+    const rows = Object.values(byVend);
+    document.getElementById('ov-vend-body').innerHTML = rows.length ? rows.map(v => {
+      const mins = Math.round(v.tiempoMin);
+      const tiempoStr = mins >= 60 ? `${Math.floor(mins/60)}h ${mins%60}m` : mins > 0 ? `${mins}m` : '—';
+      const efic = v.waClicks > 0 ? Math.round(v.confirmaciones / v.waClicks * 100) : null;
+      const lastAct = v.last_active ? (() => { const d = Math.floor((Date.now()-new Date(v.last_active))/86400000); return d===0?'Hoy':d===1?'Ayer':`hace ${d}d`; })() : 'Nunca';
+      const lastColor = !v.last_active ? 'var(--muted)' : (() => { const d=Math.floor((Date.now()-new Date(v.last_active))/86400000); return d>5?'var(--red)':d>2?'#eab308':'var(--green)'; })();
+      return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+        <td style="padding:10px 16px;font-weight:600;">${esc(v.nombre)}</td>
+        <td style="text-align:center;padding:10px 12px;color:var(--text);">${v.sessions||0}</td>
+        <td style="text-align:center;padding:10px 12px;color:var(--text);">${tiempoStr}</td>
+        <td style="text-align:center;padding:10px 12px;color:#25d366;font-weight:600;">${v.waClicks||0}</td>
+        <td style="text-align:center;padding:10px 12px;color:var(--blue);font-weight:600;">${v.confirmaciones||0}</td>
+        <td style="text-align:center;padding:10px 12px;font-weight:700;color:${efic!=null?(efic>=50?'var(--green)':efic>=20?'#eab308':'var(--red)'):'var(--muted)'};">${efic!=null?efic+'%':'—'}</td>
+        <td style="text-align:center;padding:10px 12px;font-size:0.78rem;color:${lastColor};">${lastAct}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--muted);">Sin vendedores aún</td></tr>';
+  } catch(e) { /* silent */ }
 }
 
 function getLast14Days(regs) {
@@ -1113,6 +1075,27 @@ function renderABTest() {
       scales: {
         x: { ticks: { color: '#666' }, grid: { color: '#1e1e1e' } },
         y: { ticks: { color: '#666', stepSize: 1 }, grid: { color: '#1e1e1e' }, min: 0 }
+      }
+    }
+  });
+
+  // Registros por día chart (also in Landing tab)
+  const regs = getRegistrations();
+  const last14 = getLast14Days(regs);
+  if (chartRegistros) chartRegistros.destroy();
+  const ctx2 = document.getElementById('chartRegistros').getContext('2d');
+  chartRegistros = new Chart(ctx2, {
+    type: 'line',
+    data: {
+      labels: last14.labels,
+      datasets: [{ label: 'Registros', data: last14.data, borderColor: '#FFE500', backgroundColor: 'rgba(255,229,0,0.08)', tension: 0.3, fill: true, pointBackgroundColor: '#FFE500', pointRadius: 4 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#666', font: { size: 11 } }, grid: { color: '#1e1e1e' } },
+        y: { ticks: { color: '#666', font: { size: 11 }, stepSize: 1 }, grid: { color: '#1e1e1e' }, min: 0 }
       }
     }
   });
@@ -1286,6 +1269,65 @@ async function loadZoomStats() {
       ).join('');
     }
   } catch(e) {}
+}
+
+/* ──────────────────────────────────────
+   LANDING TAB
+────────────────────────────────────── */
+async function loadLandingTab() {
+  renderABTest();
+  loadBehaviorData().then(() => renderRegistros());
+  loadVendedoresAdmin();
+  loadAprobaciones();
+}
+
+/* ──────────────────────────────────────
+   ANÁLISIS SUB-TABS
+────────────────────────────────────── */
+let currentAnalisisSubTab = 'landing';
+
+function setAnalisisSubTab(sub) {
+  currentAnalisisSubTab = sub;
+  ['landing','evento','transcript'].forEach(s => {
+    document.getElementById('st-' + s).classList.toggle('active', s === sub);
+    document.getElementById('ast-' + s).style.display = s === sub ? '' : 'none';
+  });
+  if (sub === 'landing') { loadAnalisis(); setAnalisisFilter('todos'); }
+  if (sub === 'evento')  { loadZoomStats(); loadCachedAnalysisEvento(); }
+  if (sub === 'transcript') { loadCachedAnalysis(); }
+}
+
+async function loadCachedAnalysisEvento() {
+  try {
+    const rows = await fetchSB('/rest/v1/clase_analisis?select=*&order=updated_at.desc&limit=1');
+    if (!rows || !rows.length) return;
+    const cached = rows[0];
+    // Update YouTube-style big numbers
+    const total = cached.total_participants || 0;
+    document.getElementById('yt-asistentes').textContent = total || '—';
+    const ret = cached.retention_data || [];
+    const lastPt = ret.length ? ret[ret.length - 1] : null;
+    const halfPt = ret.find(r => r.pct <= 50);
+    document.getElementById('yt-retencion').textContent = lastPt ? lastPt.pct + '%' : '—';
+    document.getElementById('yt-retencion').style.color = lastPt ? (lastPt.pct >= 60 ? '#22c55e' : lastPt.pct >= 35 ? '#eab308' : '#ef4444') : '';
+    document.getElementById('yt-tiempo').textContent = document.getElementById('zm-tiempo').textContent !== '—' ? document.getElementById('zm-tiempo').textContent : '—';
+    const fecha = cached.start_time ? new Date(cached.start_time).toLocaleDateString('es-MX') : '';
+    document.getElementById('yt-asistentes-sub').textContent = fecha || 'última clase';
+    // Render retention curve inside evento sub-tab
+    const container = document.getElementById('ast-evento-retention');
+    renderTranscriptAnalysis({
+      meetingId: cached.meeting_id, startTime: cached.start_time,
+      totalParticipants: total, retention: ret,
+      criticalMoments: cached.critical_moments || [],
+      transcript: cached.transcript_segments || [],
+      transcriptWarning: null
+    }, container);
+    // After render, hide the transcript section (it's in transcript sub-tab)
+    const transcriptDetails = container.querySelector('details');
+    if (transcriptDetails) transcriptDetails.style.display = 'none';
+    // Pre-fill transcript meeting ID
+    document.getElementById('transcriptMeetingId').value = cached.meeting_id;
+  } catch(e) { /* silent */ }
 }
 
 /* ──────────────────────────────────────
