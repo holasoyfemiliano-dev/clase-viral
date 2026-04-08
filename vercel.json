@@ -8,6 +8,9 @@
     },
     "api/auto-sync.js": {
       "maxDuration": 60
+    },
+    "api/optimize-variant.js": {
+      "maxDuration": 15
     }
   },
   "crons": [

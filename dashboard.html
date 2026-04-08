@@ -1057,6 +1057,9 @@ function renderABTest() {
       </div>`;
   });
 
+  // Auto-optimize underperforming variants (async, non-blocking)
+  autoOptimizeVariants(best, bestCVR);
+
   // Chart AB
   if (chartAB) chartAB.destroy();
   const ctx = document.getElementById('chartAB').getContext('2d');
@@ -1099,6 +1102,105 @@ function renderABTest() {
       }
     }
   });
+}
+
+/* ──────────────────────────────────────
+   AUTO-OPTIMIZE A/B
+────────────────────────────────────── */
+const OPTIMIZE_COOLDOWN_KEY = 'ab_optimize_last';
+const MIN_VISITS = 50; // minimum visits before considering optimization
+
+async function autoOptimizeVariants(bestVariant, bestCVR) {
+  if (!bestVariant || bestCVR < 1) return; // not enough data yet
+
+  // Cooldown: only optimize once per 24h to avoid thrashing
+  const lastOpt = localStorage.getItem(OPTIMIZE_COOLDOWN_KEY);
+  if (lastOpt && Date.now() - parseInt(lastOpt) < 24 * 60 * 60 * 1000) return;
+
+  const cfg = getConfig();
+  let optimized = false;
+
+  for (const v of ['A','B','C','D']) {
+    if (v === bestVariant) continue;
+    const visits = getViews(v);
+    const loserCVR = cvr(visits, getConv(v));
+    if (visits < MIN_VISITS) continue;
+    if (loserCVR > bestCVR * 0.5) continue; // not bad enough to replace
+
+    // This variant is underperforming — replace it
+    try {
+      const res = await fetch('/api/optimize-variant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DASHBOARD_SECRET}` },
+        body: JSON.stringify({
+          variant: v,
+          currentTitle: cfg.variants[v],
+          winnerTitle: cfg.variants[bestVariant],
+          winnerCVR: bestCVR,
+          loserCVR,
+          visits
+        })
+      });
+
+      if (!res.ok) continue;
+      const data = await res.json();
+
+      // Save new title + reset counters for this variant
+      cfg.variants[v] = data.newTitle;
+      saveToStorage(cfg);
+
+      // Reset variant counters so it starts fresh
+      localStorage.removeItem(`views_${v}`);
+      localStorage.removeItem(`conv_${v}`);
+
+      // Log optimization to Supabase
+      await fetchSB('/rest/v1/ab_optimizations', 'POST', {
+        variant: v,
+        old_title: data.oldTitle,
+        new_title: data.newTitle,
+        reason: data.reason,
+        optimized_at: new Date().toISOString()
+      }).catch(() => {});
+
+      // Show notification
+      showOptimizationToast(v, data.oldTitle, data.newTitle);
+      optimized = true;
+    } catch(e) { /* silent */ }
+  }
+
+  if (optimized) {
+    localStorage.setItem(OPTIMIZE_COOLDOWN_KEY, Date.now().toString());
+    // Re-render after short delay
+    setTimeout(() => renderABTest(), 500);
+  }
+}
+
+function showOptimizationToast(variant, oldTitle, newTitle) {
+  let toast = document.getElementById('optimizeToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'optimizeToast';
+    toast.style.cssText = `
+      position:fixed;bottom:80px;right:24px;
+      background:#141414;border:1px solid rgba(255,229,0,0.4);
+      border-radius:10px;padding:14px 18px;max-width:360px;
+      font-size:0.82rem;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,0.5);
+      animation:slideUp 0.3s ease;
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:10px;">
+      <span style="font-size:1.2rem;flex-shrink:0;">🤖</span>
+      <div>
+        <div style="font-weight:700;color:var(--gold);margin-bottom:4px;">Variante ${variant} optimizada</div>
+        <div style="color:var(--muted);font-size:0.75rem;margin-bottom:4px;">Antes: <em>"${esc(oldTitle.substring(0,60))}"</em></div>
+        <div style="color:var(--text);font-size:0.78rem;">Nuevo: <strong>"${esc(newTitle)}"</strong></div>
+      </div>
+      <button onclick="this.parentNode.parentNode.remove()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;margin-left:auto;flex-shrink:0;">✕</button>
+    </div>
+  `;
+  setTimeout(() => { if (toast.parentNode) toast.remove(); }, 8000);
 }
 
 /* ──────────────────────────────────────
