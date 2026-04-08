@@ -1852,7 +1852,15 @@ function renderMiembros(miembros) {
       <td>${estadoBadge}</td>
       <td style="color:var(--muted);font-size:0.82rem">${esc(m.vendedor||'—')}</td>
       <td style="color:var(--muted);font-size:0.8rem">${esc(m.notas||'—')}</td>
-      <td><button class="btn btn-outline btn-sm" onclick="editMiembro('${m.id}')">✏️</button></td>
+      <td style="display:flex;gap:6px;align-items:center;">
+        <button class="btn btn-outline btn-sm" onclick="editMiembro('${m.id}')">✏️</button>
+        <button onclick="deleteMiembro('${m.id}','${esc(m.nombre||'')}')" title="Eliminar miembro"
+          style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
+          border-radius:4px;background:transparent;border:1px solid transparent;
+          color:var(--muted);font-size:0.78rem;cursor:pointer;transition:all 0.15s;"
+          onmouseover="this.style.color='#ef4444';this.style.borderColor='rgba(239,68,68,0.3)'"
+          onmouseout="this.style.color='var(--muted)';this.style.borderColor='transparent'">🗑</button>
+      </td>
     </tr>`;
   }).join('');
 }
@@ -2311,11 +2319,34 @@ async function aprobarVenta(id, aprobar) {
 async function deleteVenta(id, nombre) {
   if (!confirm(`¿Eliminar la venta de "${nombre || id}"? Esta acción no se puede deshacer.`)) return;
   try {
+    // If venta was approved, also remove the auto-created member entry
+    const venta = (ventasCache || []).find(v => v.id === id);
+    if (venta && venta.aprobado && venta.registro_email) {
+      await fetch(SB_URL + `/rest/v1/miembros?email=eq.${encodeURIComponent(venta.registro_email)}&vendedor=eq.${encodeURIComponent(venta.vendedor||'')}`, {
+        method: 'DELETE',
+        headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+      });
+    }
     await fetch(SB_URL + `/rest/v1/ventas?id=eq.${id}`, {
       method: 'DELETE',
       headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
     });
     loadAprobaciones();
+    renderOverview();
+  } catch(e) {
+    alert('Error al eliminar. Intenta de nuevo.');
+  }
+}
+
+async function deleteMiembro(id, nombre) {
+  if (!confirm(`¿Eliminar a "${nombre || id}" de Miembros? Esta acción no se puede deshacer.`)) return;
+  try {
+    await fetch(SB_URL + `/rest/v1/miembros?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+    });
+    loadMiembros();
+    renderOverview();
   } catch(e) {
     alert('Error al eliminar. Intenta de nuevo.');
   }
