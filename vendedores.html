@@ -9,50 +9,95 @@
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --black:  #000;
-      --dark:   #0d0d0d;
-      --card:   #141414;
-      --card2:  #1c1c1c;
-      --border: #272727;
-      --blue:   #0450E0;
-      --gold:   #FFE500;
+      --black:  #040d1a;
+      --dark:   #020810;
+      --card:   rgba(255,255,255,0.04);
+      --card2:  rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.09);
+      --border-gold: rgba(255,214,0,0.18);
+      --blue:   #1a6fff;
+      --gold:   #ffd600;
       --green:  #22c55e;
       --red:    #ef4444;
       --orange: #f97316;
       --purple: #a855f7;
       --white:  #fff;
-      --text:   #ccc;
-      --muted:  #666;
+      --text:   #c8d8f0;
+      --muted:  #6a88b0;
     }
-    body { background: var(--dark); color: var(--white); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+    /* ── BACKGROUND BLOBS ── */
+    .bg-blobs {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .bg-blobs::before {
+      content: '';
+      position: absolute;
+      width: 900px; height: 900px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(26,111,255,0.2) 0%, rgba(10,50,180,0.12) 50%, transparent 72%);
+      bottom: -200px; left: 50%; transform: translateX(-50%);
+      filter: blur(60px);
+    }
+    .bg-blobs::after {
+      content: '';
+      position: absolute;
+      width: 550px; height: 550px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,180,255,0.12) 0%, transparent 70%);
+      top: -80px; right: -120px;
+      filter: blur(65px);
+    }
+    .bg-blob-3 {
+      position: absolute;
+      width: 450px; height: 450px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(100,60,255,0.12) 0%, transparent 75%);
+      top: 40%; left: -100px;
+      filter: blur(70px);
+    }
+    .bg-blob-gold {
+      position: absolute;
+      width: 300px; height: 300px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,214,0,0.09) 0%, transparent 70%);
+      bottom: 12%; right: 4%;
+      filter: blur(65px);
+    }
+    body > *:not(.bg-blobs) { position: relative; z-index: 1; }
+
+    body { background: var(--dark); color: var(--white); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
 
     /* ── LOGIN ── */
     #loginScreen {
       display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; padding: 20px;
+      min-height: 100vh; padding: 20px; position: relative; z-index: 1;
     }
     .login-box {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 12px; padding: 40px; width: 100%; max-width: 380px;
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,229,0,0.18);
+      border-radius: 16px; padding: 44px 40px; width: 100%; max-width: 380px;
       text-align: center;
+      box-shadow: 0 0 60px rgba(255,229,0,0.06);
     }
     .login-logo {
-      font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem;
-      color: var(--gold); letter-spacing: 0.05em; margin-bottom: 6px;
+      display: flex; justify-content: center; margin-bottom: 20px;
     }
+    .login-logo img { height: 32px; width: auto; }
     .login-sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 28px; }
     .login-box select, .login-box input {
       width: 100%; padding: 12px 14px; border-radius: 6px;
-      background: var(--dark); border: 1px solid var(--border);
+      background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
       color: var(--white); font-family: 'Inter', sans-serif; font-size: 0.9rem;
-      margin-bottom: 12px; outline: none;
+      margin-bottom: 12px; outline: none; transition: border-color 0.2s;
     }
-    .login-box select:focus, .login-box input:focus { border-color: var(--gold); }
+    .login-box select:focus, .login-box input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(255,214,0,0.08); }
     .login-error { color: var(--red); font-size: 0.82rem; margin-bottom: 12px; display: none; }
 
     /* ── HEADER ── */
     header {
-      background: var(--black); border-bottom: 1px solid var(--border);
+      background: rgba(4,13,26,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
       padding: 0 24px; position: sticky; top: 0; z-index: 100;
     }
     .header-inner {
@@ -60,8 +105,9 @@
       display: flex; align-items: center; justify-content: space-between;
       height: 60px;
     }
-    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--gold); letter-spacing: 0.05em; }
-    .logo span { color: var(--white); font-size: 0.85rem; margin-left: 10px; font-family: 'Inter', sans-serif; font-weight: 500; opacity: 0.6; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo img { height: 24px; width: auto; display: block; opacity: 0.92; }
+    .logo span { color: var(--muted); font-size: 0.78rem; font-family: 'Inter', sans-serif; font-weight: 500; }
     .vendedor-chip {
       background: rgba(255,229,0,0.1); border: 1px solid rgba(255,229,0,0.3);
       color: var(--gold); padding: 5px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600;
@@ -103,8 +149,11 @@
 
     /* ── CARDS / STATS ── */
     .card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 10px; padding: 22px; margin-bottom: 20px;
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 22px; margin-bottom: 20px;
     }
     .card-title {
       font-weight: 700; font-size: 0.9rem; color: var(--text);
@@ -112,7 +161,10 @@
     }
     .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
     .stat-card {
-      background: var(--card); border: 1px solid var(--border);
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
       border-radius: 10px; padding: 18px 20px;
     }
     .s-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
@@ -290,6 +342,12 @@
   </style>
 </head>
 <body>
+
+<!-- BACKGROUND BLOBS -->
+<div class="bg-blobs" aria-hidden="true">
+  <div class="bg-blob-3"></div>
+  <div class="bg-blob-gold"></div>
+</div>
 
 <!-- ═══════════════════════════════════
      LOGIN SCREEN

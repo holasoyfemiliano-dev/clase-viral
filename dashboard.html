@@ -10,28 +10,68 @@
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --black:  #000;
-      --dark:   #0d0d0d;
-      --card:   #141414;
-      --card2:  #1c1c1c;
-      --border: #272727;
-      --blue:   #0450E0;
-      --gold:   #FFE500;
+      --black:  #040d1a;
+      --dark:   #020810;
+      --card:   rgba(255,255,255,0.04);
+      --card2:  rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.09);
+      --border-gold: rgba(255,214,0,0.18);
+      --blue:   #1a6fff;
+      --gold:   #ffd600;
       --green:  #22c55e;
       --red:    #ef4444;
       --white:  #fff;
-      --text:   #ccc;
-      --muted:  #666;
+      --text:   #c8d8f0;
+      --muted:  #6a88b0;
     }
     html { scroll-behavior: smooth; }
-    body { background: var(--dark); color: var(--white); font-family: 'Inter', sans-serif; min-height: 100vh; }
+    body { background: var(--dark); color: var(--white); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+    /* ── BACKGROUND BLOBS ── */
+    .bg-blobs {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .bg-blobs::before {
+      content: '';
+      position: absolute;
+      width: 1000px; height: 1000px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(26,111,255,0.22) 0%, rgba(10,50,180,0.14) 50%, transparent 72%);
+      bottom: -250px; left: 50%; transform: translateX(-50%);
+      filter: blur(60px);
+    }
+    .bg-blobs::after {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,180,255,0.14) 0%, transparent 70%);
+      top: -100px; right: -150px;
+      filter: blur(60px);
+    }
+    .bg-blob-3 {
+      position: absolute;
+      width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(100,60,255,0.14) 0%, transparent 75%);
+      top: 35%; left: -120px;
+      filter: blur(70px);
+    }
+    .bg-blob-gold {
+      position: absolute;
+      width: 350px; height: 350px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,214,0,0.1) 0%, transparent 70%);
+      bottom: 10%; right: 5%;
+      filter: blur(65px);
+    }
+    body > *:not(.bg-blobs) { position: relative; z-index: 1; }
 
     /* ── LAYOUT ── */
     .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
     /* ── HEADER ── */
     header {
-      background: var(--black); border-bottom: 1px solid var(--border);
+      background: rgba(4,13,26,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
       padding: 0 24px; position: sticky; top: 0; z-index: 100;
     }
     .header-inner {
@@ -40,10 +80,10 @@
       height: 60px;
     }
     .logo {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.4rem; color: var(--gold); text-decoration: none; letter-spacing: 0.05em;
+      display: flex; align-items: center; gap: 10px; text-decoration: none;
     }
-    .logo span { color: var(--white); font-size: 0.85rem; margin-left: 10px; font-family: 'Inter', sans-serif; font-weight: 500; opacity: 0.6; }
+    .logo img { height: 24px; width: auto; display: block; opacity: 0.92; }
+    .logo span { color: var(--muted); font-size: 0.78rem; font-family: 'Inter', sans-serif; font-weight: 500; }
     .header-actions { display: flex; gap: 10px; }
 
     /* ── BUTTONS ── */
@@ -96,8 +136,11 @@
     /* ── STAT CARDS ── */
     .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
     .stat-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 8px; padding: 20px 22px;
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 22px;
     }
     .stat-card .s-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
     .stat-card .s-value { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; line-height: 1; color: var(--gold); }
@@ -122,8 +165,11 @@
 
     /* ── CARD PANEL ── */
     .card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 10px; padding: 24px; margin-bottom: 22px;
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px; margin-bottom: 22px;
     }
     .card-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 18px; color: var(--white); display: flex; align-items: center; justify-content: space-between; }
 
@@ -151,10 +197,10 @@
     .field-group { margin-bottom: 18px; }
     .field-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text); margin-bottom: 7px; }
     .field-group input, .field-group select, .field-group textarea {
-      width: 100%; background: var(--dark); border: 1px solid var(--border);
+      width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
       border-radius: 5px; padding: 11px 14px; color: var(--white);
       font-size: 0.9rem; font-family: 'Inter', sans-serif; outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
     .field-group input:focus, .field-group select:focus, .field-group textarea:focus { border-color: var(--gold); }
     .field-group textarea { resize: vertical; min-height: 80px; }
@@ -221,29 +267,43 @@
   </style>
   <style>
     #dashLogin {
-      display:flex; align-items:center; justify-content:center; min-height:100vh;
+      display:flex; align-items:center; justify-content:center; min-height:100vh; position:relative; z-index:1;
     }
     .dash-login-box {
-      background:var(--card); border:1px solid var(--border); border-radius:12px;
-      padding:40px; width:100%; max-width:360px; text-align:center;
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,229,0,0.18);
+      border-radius:16px;
+      padding:44px 40px; width:100%; max-width:360px; text-align:center;
+      box-shadow: 0 0 60px rgba(255,229,0,0.06);
     }
-    .dash-login-box .dl-logo { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--gold); letter-spacing:0.05em; margin-bottom:6px; }
+    .dash-login-box .dl-logo { margin-bottom: 20px; display:flex; justify-content:center; }
+    .dash-login-box .dl-logo img { height: 32px; width: auto; }
     .dash-login-box .dl-sub  { color:var(--muted); font-size:0.85rem; margin-bottom:28px; }
     .dash-login-box input {
-      width:100%; padding:12px 14px; border-radius:6px; background:var(--dark);
-      border:1px solid var(--border); color:var(--white); font-family:'Inter',sans-serif;
+      width:100%; padding:12px 14px; border-radius:6px;
+      background: rgba(0,0,0,0.4);
+      border:1px solid rgba(255,255,255,0.1); color:var(--white); font-family:'Inter',sans-serif;
       font-size:0.9rem; margin-bottom:12px; outline:none;
+      transition: border-color 0.2s;
     }
-    .dash-login-box input:focus { border-color:var(--gold); }
+    .dash-login-box input:focus { border-color:var(--gold); box-shadow: 0 0 0 3px rgba(255,214,0,0.08); }
     .dl-error { color:var(--red); font-size:0.82rem; margin-bottom:10px; display:none; }
   </style>
 </head>
 <body>
 
+<!-- BACKGROUND BLOBS -->
+<div class="bg-blobs" aria-hidden="true">
+  <div class="bg-blob-3"></div>
+  <div class="bg-blob-gold"></div>
+</div>
+
 <!-- LOGIN -->
 <div id="dashLogin">
   <div class="dash-login-box">
-    <div class="dl-logo">FEMILIANO</div>
+    <div class="dl-logo"><img src="logo-blanco.webp" alt="Femiliano"></div>
     <div class="dl-sub">Dashboard Admin</div>
     <input type="password" id="dashPass" placeholder="Contraseña" onkeydown="if(event.key==='Enter')dashLogin()">
     <div class="dl-error" id="dlError">Contraseña incorrecta.</div>
@@ -256,7 +316,10 @@
 ──────────────────────────────────────── -->
 <header id="dashApp" style="display:none">
   <div class="header-inner">
-    <a href="index.html" class="logo">FEMILIANO <span>Dashboard</span></a>
+    <a href="index.html" class="logo">
+      <img src="logo-blanco.webp" alt="Femiliano">
+      <span>Dashboard</span>
+    </a>
     <div class="header-actions">
       <a href="index.html" target="_blank" class="btn btn-outline btn-sm">👁 Ver Landing</a>
       <button class="btn btn-gold btn-sm" onclick="exportCSV()">⬇ Exportar CSV</button>
