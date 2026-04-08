@@ -680,6 +680,16 @@ async function loadData() {
 
   misVentas = ventas;
 
+  // Auto-categorize any lead that has datos but no categoria yet
+  const toCateg = Object.values(estadosMap).filter(e => e.notas && !e.categoria);
+  for (const e of toCateg) {
+    const cat = detectarCategoria(e.notas);
+    if (cat) {
+      estadosMap[e.registro_email] = { ...e, categoria: cat };
+      sbPatch(`/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(e.registro_email)}`, { categoria: cat }).catch(() => {});
+    }
+  }
+
   renderLeads();
   renderVentas();
 }
@@ -714,10 +724,13 @@ function isThisWeek(ts) {
 
 function leadRow(l, i) {
   const eMap = estadosMap[l.email] || {};
-  const estado   = eMap.estado   || 'por_confirmar';
-  const contacto = eMap.contacto || '';
-  const notas    = eMap.notas    || '';
+  const estado         = eMap.estado         || 'por_confirmar';
+  const contacto       = eMap.contacto       || '';
+  const datos          = eMap.notas          || '';   // "Datos" = campo notas existente
+  const notasVendedor  = eMap.notas_vendedor || '';   // nuevo campo personal
+  const categoria      = eMap.categoria      || '';
   const fecha = l.ts ? new Date(l.ts).toLocaleDateString('es-MX') : '—';
+  const catBadge = categoria ? `<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:700;background:${categoriaBg(categoria)};color:#fff;white-space:nowrap;">${esc(categoria)}</span>` : '';
   return `<tr>
     <td style="color:var(--muted)">${i+1}</td>
     <td class="bold">${esc(l.nombre)}</td>
@@ -742,10 +755,48 @@ function leadRow(l, i) {
       </select>
     </td>
     <td>
-      <textarea class="notas-input" rows="1" placeholder="Notas…"
-        onblur="onNotasChange('${esc(l.email)}', this.value)">${esc(notas)}</textarea>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        ${catBadge}
+        <textarea class="notas-input" rows="1" placeholder="Datos del lead…"
+          onblur="onDatosChange('${esc(l.email)}', this.value)">${esc(datos)}</textarea>
+      </div>
+    </td>
+    <td>
+      <textarea class="notas-input" rows="1" placeholder="Mis notas…"
+        onblur="onNotasVendedorChange('${esc(l.email)}', this.value)">${esc(notasVendedor)}</textarea>
     </td>
   </tr>`;
+}
+
+const CATEGORIAS = [
+  { key: 'desarrollo_personal', label: 'Desarrollo Personal', words: ['coach','coaching','desarrollo personal','mentalidad','habitos','hábitos','motivacion','motivación','crecimiento personal','liderazgo','emprendedor personal'] },
+  { key: 'bienes_raices',       label: 'Bienes Raíces',       words: ['bienes raices','bienes raíces','inmobili','propiedades','rentas','terreno','departamento','casa','construccion','construcción','realtor','agente inmobiliario'] },
+  { key: 'marketing_digital',   label: 'Marketing Digital',   words: ['marketing','publicidad','anuncios','facebook ads','google ads','social media','redes sociales','contenido','influencer','seo','email marketing'] },
+  { key: 'ecommerce',           label: 'E-commerce',          words: ['tienda','shopify','amazon','mercado libre','dropshipping','ecommerce','e-commerce','producto','inventario','ventas online'] },
+  { key: 'finanzas',            label: 'Finanzas',            words: ['finanzas','inversiones','bolsa','criptomonedas','cripto','ahorro','deudas','trading','fondos','acciones'] },
+  { key: 'salud_bienestar',     label: 'Salud y Bienestar',   words: ['nutricion','nutrición','fitness','gym','salud','bienestar','yoga','médico','medico','terapeuta','psicolog'] },
+  { key: 'servicios_prof',      label: 'Servicios Profesionales', words: ['abogado','contador','consultor','asesor','arquitecto','ingeniero','diseñador','diseñadora','fotograf','videograf'] },
+  { key: 'educacion',           label: 'Educación',           words: ['maestro','maestra','profesor','profesora','educacion','educación','cursos','escuela','universidad','capacitacion'] },
+  { key: 'restaurantes',        label: 'Restaurantes / Alimentos', words: ['restaurante','cocina','chef','alimentos','comida','cafetería','catering','panadería'] },
+  { key: 'retail',              label: 'Retail / Tienda Física', words: ['tienda física','negocio local','boutique','ropa','moda','calzado','retail'] },
+];
+const CATEGORIA_COLORS = {
+  desarrollo_personal: '#8b5cf6', bienes_raices: '#0450E0',
+  marketing_digital: '#f97316', ecommerce: '#22c55e',
+  finanzas: '#FFE500', salud_bienestar: '#10b981',
+  servicios_prof: '#6b7280', educacion: '#3b82f6',
+  restaurantes: '#ef4444', retail: '#ec4899',
+};
+
+function categoriaBg(cat) { return CATEGORIA_COLORS[cat] || '#666'; }
+
+function detectarCategoria(texto) {
+  if (!texto) return null;
+  const lower = texto.toLowerCase();
+  for (const cat of CATEGORIAS) {
+    if (cat.words.some(w => lower.includes(w))) return cat.key;
+  }
+  return null;
 }
 
 function renderLeads() {
@@ -797,7 +848,7 @@ function renderLeads() {
         <div class="section-body" id="body-${estado}">
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Notas</th></tr></thead>
+              <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>
               <tbody>${grp.map((l,i) => leadRow(l, i)).join('')}</tbody>
             </table>
           </div>
@@ -813,7 +864,7 @@ function renderLeads() {
     container.innerHTML = `<div class="card" style="padding:0;overflow:hidden;">
       <div class="table-wrap">
         <table>
-          <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Notas</th></tr></thead>
+          <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>
           <tbody>${leads.map((l,i) => leadRow(l,i)).join('')}</tbody>
         </table>
       </div>
@@ -886,15 +937,44 @@ async function onContactoChange(email, value) {
   estadosMap[email] = { ...(estadosMap[email] || {}), contacto: value };
 }
 
-async function onNotasChange(email, value) {
+async function onDatosChange(email, value) {
   const existing = estadosMap[email];
-  const payload = { notas: value || null, vendedor: currentVendedor, updated_at: new Date().toISOString() };
+  // Auto-detect category from the datos text
+  const cat = detectarCategoria(value);
+  const payload = { notas: value || null, categoria: cat, vendedor: currentVendedor, updated_at: new Date().toISOString() };
   if (existing) {
     await sbPatch(`/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, payload);
   } else {
     await sbPost('/rest/v1/lead_estados', { registro_email: email, ...payload }, 'return=representation');
   }
-  estadosMap[email] = { ...(estadosMap[email] || {}), notas: value };
+  estadosMap[email] = { ...(estadosMap[email] || {}), notas: value, categoria: cat };
+  // Refresh the categoria badge in the row without full re-render
+  const rows = document.querySelectorAll(`[data-email="${CSS.escape(email)}"]`);
+  rows.forEach(sel => {
+    const tr = sel.closest('tr');
+    if (!tr) return;
+    const datosCell = tr.cells[7];
+    if (!datosCell) return;
+    let badge = datosCell.querySelector('span');
+    if (cat) {
+      if (!badge) { badge = document.createElement('span'); datosCell.querySelector('div').prepend(badge); }
+      badge.style.cssText = `display:inline-block;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:700;background:${categoriaBg(cat)};color:#fff;white-space:nowrap;`;
+      badge.textContent = CATEGORIAS.find(c => c.key === cat)?.label || cat;
+    } else if (badge) {
+      badge.remove();
+    }
+  });
+}
+
+async function onNotasVendedorChange(email, value) {
+  const existing = estadosMap[email];
+  const payload = { notas_vendedor: value || null, vendedor: currentVendedor, updated_at: new Date().toISOString() };
+  if (existing) {
+    await sbPatch(`/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, payload);
+  } else {
+    await sbPost('/rest/v1/lead_estados', { registro_email: email, ...payload }, 'return=representation');
+  }
+  estadosMap[email] = { ...(estadosMap[email] || {}), notas_vendedor: value };
 }
 
 /* ─────────────────────────────────────
