@@ -61,16 +61,10 @@
       bottom: 10%; right: 5%;
       filter: blur(65px);
     }
-    .bg-symbol {
-      position: absolute;
-      width: 420px; height: 420px;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      opacity: 0.06;
-      filter: blur(1px);
-      pointer-events: none;
-      user-select: none;
-    }
+    /* Tab icon alignment */
+    .tab { display: inline-flex; align-items: center; gap: 7px; }
+    .tab svg { flex-shrink: 0; opacity: 0.7; }
+    .tab.active svg { opacity: 1; }
     body > *:not(.bg-blobs) { position: relative; z-index: 1; }
 
     /* ── LAYOUT ── */
@@ -308,7 +302,6 @@
 <div class="bg-blobs" aria-hidden="true">
   <div class="bg-blob-3"></div>
   <div class="bg-blob-gold"></div>
-  <img class="bg-symbol" src="Logotipo/WEBP/Simbolo Blanco.webp" alt="">
 </div>
 
 <!-- LOGIN -->
@@ -359,12 +352,30 @@
 
     <!-- TABS -->
     <div class="tabs">
-      <button class="tab active" data-tab="overview">📊 Resumen</button>
-      <button class="tab" data-tab="landing">📋 Landing & Ventas <span id="aprobBadge" style="display:none;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:0.72rem;margin-left:4px;">0</span></button>
-      <button class="tab" data-tab="analisis">🧠 Análisis</button>
-      <button class="tab" data-tab="pauta">📣 Pauta</button>
-      <button class="tab" data-tab="miembros">🏆 Miembros</button>
-      <button class="tab" data-tab="config">⚙️ Configuración</button>
+      <button class="tab active" data-tab="overview">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>
+        Resumen
+      </button>
+      <button class="tab" data-tab="landing">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h12l-4.5 5.5v4.5l-3-1.5V8.5L2 3z"/></svg>
+        Landing & Ventas <span id="aprobBadge" style="display:none;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:0.72rem;margin-left:2px;">0</span>
+      </button>
+      <button class="tab" data-tab="analisis">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13V2M2 13h12"/><path d="M2 11l3-3.5 2.5 2L12 4"/></svg>
+        Análisis
+      </button>
+      <button class="tab" data-tab="pauta">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="12.5" r="1.2" fill="currentColor" stroke="none"/><path d="M5.2 10a4 4 0 0 1 5.6 0"/><path d="M3 7.8a7 7 0 0 1 10 0"/></svg>
+        Pauta
+      </button>
+      <button class="tab" data-tab="miembros">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="5.5" r="3"/><path d="M2 14c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/></svg>
+        Miembros
+      </button>
+      <button class="tab" data-tab="config">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="4" x2="14" y2="4"/><line x1="2" y1="8" x2="14" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/><line x1="5" y1="2.5" x2="5" y2="5.5"/><line x1="10" y1="6.5" x2="10" y2="9.5"/><line x1="7" y1="10.5" x2="7" y2="13.5"/></svg>
+        Configuración
+      </button>
     </div>
 
     <!-- ════════════ OVERVIEW ════════════ -->
