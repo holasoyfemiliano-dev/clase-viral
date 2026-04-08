@@ -865,7 +865,12 @@ function renderLeads() {
       <div class="table-wrap">
         <table>
           <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>
-          <tbody>${leads.map((l,i) => leadRow(l,i)).join('')}</tbody>
+          <tbody>${leads.slice().sort((a,b) => {
+            const DONE = ['confirmado','asistio','compro_evento','seguimiento_exitoso','no_asistira'];
+            const aD = DONE.includes((estadosMap[a.email]||{}).estado||'por_confirmar');
+            const bD = DONE.includes((estadosMap[b.email]||{}).estado||'por_confirmar');
+            return aD === bD ? 0 : aD ? 1 : -1;
+          }).map((l,i) => leadRow(l,i)).join('')}</tbody>
         </table>
       </div>
     </div>`;
