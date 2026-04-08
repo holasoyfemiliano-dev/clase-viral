@@ -60,6 +60,14 @@
       bottom: 12%; right: 4%;
       filter: blur(65px);
     }
+    .bg-symbol {
+      position: absolute;
+      width: 480px; height: 480px;
+      bottom: -60px; right: -60px;
+      opacity: 0.04;
+      pointer-events: none;
+      user-select: none;
+    }
     body > *:not(.bg-blobs) { position: relative; z-index: 1; }
 
     body { background: var(--dark); color: var(--white); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
@@ -347,6 +355,7 @@
 <div class="bg-blobs" aria-hidden="true">
   <div class="bg-blob-3"></div>
   <div class="bg-blob-gold"></div>
+  <img class="bg-symbol" src="Logotipo/WEBP/Simbolo Blanco.webp" alt="">
 </div>
 
 <!-- ═══════════════════════════════════
