@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendedores — Femiliano</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --black:  #000;
+      --dark:   #0d0d0d;
+      --card:   #141414;
+      --card2:  #1c1c1c;
+      --border: #272727;
+      --blue:   #0450E0;
+      --gold:   #FFE500;
+      --green:  #22c55e;
+      --red:    #ef4444;
+      --orange: #f97316;
+      --purple: #a855f7;
+      --white:  #fff;
+      --text:   #ccc;
+      --muted:  #666;
+    }
+    body { background: var(--dark); color: var(--white); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+    /* ── LOGIN ── */
+    #loginScreen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 20px;
+    }
+    .login-box {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 40px; width: 100%; max-width: 380px;
+      text-align: center;
+    }
+    .login-logo {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem;
+      color: var(--gold); letter-spacing: 0.05em; margin-bottom: 6px;
+    }
+    .login-sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 28px; }
+    .login-box select, .login-box input {
+      width: 100%; padding: 12px 14px; border-radius: 6px;
+      background: var(--dark); border: 1px solid var(--border);
+      color: var(--white); font-family: 'Inter', sans-serif; font-size: 0.9rem;
+      margin-bottom: 12px; outline: none;
+    }
+    .login-box select:focus, .login-box input:focus { border-color: var(--gold); }
+    .login-error { color: var(--red); font-size: 0.82rem; margin-bottom: 12px; display: none; }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--black); border-bottom: 1px solid var(--border);
+      padding: 0 24px; position: sticky; top: 0; z-index: 100;
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--gold); letter-spacing: 0.05em; }
+    .logo span { color: var(--white); font-size: 0.85rem; margin-left: 10px; font-family: 'Inter', sans-serif; font-weight: 500; opacity: 0.6; }
+    .vendedor-chip {
+      background: rgba(255,229,0,0.1); border: 1px solid rgba(255,229,0,0.3);
+      color: var(--gold); padding: 5px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600;
+    }
+
+    /* ── LAYOUT ── */
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    main { padding: 28px 24px 60px; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: 'Inter', sans-serif; font-weight: 600;
+      font-size: 0.82rem; padding: 9px 18px; border-radius: 5px;
+      border: none; cursor: pointer; text-decoration: none;
+      transition: filter 0.15s, transform 0.15s;
+    }
+    .btn:hover { filter: brightness(1.1); transform: scale(1.02); }
+    .btn-gold { background: var(--gold); color: var(--black); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-green { background: var(--green); color: var(--black); }
+    .btn-red { background: var(--red); color: var(--white); }
+    .btn-sm { padding: 7px 14px; font-size: 0.78rem; }
+    .btn-full { width: 100%; justify-content: center; }
+
+    /* ── TABS ── */
+    .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+    .tab {
+      padding: 12px 20px; font-size: 0.85rem; font-weight: 600;
+      color: var(--muted); background: none; border: none; cursor: pointer;
+      border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s;
+      margin-bottom: -1px;
+    }
+    .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .tab:hover:not(.active) { color: var(--text); }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── CARDS / STATS ── */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 22px; margin-bottom: 20px;
+    }
+    .card-title {
+      font-weight: 700; font-size: 0.9rem; color: var(--text);
+      margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px 20px;
+    }
+    .s-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .s-value { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; color: var(--white); line-height: 1; }
+    .s-sub { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
+    .stat-card.green .s-value { color: var(--green); }
+    .stat-card.gold .s-value { color: var(--gold); }
+    .stat-card.orange .s-value { color: var(--orange); }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .filter-btns { display: flex; gap: 6px; }
+    .filter-btn {
+      padding: 7px 14px; font-size: 0.78rem; font-weight: 600;
+      border-radius: 5px; border: 1px solid var(--border);
+      background: none; color: var(--muted); cursor: pointer; transition: all 0.15s;
+    }
+    .filter-btn.active { background: rgba(255,229,0,0.1); border-color: rgba(255,229,0,0.4); color: var(--gold); }
+    .search-input {
+      padding: 8px 14px; border-radius: 5px; border: 1px solid var(--border);
+      background: var(--card); color: var(--white); font-size: 0.85rem;
+      font-family: 'Inter', sans-serif; outline: none; min-width: 220px;
+    }
+    .search-input:focus { border-color: rgba(255,229,0,0.5); }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th {
+      text-align: left; padding: 10px 14px; font-size: 0.72rem; font-weight: 700;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .bold { font-weight: 600; color: var(--white); }
+
+    /* ── STATUS BADGES & SELECT ── */
+    .estado-select {
+      padding: 5px 10px; border-radius: 5px; font-size: 0.78rem; font-weight: 600;
+      border: 1px solid; cursor: pointer; outline: none; font-family: 'Inter', sans-serif;
+      background: var(--dark); transition: all 0.15s;
+    }
+    .estado-por_confirmar       { color: var(--muted);  border-color: var(--border); }
+    .estado-pendiente_confirmar { color: #eab308; border-color: rgba(234,179,8,0.4); background: rgba(234,179,8,0.08); }
+    .estado-numero_invalido     { color: var(--red); border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.08); }
+    .estado-no_asistira         { color: #6b7280; border-color: rgba(107,114,128,0.4); background: rgba(107,114,128,0.08); }
+    .estado-confirmado     { color: var(--blue);   border-color: rgba(4,80,224,0.4); background: rgba(4,80,224,0.08); }
+    .estado-asistio        { color: var(--purple); border-color: rgba(168,85,247,0.4); background: rgba(168,85,247,0.08); }
+    .estado-compro_evento  { color: var(--green);  border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.08); }
+    .estado-seguimiento    { color: var(--orange); border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.08); }
+    .estado-seguimiento_exitoso { color: var(--gold); border-color: rgba(255,229,0,0.4); background: rgba(255,229,0,0.08); }
+
+    .contacto-select {
+      padding: 5px 10px; border-radius: 5px; font-size: 0.78rem; font-weight: 600;
+      border: 1px solid var(--border); cursor: pointer; outline: none; font-family: 'Inter', sans-serif;
+      background: var(--dark); color: var(--text); transition: all 0.15s; min-width: 120px;
+    }
+    .contacto-select:focus { border-color: rgba(255,229,0,0.5); }
+    .notas-input {
+      padding: 5px 10px; border-radius: 5px; font-size: 0.78rem;
+      border: 1px solid var(--border); background: var(--dark); color: var(--text);
+      font-family: 'Inter', sans-serif; outline: none; resize: none; min-width: 150px;
+      transition: border-color 0.15s, height 0.2s, min-width 0.2s, box-shadow 0.2s;
+      line-height: 1.4; height: 30px; overflow: hidden;
+    }
+    .notas-input:focus {
+      border-color: rgba(255,229,0,0.5);
+      height: 90px; min-width: 260px;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      position: relative; z-index: 10;
+    }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    }
+    .badge-pending  { background: rgba(249,115,22,0.15); color: var(--orange); }
+    .badge-approved { background: rgba(34,197,94,0.15);  color: var(--green); }
+    .badge-rejected { background: rgba(239,68,68,0.15);  color: var(--red); }
+
+    /* ── EMPTY ── */
+    .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
+    .empty-icon { font-size: 2.2rem; display: block; margin-bottom: 10px; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; padding: 20px; backdrop-filter: blur(4px);
+    }
+    .modal {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 32px; width: 100%; max-width: 460px;
+    }
+    .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .modal-lead { font-size: 0.82rem; color: var(--muted); margin-bottom: 24px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .field input, .field select {
+      width: 100%; padding: 11px 14px; border-radius: 6px;
+      background: var(--dark); border: 1px solid var(--border);
+      color: var(--white); font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none;
+    }
+    .field input:focus, .field select:focus { border-color: rgba(255,229,0,0.5); }
+    .field .hint { font-size: 0.75rem; color: var(--muted); margin-top: 5px; }
+    .upload-area {
+      border: 2px dashed var(--border); border-radius: 8px;
+      padding: 24px; text-align: center; cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .upload-area:hover, .upload-area.drag-over { border-color: rgba(255,229,0,0.5); }
+    .upload-area input { display: none; }
+    .upload-icon { font-size: 1.8rem; display: block; margin-bottom: 8px; }
+    .upload-text { font-size: 0.82rem; color: var(--muted); }
+    .upload-text strong { color: var(--gold); }
+    .upload-preview {
+      margin-top: 10px; border-radius: 6px; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .upload-preview img { max-width: 100%; max-height: 180px; object-fit: contain; display: block; }
+    .commission-info {
+      background: rgba(255,229,0,0.07); border: 1px solid rgba(255,229,0,0.2);
+      border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;
+      font-size: 0.85rem;
+    }
+    .commission-info .comm-rate { font-size: 1.6rem; font-family: 'Bebas Neue', sans-serif; color: var(--gold); }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-actions .btn { flex: 1; justify-content: center; }
+
+    /* ── VENTAS SUMMARY ── */
+    .ventas-summary {
+      background: linear-gradient(135deg, rgba(255,229,0,0.08), rgba(255,229,0,0.02));
+      border: 1px solid rgba(255,229,0,0.25); border-radius: 10px;
+      padding: 24px; margin-bottom: 20px; display: flex; gap: 32px; flex-wrap: wrap;
+    }
+    .vs-item {}
+    .vs-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+    .vs-value { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--gold); line-height: 1; }
+    .vs-value.white { color: var(--white); }
+    .vs-value.green { color: var(--green); }
+    .vs-sub { font-size: 0.72rem; color: var(--muted); margin-top: 3px; }
+
+    /* ── GROUPED SECTIONS ── */
+    .estado-section { margin-bottom: 12px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+    .section-hdr {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; cursor: pointer; background: var(--card);
+      transition: background 0.15s; user-select: none;
+    }
+    .section-hdr:hover { background: var(--card2); }
+    .section-hdr .section-title { font-weight: 700; font-size: 0.85rem; flex: 1; }
+    .section-badge {
+      background: rgba(255,255,255,0.08); color: var(--text);
+      padding: 2px 9px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;
+    }
+    .section-chevron { color: var(--muted); font-size: 0.7rem; }
+    .section-body { background: var(--dark); }
+    .section-body table { font-size: 0.83rem; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .tab { padding: 10px 12px; font-size: 0.78rem; }
+      .search-input { width: 100%; }
+    }
+    @media (max-width: 480px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <img src="logo-blanco.webp" alt="Proximity Brand" style="height:44px;width:auto;margin-bottom:10px;">
+    <div class="login-sub">Portal de Ventas</div>
+    <select id="vendedorSelect">
+      <option value="">Selecciona tu nombre</option>
+      <option value="Diego Martinez">Diego Martinez</option>
+    </select>
+    <input type="password" id="passInput" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="login-error" id="loginError">Nombre o contraseña incorrectos.</div>
+    <button class="btn btn-gold btn-full" onclick="doLogin()">Entrar →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     APP
+═══════════════════════════════════ -->
+<div id="app" style="display:none">
+
+  <header>
+    <div class="header-inner wrap">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <img src="logo-blanco.webp" alt="Proximity Brand" style="height:32px;width:auto;">
+        <span style="color:var(--muted);font-size:0.82rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Sales</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="vendedor-chip" id="vendedorLabel">—</span>
+        <button class="btn btn-outline btn-sm" onclick="doLogout()">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+
+      <div class="tabs">
+        <button class="tab active" data-tab="leads">📋 Leads</button>
+        <button class="tab" data-tab="ventas">💰 Mis Ventas</button>
+      </div>
+
+      <!-- ═══════════ LEADS ═══════════ -->
+      <div class="panel active" id="tab-leads">
+
+        <div class="stats-row">
+          <div class="stat-card"><div class="s-label">Total Leads</div><div class="s-value" id="st-total">0</div><div class="s-sub">Esta semana o todos</div></div>
+          <div class="stat-card"><div class="s-label">Confirmados</div><div class="s-value" id="st-confirmados">0</div><div class="s-sub">confirmado + asistió</div></div>
+          <div class="stat-card green"><div class="s-label">Compraron</div><div class="s-value" id="st-compraron">0</div><div class="s-sub">En evento + seguimiento</div></div>
+          <div class="stat-card gold"><div class="s-label">Por Confirmar</div><div class="s-value" id="st-porconf">0</div><div class="s-sub">Sin contactar aún</div></div>
+        </div>
+
+        <div class="toolbar">
+          <div class="filter-btns">
+            <button class="filter-btn" id="fb-todos" onclick="setFilter('todos')">Todos</button>
+            <button class="filter-btn active" id="fb-semana" onclick="setFilter('semana')">Esta semana</button>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="text" class="search-input" id="leadSearch" placeholder="🔍 Buscar nombre o email…" oninput="renderLeads()">
+            <button class="btn btn-outline btn-sm" onclick="loadData()">🔄 Actualizar</button>
+          </div>
+        </div>
+
+        <div id="leadsContainer">
+          <div class="card" style="padding:0;overflow:hidden;">
+            <div class="empty"><span class="empty-icon">⏳</span>Cargando leads…</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══════════ VENTAS ═══════════ -->
+      <div class="panel" id="tab-ventas">
+
+        <!-- Este mes (principal) -->
+        <div style="background:linear-gradient(135deg,rgba(255,229,0,0.12),rgba(255,229,0,0.03));border:1px solid rgba(255,229,0,0.4);border-radius:12px;padding:20px 24px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+          <div>
+            <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:4px;">💰 Este mes</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:var(--gold);line-height:1;" id="vs-mes-comision">$0</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;" id="vs-mes-label">comisión del mes</div>
+          </div>
+          <div style="display:flex;gap:24px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Ventas este mes</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--white);" id="vs-mes-count">0</div>
+            </div>
+            <div>
+              <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Facturado este mes</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--white);" id="vs-mes-total">$0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Histórico -->
+        <div class="ventas-summary">
+          <div class="vs-item">
+            <div class="vs-label">Comisión Total</div>
+            <div class="vs-value green" id="vs-comision">$0</div>
+            <div class="vs-sub">histórico aprobado</div>
+          </div>
+          <div class="vs-item">
+            <div class="vs-label">Total Facturado</div>
+            <div class="vs-value" id="vs-total">$0</div>
+            <div class="vs-sub">ventas aprobadas</div>
+          </div>
+          <div class="vs-item">
+            <div class="vs-label">Pendiente Aprobación</div>
+            <div class="vs-value white" id="vs-pendiente">$0</div>
+            <div class="vs-sub">esperando revisión</div>
+          </div>
+          <div class="vs-item">
+            <div class="vs-label">Total Ventas</div>
+            <div class="vs-value white" id="vs-count">0</div>
+            <div class="vs-sub">registradas</div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Lead</th>
+                  <th>Monto</th>
+                  <th>Tipo</th>
+                  <th>Comisión</th>
+                  <th>Comprobante</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                </tr>
+              </thead>
+              <tbody id="ventasBody">
+                <tr><td colspan="8"><div class="empty"><span class="empty-icon">💸</span>Aún no tienes ventas registradas.</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+</div>
+
+<!-- ═══════════════════════════════════
+     MODAL VENTA
+═══════════════════════════════════ -->
+<div id="ventaModal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-title">💰 Registrar Venta</div>
+    <div class="modal-lead" id="ventaModalLead">—</div>
+
+    <div class="commission-info" id="commissionInfo">
+      <div class="comm-rate" id="commRate">5%</div>
+      <div style="color:var(--text);font-size:0.82rem;">de comisión sobre el monto de la venta</div>
+    </div>
+
+    <div class="field">
+      <label>Monto de la venta (MXN)</label>
+      <input type="number" id="ventaMonto" placeholder="Ej: 3500" min="1" step="1">
+      <div class="hint" id="commPreview">Comisión estimada: $0</div>
+    </div>
+
+    <div class="field">
+      <label>Comprobante de pago <span style="color:var(--red)">*</span></label>
+      <div class="upload-area" id="uploadArea" onclick="document.getElementById('comprobanteFile').click()">
+        <input type="file" id="comprobanteFile" accept="image/*,.pdf" onchange="onFileSelect(this)">
+        <span class="upload-icon">📎</span>
+        <div class="upload-text">
+          <strong>Selecciona o arrastra</strong> el comprobante<br>
+          <span>Imagen o PDF · Sin comprobante no cuenta</span>
+        </div>
+      </div>
+      <div class="upload-preview" id="uploadPreview" style="display:none">
+        <img id="previewImg" src="" alt="Comprobante">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeVentaModal()">Cancelar</button>
+      <button class="btn btn-gold" id="ventaSubmitBtn" onclick="submitVenta()">Registrar Venta →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════ -->
+<script>
+/* ─────────────────────────────────────
+   CONFIG
+───────────────────────────────────── */
+const SB_URL = 'https://xpsvkhoeedinuvwrumvu.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3ZraG9lZWRpbnV2d3J1bXZ1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDkzNDUzNiwiZXhwIjoyMDkwNTEwNTM2fQ.w9ij07UJ50lGwu8FcqM81tPmrU2Z7Uft7HnoAEUcBzI';
+
+let VENDEDORES_PASS = {}; // loaded from Supabase
+
+const ESTADOS = {
+  por_confirmar:        { label: 'Por confirmar',           color: '#666' },
+  pendiente_confirmar:  { label: 'Pendiente por confirmar', color: '#eab308' },
+  numero_invalido:      { label: 'Número inválido',          color: '#ef4444' },
+  no_asistira:          { label: 'No asistirá',              color: '#6b7280' },
+  confirmado:           { label: 'Confirmado',               color: '#0450E0' },
+  asistio:              { label: 'Asistió',                  color: '#a855f7' },
+  compro_evento:        { label: 'Compró en evento',         color: '#22c55e' },
+  seguimiento:          { label: 'Seguimiento',              color: '#f97316' },
+  seguimiento_exitoso:  { label: 'Seguimiento exitoso',      color: '#FFE500' },
+};
+
+const CONTACTO_ESTADOS = {
+  '':               'Sin contacto',
+  primer_contacto:  'Primer contacto',
+  segundo_contacto: 'Segundo contacto',
+  '24hr':           '24hr',
+  '2hr':            '2hr',
+};
+
+const COMMISSION = { compro_evento: 0.05, seguimiento_exitoso: 0.10 };
+
+// Penalización: si el lead tiene 2+ semanas y no fue confirmado esa semana → 2%
+function getCommRate(tipo, leadTs) {
+  if (tipo === 'seguimiento_exitoso') return 0.10;
+  if (tipo === 'compro_evento') return isPenalized(tipo, leadTs) ? 0.02 : 0.05;
+  return 0;
+}
+
+function isPenalized(tipo, leadTs) {
+  if (tipo !== 'compro_evento') return false;
+  // Penalizado si el lead es de antes del ciclo anterior (2+ jueves atrás)
+  const dosCiclosAtras = new Date(lastThursday7PM().getTime() - 7 * 86400000);
+  return new Date(leadTs) < dosCiclosAtras;
+}
+
+/* ─────────────────────────────────────
+   STATE
+───────────────────────────────────── */
+let currentVendedor = null;
+let allLeads = [];
+let estadosMap = {};  // email → estado object
+let misVentas = [];
+let currentFilter = 'semana';
+let pendingVenta = null; // { email, nombre, tipo }
+
+// Activity tracking
+const waClickedLeads = new Set();   // emails where WA was opened this session
+const copiedLeads = new Set();       // emails where phone was copied this session
+let sessionStartTime = null;
+
+async function logActivity(accion, leadEmail = null, detalle = null) {
+  if (!currentVendedor) return;
+  try {
+    await sbPost('/rest/v1/vendedor_actividad', {
+      vendedor: currentVendedor, lead_email: leadEmail, accion, detalle
+    }, 'return=minimal');
+    // Update last_active on vendedores
+    await fetch(SB_URL + `/rest/v1/vendedores?nombre=eq.${encodeURIComponent(currentVendedor)}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ last_active: new Date().toISOString() })
+    });
+  } catch(e) { /* silent */ }
+}
+
+/* ─────────────────────────────────────
+   AUTH
+───────────────────────────────────── */
+async function initLogin() {
+  const sel = document.getElementById('vendedorSelect');
+  sel.innerHTML = '<option value="">Cargando…</option>';
+  const lista = await sbGet('/rest/v1/vendedores?select=nombre,password&activo=eq.true&order=nombre');
+  VENDEDORES_PASS = {};
+  sel.innerHTML = '<option value="">Selecciona tu nombre</option>';
+  (lista || []).forEach(v => {
+    VENDEDORES_PASS[v.nombre] = v.password;
+    sel.innerHTML += `<option value="${esc(v.nombre)}">${esc(v.nombre)}</option>`;
+  });
+}
+
+function doLogin() {
+  const vendedor = document.getElementById('vendedorSelect').value;
+  const pass = document.getElementById('passInput').value;
+  const errEl = document.getElementById('loginError');
+  if (!vendedor || !pass) { errEl.style.display = 'block'; errEl.textContent = 'Selecciona tu nombre e ingresa la contraseña.'; return; }
+  if (VENDEDORES_PASS[vendedor] !== pass) { errEl.style.display = 'block'; errEl.textContent = 'Contraseña incorrecta.'; return; }
+  errEl.style.display = 'none';
+  currentVendedor = vendedor;
+  sessionStorage.setItem('vendedor', vendedor);
+  startApp();
+}
+
+function doLogout() {
+  endSession();
+  sessionStorage.removeItem('vendedor');
+  currentVendedor = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+async function checkSession() {
+  await initLogin();
+  const v = sessionStorage.getItem('vendedor');
+  if (v && VENDEDORES_PASS[v] !== undefined) {
+    currentVendedor = v;
+    startApp();
+  }
+}
+
+function startApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('vendedorLabel').textContent = currentVendedor;
+  sessionStartTime = Date.now();
+  logActivity('session_start');
+  loadData();
+}
+
+function endSession() {
+  if (!currentVendedor || !sessionStartTime) return;
+  const mins = Math.round((Date.now() - sessionStartTime) / 60000);
+  logActivity('session_end', null, `${mins} minutos`);
+}
+
+/* ─────────────────────────────────────
+   SUPABASE HELPERS
+───────────────────────────────────── */
+const SB_HEADERS = {
+  'apikey': SB_KEY,
+  'Authorization': 'Bearer ' + SB_KEY,
+  'Content-Type': 'application/json',
+};
+
+async function sbGet(path) {
+  const res = await fetch(SB_URL + path, { headers: SB_HEADERS });
+  return res.ok ? await res.json() : [];
+}
+
+async function sbPost(path, body, prefer = '') {
+  const headers = { ...SB_HEADERS };
+  if (prefer) headers['Prefer'] = prefer;
+  const res = await fetch(SB_URL + path, { method: 'POST', headers, body: JSON.stringify(body) });
+  return res;
+}
+
+async function sbPatch(path, body) {
+  const headers = { ...SB_HEADERS, 'Prefer': 'return=representation' };
+  const res = await fetch(SB_URL + path, { method: 'PATCH', headers, body: JSON.stringify(body) });
+  return res;
+}
+
+async function uploadComprobante(file, ventaId) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const path = `${currentVendedor.replace(' ', '_')}/${ventaId}.${ext}`;
+  const res = await fetch(`${SB_URL}/storage/v1/object/comprobantes/${path}`, {
+    method: 'POST',
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type },
+    body: file
+  });
+  if (res.ok) return `${SB_URL}/storage/v1/object/public/comprobantes/${path}`;
+  return null;
+}
+
+/* ─────────────────────────────────────
+   DATA LOADING
+───────────────────────────────────── */
+async function loadData() {
+  document.getElementById('leadsContainer').innerHTML = '<div class="card" style="padding:40px;text-align:center;color:var(--muted)"><span style="font-size:2rem;display:block;margin-bottom:10px">⏳</span>Cargando leads…</div>';
+
+  const [leads, estados, ventas] = await Promise.all([
+    sbGet('/rest/v1/clase_viral_registros?select=*&order=ts.desc'),
+    sbGet('/rest/v1/lead_estados?select=*'),
+    sbGet(`/rest/v1/ventas?select=*&vendedor=eq.${encodeURIComponent(currentVendedor)}&order=created_at.desc`),
+  ]);
+
+  estadosMap = {};
+  estados.forEach(e => { estadosMap[e.registro_email] = e; });
+
+  // Only show leads assigned to me OR unassigned (no asignado_a)
+  allLeads = leads
+    .map(r => ({ id: r.id, nombre: r.nombre || r.name || '', email: r.email || '', phone: r.phone || '', ts: r.ts }))
+    .filter(l => {
+      const e = estadosMap[l.email];
+      return !e || !e.asignado_a || e.asignado_a === currentVendedor;
+    });
+
+  misVentas = ventas;
+
+  renderLeads();
+  renderVentas();
+}
+
+/* ─────────────────────────────────────
+   LEADS PANEL
+───────────────────────────────────── */
+function setFilter(f) {
+  currentFilter = f;
+  document.getElementById('fb-todos').classList.toggle('active', f === 'todos');
+  document.getElementById('fb-semana').classList.toggle('active', f === 'semana');
+  renderLeads();
+}
+
+// Regresa el último jueves a las 7PM hora México (inicio del ciclo actual)
+function lastThursday7PM() {
+  const MX = -6 * 3600000;
+  const now = new Date();
+  const mxNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + MX);
+  let days = (mxNow.getDay() - 4 + 7) % 7; // días desde el último jueves
+  if (days === 0 && mxNow.getHours() < 19) days = 7; // jueves pero antes de 7PM → retroceder una semana
+  const t = new Date(mxNow);
+  t.setDate(mxNow.getDate() - days);
+  t.setHours(19, 0, 0, 0);
+  return new Date(t.getTime() - now.getTimezoneOffset() * 60000 - MX);
+}
+
+function isThisWeek(ts) {
+  if (!ts) return false;
+  return new Date(ts) >= lastThursday7PM();
+}
+
+function leadRow(l, i) {
+  const eMap = estadosMap[l.email] || {};
+  const estado   = eMap.estado   || 'por_confirmar';
+  const contacto = eMap.contacto || '';
+  const notas    = eMap.notas    || '';
+  const fecha = l.ts ? new Date(l.ts).toLocaleDateString('es-MX') : '—';
+  return `<tr>
+    <td style="color:var(--muted)">${i+1}</td>
+    <td class="bold">${esc(l.nombre)}</td>
+    <td style="color:var(--text);font-size:0.82rem">${esc(l.email)}</td>
+    <td>${l.phone ? phoneCell(l.phone, l.email) : '<span style="color:var(--muted)">—</span>'}</td>
+    <td style="color:var(--muted);font-size:0.8rem">${fecha}</td>
+    <td>
+      <select class="estado-select estado-${estado}"
+        onchange="onEstadoChange(this,'${esc(l.email)}','${esc(l.nombre)}','${l.ts||''}')"
+        data-email="${esc(l.email)}">
+        ${Object.entries(ESTADOS).map(([k,v]) =>
+          `<option value="${k}" ${k===estado?'selected':''}>${v.label}</option>`
+        ).join('')}
+      </select>
+    </td>
+    <td>
+      <select class="contacto-select"
+        onchange="onContactoChange('${esc(l.email)}', this.value)">
+        ${Object.entries(CONTACTO_ESTADOS).map(([k,v]) =>
+          `<option value="${k}" ${k===contacto?'selected':''}>${v}</option>`
+        ).join('')}
+      </select>
+    </td>
+    <td>
+      <textarea class="notas-input" rows="1" placeholder="Notas…"
+        onblur="onNotasChange('${esc(l.email)}', this.value)">${esc(notas)}</textarea>
+    </td>
+  </tr>`;
+}
+
+function renderLeads() {
+  const search = (document.getElementById('leadSearch').value || '').toLowerCase();
+  let leads = allLeads;
+  if (currentFilter === 'semana') leads = leads.filter(l => isThisWeek(l.ts));
+  if (search) leads = leads.filter(l => (l.nombre + l.email).toLowerCase().includes(search));
+
+  // Stats
+  const estadosArr = leads.map(l => (estadosMap[l.email] || {}).estado || 'por_confirmar');
+  document.getElementById('st-total').textContent = leads.length;
+  document.getElementById('st-confirmados').textContent = estadosArr.filter(e => ['confirmado','asistio'].includes(e)).length;
+  document.getElementById('st-compraron').textContent = estadosArr.filter(e => ['compro_evento','seguimiento_exitoso'].includes(e)).length;
+  document.getElementById('st-porconf').textContent = estadosArr.filter(e => e === 'por_confirmar').length;
+
+  const container = document.getElementById('leadsContainer');
+
+  if (currentFilter === 'todos') {
+    // Grouped by estado
+    const groups = {};
+    Object.keys(ESTADOS).forEach(k => { groups[k] = []; });
+    leads.forEach(l => {
+      const e = (estadosMap[l.email] || {}).estado || 'por_confirmar';
+      (groups[e] = groups[e] || []).push(l);
+    });
+
+    if (!leads.length) {
+      container.innerHTML = '<div class="empty"><span class="empty-icon">📭</span>No hay leads.</div>';
+      return;
+    }
+
+    container.innerHTML = Object.entries(ESTADOS).map(([estado, info]) => {
+      const grp = groups[estado] || [];
+      if (!grp.length) return '';
+      const ESTADO_COLORS = {
+        por_confirmar: 'var(--muted)', pendiente_confirmar: '#eab308',
+        numero_invalido: 'var(--red)', no_asistira: '#6b7280',
+        confirmado: 'var(--blue)', asistio: 'var(--purple)',
+        compro_evento: 'var(--green)', seguimiento: 'var(--orange)',
+        seguimiento_exitoso: 'var(--gold)'
+      };
+      return `<div class="estado-section">
+        <div class="section-hdr" onclick="toggleSection('${estado}')">
+          <span style="width:8px;height:8px;border-radius:50%;background:${ESTADO_COLORS[estado]};flex-shrink:0;display:inline-block;"></span>
+          <span class="section-title" style="color:${ESTADO_COLORS[estado]}">${info.label}</span>
+          <span class="section-badge">${grp.length}</span>
+          <span class="section-chevron" id="chev-${estado}">▼</span>
+        </div>
+        <div class="section-body" id="body-${estado}">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Notas</th></tr></thead>
+              <tbody>${grp.map((l,i) => leadRow(l, i)).join('')}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    // Flat list for "esta semana"
+    if (!leads.length) {
+      container.innerHTML = '<div class="card" style="padding:0;overflow:hidden;"><div class="empty"><span class="empty-icon">📭</span>No hay leads esta semana.</div></div>';
+      return;
+    }
+    container.innerHTML = `<div class="card" style="padding:0;overflow:hidden;">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Notas</th></tr></thead>
+          <tbody>${leads.map((l,i) => leadRow(l,i)).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+}
+
+function toggleSection(estado) {
+  const body = document.getElementById('body-' + estado);
+  const chev = document.getElementById('chev-' + estado);
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  chev.textContent = open ? '▶' : '▼';
+}
+
+async function onEstadoChange(select, email, nombre, leadTs) {
+  const newEstado = select.value;
+  const prevEstado = (estadosMap[email] || {}).estado || 'por_confirmar';
+
+  // Block "confirmado" unless WA was opened or phone was copied for this lead
+  if (newEstado === 'confirmado' && !waClickedLeads.has(email) && !copiedLeads.has(email)) {
+    select.value = prevEstado;
+    select.className = `estado-select estado-${prevEstado}`;
+    // Show inline warning
+    const tr = select.closest('tr');
+    const existing = tr ? tr.querySelector('.confirm-block-msg') : null;
+    if (!existing) {
+      const msg = document.createElement('div');
+      msg.className = 'confirm-block-msg';
+      msg.style.cssText = 'color:#fca5a5;font-size:0.75rem;margin-top:4px;';
+      msg.textContent = '⚠️ Abre WhatsApp o copia el número primero';
+      select.parentNode.appendChild(msg);
+      setTimeout(() => msg.remove(), 3000);
+    }
+    return;
+  }
+
+  select.className = `estado-select estado-${newEstado}`;
+
+  const existing = estadosMap[email];
+  if (existing) {
+    await sbPatch(`/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, {
+      estado: newEstado, vendedor: currentVendedor, updated_at: new Date().toISOString()
+    });
+  } else {
+    await sbPost('/rest/v1/lead_estados', {
+      registro_email: email, vendedor: currentVendedor,
+      estado: newEstado, updated_at: new Date().toISOString()
+    }, 'return=representation');
+  }
+  estadosMap[email] = { ...(estadosMap[email] || {}), estado: newEstado, vendedor: currentVendedor };
+
+  // Log activity
+  logActivity('estado_change', email, `${prevEstado} → ${newEstado}`);
+  if (newEstado === 'confirmado') logActivity('confirmacion', email);
+
+  if (newEstado === 'compro_evento' || newEstado === 'seguimiento_exitoso') {
+    openVentaModal(email, nombre, newEstado, leadTs);
+  }
+}
+
+async function onContactoChange(email, value) {
+  const existing = estadosMap[email];
+  const payload = { contacto: value || null, vendedor: currentVendedor, updated_at: new Date().toISOString() };
+  if (existing) {
+    await sbPatch(`/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, payload);
+  } else {
+    await sbPost('/rest/v1/lead_estados', { registro_email: email, ...payload }, 'return=representation');
+  }
+  estadosMap[email] = { ...(estadosMap[email] || {}), contacto: value };
+}
+
+async function onNotasChange(email, value) {
+  const existing = estadosMap[email];
+  const payload = { notas: value || null, vendedor: currentVendedor, updated_at: new Date().toISOString() };
+  if (existing) {
+    await sbPatch(`/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, payload);
+  } else {
+    await sbPost('/rest/v1/lead_estados', { registro_email: email, ...payload }, 'return=representation');
+  }
+  estadosMap[email] = { ...(estadosMap[email] || {}), notas: value };
+}
+
+/* ─────────────────────────────────────
+   VENTAS PANEL
+───────────────────────────────────── */
+function renderVentas() {
+  const ahora = new Date();
+  const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  const aprobadas = misVentas.filter(v => v.aprobado);
+  const pendientes = misVentas.filter(v => !v.aprobado && !v.rechazado);
+  const aprobMes   = aprobadas.filter(v => v.created_at && new Date(v.created_at) >= inicioMes);
+
+  const commRate = v => (v.comision_porcentaje != null ? v.comision_porcentaje : (v.tipo === 'compro_evento' ? 5 : 10)) / 100;
+
+  const totalAprobado  = aprobadas.reduce((s,v) => s + Number(v.monto), 0);
+  const totalComision  = aprobadas.reduce((s,v) => s + Number(v.monto) * commRate(v), 0);
+  const totalPendiente = pendientes.reduce((s,v) => s + Number(v.monto), 0);
+  const mesMonto       = aprobMes.reduce((s,v) => s + Number(v.monto), 0);
+  const mesComision    = aprobMes.reduce((s,v) => s + Number(v.monto) * commRate(v), 0);
+
+  document.getElementById('vs-mes-comision').textContent = '$' + fmt(mesComision);
+  document.getElementById('vs-mes-total').textContent    = '$' + fmt(mesMonto);
+  document.getElementById('vs-mes-count').textContent    = aprobMes.length;
+  document.getElementById('vs-mes-label').textContent    = MESES[ahora.getMonth()] + ' ' + ahora.getFullYear() + ' · aprobadas';
+  document.getElementById('vs-total').textContent    = '$' + fmt(totalAprobado);
+  document.getElementById('vs-comision').textContent = '$' + fmt(totalComision);
+  document.getElementById('vs-pendiente').textContent = '$' + fmt(totalPendiente);
+  document.getElementById('vs-count').textContent    = misVentas.length;
+
+  if (!misVentas.length) {
+    document.getElementById('ventasBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">💸</span>Aún no tienes ventas registradas.</div></td></tr>';
+    return;
+  }
+
+  document.getElementById('ventasBody').innerHTML = misVentas.map((v, i) => {
+    const rate = (v.comision_porcentaje != null ? v.comision_porcentaje : (v.tipo === 'compro_evento' ? 5 : 10)) / 100;
+    const comision = Number(v.monto) * rate;
+    const pct = Math.round(rate * 100);
+    const tipoLabel = v.tipo === 'compro_evento' ? `Evento (${pct}%)` : `Seguimiento (${pct}%)`;
+    const fecha = v.created_at ? new Date(v.created_at).toLocaleDateString('es-MX') : '—';
+    const badge = v.aprobado
+      ? '<span class="badge badge-approved">Aprobado</span>'
+      : v.rechazado
+        ? '<span class="badge badge-rejected">Rechazado</span>'
+        : '<span class="badge badge-pending">Pendiente</span>';
+    const comp = v.comprobante_url
+      ? `<a href="${esc(v.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.78rem">Ver →</a>`
+      : '<span style="color:var(--red);font-size:0.78rem">Sin subir</span>';
+    return `<tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td class="bold">${esc(v.nombre_lead || '—')}</td>
+      <td style="color:var(--green);font-weight:600">$${fmt(v.monto)}</td>
+      <td style="font-size:0.78rem;color:var(--text)">${tipoLabel}</td>
+      <td style="color:var(--gold);font-weight:600">$${fmt(comision)}</td>
+      <td>${comp}</td>
+      <td>${badge}</td>
+      <td style="color:var(--muted);font-size:0.8rem">${fecha}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ─────────────────────────────────────
+   VENTA MODAL
+───────────────────────────────────── */
+function openVentaModal(email, nombre, tipo, leadTs) {
+  const penalized = isPenalized(tipo, leadTs);
+  const rate = getCommRate(tipo, leadTs);
+  pendingVenta = { email, nombre, tipo, leadTs, rate };
+
+  document.getElementById('ventaModalLead').textContent = nombre + ' · ' + email;
+  document.getElementById('commRate').textContent = (rate * 100) + '%';
+
+  // Show penalty warning
+  let penWarn = document.getElementById('penaltyWarn');
+  if (!penWarn) {
+    penWarn = document.createElement('div');
+    penWarn.id = 'penaltyWarn';
+    penWarn.style.cssText = 'background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;font-size:0.8rem;color:#f87171;margin-bottom:14px;';
+    document.getElementById('commissionInfo').after(penWarn);
+  }
+  if (penalized) {
+    penWarn.style.display = 'block';
+    penWarn.innerHTML = '⚠️ <strong>Comisión reducida al 2%</strong> — Este lead tiene más de 2 semanas sin ser confirmado. Confirma tus leads la misma semana para mantener el 5%.';
+  } else {
+    penWarn.style.display = 'none';
+  }
+
+  document.getElementById('ventaMonto').value = '';
+  document.getElementById('commPreview').textContent = 'Comisión estimada: $0';
+  document.getElementById('uploadPreview').style.display = 'none';
+  document.getElementById('comprobanteFile').value = '';
+  document.querySelector('.upload-text').innerHTML = '<strong>Selecciona o arrastra</strong> el comprobante<br><span>Imagen o PDF · Sin comprobante no cuenta</span>';
+  document.getElementById('ventaModal').style.display = 'flex';
+}
+
+function closeVentaModal() {
+  document.getElementById('ventaModal').style.display = 'none';
+  pendingVenta = null;
+}
+
+document.getElementById('ventaMonto').addEventListener('input', function() {
+  const monto = parseFloat(this.value) || 0;
+  const rate = pendingVenta ? pendingVenta.rate : 0;
+  document.getElementById('commPreview').textContent = 'Comisión estimada: $' + fmt(monto * rate);
+});
+
+function onFileSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('previewImg').src = e.target.result;
+      document.getElementById('uploadPreview').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  } else {
+    document.getElementById('uploadPreview').style.display = 'none';
+  }
+  document.querySelector('.upload-text').innerHTML = `<strong style="color:var(--green)">✓ ${esc(file.name)}</strong>`;
+}
+
+async function submitVenta() {
+  const monto = parseFloat(document.getElementById('ventaMonto').value);
+  const file = document.getElementById('comprobanteFile').files[0];
+
+  if (!monto || monto <= 0) { alert('Ingresa un monto válido.'); return; }
+  if (!file) { alert('El comprobante es obligatorio para registrar la venta.'); return; }
+
+  const btn = document.getElementById('ventaSubmitBtn');
+  btn.textContent = 'Subiendo…'; btn.disabled = true;
+
+  try {
+    // Create venta record first to get ID
+    const ventaData = {
+      registro_email: pendingVenta.email,
+      nombre_lead: pendingVenta.nombre,
+      vendedor: currentVendedor,
+      monto: monto,
+      tipo: pendingVenta.tipo,
+      comision_porcentaje: pendingVenta.rate * 100,
+      aprobado: false,
+      rechazado: false,
+      created_at: new Date().toISOString()
+    };
+
+    const res = await sbPost('/rest/v1/ventas', ventaData, 'return=representation');
+    const [newVenta] = await res.json();
+
+    if (!newVenta || !newVenta.id) throw new Error('Error al crear venta');
+
+    // Upload comprobante
+    btn.textContent = 'Subiendo comprobante…';
+    const url = await uploadComprobante(file, newVenta.id);
+
+    if (url) {
+      await sbPatch(`/rest/v1/ventas?id=eq.${newVenta.id}`, { comprobante_url: url });
+      newVenta.comprobante_url = url;
+    }
+
+    misVentas.unshift({ ...newVenta, comprobante_url: url });
+    renderVentas();
+    closeVentaModal();
+
+    // Switch to ventas tab to show result
+    showTab('ventas');
+    alert('✅ Venta registrada correctamente. Espera la aprobación de Femiliano.');
+
+  } catch(e) {
+    alert('Error al registrar la venta. Intenta de nuevo.');
+    console.error(e);
+  } finally {
+    btn.textContent = 'Registrar Venta →'; btn.disabled = false;
+  }
+}
+
+/* ─────────────────────────────────────
+   TABS
+───────────────────────────────────── */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', function() { showTab(this.dataset.tab); });
+});
+
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+}
+
+/* ─────────────────────────────────────
+   UTILS
+───────────────────────────────────── */
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function phoneCell(phone, email) {
+  const clean = phone.replace(/\D/g, '');
+  const emailAttr = esc(email || '');
+  const waLink = `https://wa.me/${clean}`;
+  return `<div style="display:flex;align-items:center;gap:6px;">
+    <span style="color:var(--text);font-size:0.83rem">${esc(phone)}</span>
+    <a href="${waLink}" target="_blank" title="Abrir WhatsApp" data-email="${emailAttr}"
+      onclick="trackWaClick('${emailAttr}')"
+      style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:rgba(37,211,102,0.15);border:1px solid rgba(37,211,102,0.3);text-decoration:none;font-size:0.85rem;flex-shrink:0;">💬</a>
+    <button onclick="copyPhone('${esc(phone)}','${emailAttr}')" title="Copiar número"
+      style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid var(--border);cursor:pointer;font-size:0.78rem;color:var(--muted);flex-shrink:0;">📋</button>
+  </div>`;
+}
+
+function trackWaClick(email) {
+  if (!email) return;
+  waClickedLeads.add(email);
+  logActivity('wa_click', email);
+}
+
+function copyPhone(phone, email) {
+  navigator.clipboard.writeText(phone).then(() => {
+    showCopyToast();
+    if (email) {
+      copiedLeads.add(email);
+      logActivity('phone_copy', email);
+    }
+  });
+}
+
+function showCopyToast() {
+  let t = document.getElementById('copyToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'copyToast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#22c55e;color:#000;padding:8px 20px;border-radius:20px;font-size:0.82rem;font-weight:700;z-index:9999;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = '✓ Número copiado';
+  t.style.opacity = '1';
+  clearTimeout(t._t);
+  t._t = setTimeout(() => { t.style.opacity = '0'; }, 2000);
+}
+function fmt(n) { return Number(n||0).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); }
+
+/* ─────────────────────────────────────
+   INIT
+───────────────────────────────────── */
+window.addEventListener('beforeunload', endSession);
+checkSession();
+</script>
+</body>
+</html>

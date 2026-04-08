@@ -550,6 +550,7 @@
                 <th>Leads Asignados</th>
                 <th>Ventas</th>
                 <th>Comisión Total</th>
+                <th>Última actividad</th>
                 <th>Estado</th>
                 <th>Acción</th>
               </tr>
@@ -559,6 +560,14 @@
             </tbody>
           </table>
         </div>
+      </div>
+
+      <!-- Reporte de actividad -->
+      <div class="card" id="vendReporteCard" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div class="card-title" style="margin:0;">📊 Reporte de actividad por vendedor</div>
+        </div>
+        <div id="vendReporteBody"></div>
       </div>
 
       <!-- Asignar leads -->
@@ -1142,7 +1151,7 @@ function interestBadge(email) {
 }
 
 function renderRegistros(filter = '') {
-  const regs = getRegistrations().slice().reverse();
+  const regs = getRegistrations().slice().sort((a, b) => new Date(b.ts || 0) - new Date(a.ts || 0));
   filteredRegs = filter
     ? regs.filter(r => (r.name+r.email+(r.phone||'')).toLowerCase().includes(filter.toLowerCase()))
     : regs;
@@ -1785,19 +1794,34 @@ let allLeadsAdmin = [];
 let estadosAdmin = {};
 
 async function loadVendedoresAdmin() {
-  document.getElementById('vendBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+  document.getElementById('vendBody').innerHTML = '<tr><td colspan="9"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
 
-  const [vends, ventas, leads, estados] = await Promise.all([
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const [vends, ventas, leads, estados, actividad] = await Promise.all([
     fetchSB('/rest/v1/vendedores?select=*&order=nombre'),
     fetchSB('/rest/v1/ventas?select=*'),
     fetchSB('/rest/v1/clase_viral_registros?select=id,nombre,email,ts&order=ts.desc'),
     fetchSB('/rest/v1/lead_estados?select=*'),
+    fetchSB('/rest/v1/vendedor_actividad?select=vendedor,accion,ts&order=ts.desc&limit=500'),
   ]);
 
   vendedoresList = vends || [];
   allLeadsAdmin = (leads || []).map(r => ({ id: r.id, nombre: r.nombre || r.name || '', email: r.email || '', ts: r.ts }));
   estadosAdmin = {};
   (estados || []).forEach(e => { estadosAdmin[e.registro_email] = e; });
+
+  // Auto-deactivate vendors with 7+ days no activity
+  for (const v of vendedoresList) {
+    if (v.activo && v.last_active && new Date(v.last_active) < new Date(sevenDaysAgo)) {
+      await fetch(SB_URL + `/rest/v1/vendedores?id=eq.${v.id}`, {
+        method: 'PATCH',
+        headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activo: false })
+      });
+      v.activo = false;
+    }
+  }
 
   // Populate vendor filter select
   const sel = document.getElementById('assignFilterVend');
@@ -1808,7 +1832,7 @@ async function loadVendedoresAdmin() {
 
   // Render vendor table
   if (!vendedoresList.length) {
-    document.getElementById('vendBody').innerHTML = '<tr><td colspan="8"><div class="empty">No hay vendedores aún.</div></td></tr>';
+    document.getElementById('vendBody').innerHTML = '<tr><td colspan="9"><div class="empty">No hay vendedores aún.</div></td></tr>';
   } else {
     document.getElementById('vendBody').innerHTML = vendedoresList.map((v, i) => {
       const myVentas = (ventas || []).filter(vv => vv.vendedor === v.nombre);
@@ -1821,6 +1845,15 @@ async function loadVendedoresAdmin() {
       const badge = v.activo
         ? '<span style="color:var(--green);font-size:0.8rem;">● Activo</span>'
         : '<span style="color:var(--muted);font-size:0.8rem;">● Inactivo</span>';
+      const lastAct = v.last_active
+        ? (() => {
+            const d = new Date(v.last_active);
+            const diffDays = Math.floor((Date.now() - d) / 86400000);
+            const label = diffDays === 0 ? 'Hoy' : diffDays === 1 ? 'Ayer' : `hace ${diffDays}d`;
+            const color = diffDays > 5 ? 'var(--red)' : diffDays > 2 ? '#eab308' : 'var(--green)';
+            return `<span style="font-size:0.78rem;color:${color}">${label}</span>`;
+          })()
+        : '<span style="font-size:0.78rem;color:var(--muted)">Nunca</span>';
       return `<tr>
         <td style="color:var(--muted)">${i+1}</td>
         <td class="bold">${esc(v.nombre)}</td>
@@ -1828,16 +1861,19 @@ async function loadVendedoresAdmin() {
         <td style="color:var(--text)">${myLeads} asignados</td>
         <td style="color:var(--text)">${myVentas.length} total</td>
         <td style="color:var(--gold);font-weight:600">$${Number(totalComision).toLocaleString('es-MX',{maximumFractionDigits:2})}</td>
+        <td>${lastAct}</td>
         <td>${badge}</td>
         <td style="display:flex;gap:6px;">
           <button class="btn btn-outline btn-sm" onclick="cambiarPass('${esc(v.id)}','${esc(v.nombre)}')">🔑</button>
           <button class="btn btn-${v.activo ? 'red' : 'outline'} btn-sm" onclick="toggleVendedor('${esc(v.id)}',${!v.activo})">${v.activo ? 'Desactivar' : 'Activar'}</button>
+          <button class="btn btn-sm" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;" onclick="deleteVendedor('${esc(v.id)}','${esc(v.nombre)}')">🗑</button>
         </td>
       </tr>`;
     }).join('');
   }
 
   renderAssignTable();
+  renderVendedorReporte(actividad || [], vendedoresList);
 }
 
 async function crearVendedor() {
@@ -1880,6 +1916,86 @@ async function toggleVendedor(id, activo) {
     body: JSON.stringify({ activo })
   });
   loadVendedoresAdmin();
+}
+
+async function deleteVendedor(id, nombre) {
+  if (!confirm(`¿Eliminar al vendedor "${nombre}"? Esta acción no se puede deshacer.`)) return;
+  await fetch(SB_URL + `/rest/v1/vendedores?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+  });
+  showAlert('vendAlert', `✅ Vendedor "${nombre}" eliminado.`, 'success');
+  loadVendedoresAdmin();
+}
+
+function renderVendedorReporte(actividad, vends) {
+  if (!vends.length) return;
+  document.getElementById('vendReporteCard').style.display = '';
+
+  // Group activity by vendor
+  const byVend = {};
+  vends.forEach(v => { byVend[v.nombre] = { nombre: v.nombre, last_active: v.last_active, activo: v.activo, sessions: 0, tiempoMin: 0, waClicks: 0, copies: 0, estadoCambios: 0, confirmaciones: 0 }; });
+
+  const sessions = {}; // vendedor → last session_start ts
+  for (const a of actividad) {
+    if (!byVend[a.vendedor]) byVend[a.vendedor] = { nombre: a.vendedor, sessions: 0, tiempoMin: 0, waClicks: 0, copies: 0, estadoCambios: 0, confirmaciones: 0 };
+    const vd = byVend[a.vendedor];
+    switch (a.accion) {
+      case 'session_start': vd.sessions++; sessions[a.vendedor] = new Date(a.ts); break;
+      case 'session_end':
+        if (sessions[a.vendedor]) {
+          vd.tiempoMin += (new Date(a.ts) - sessions[a.vendedor]) / 60000;
+          delete sessions[a.vendedor];
+        }
+        break;
+      case 'wa_click':   vd.waClicks++; break;
+      case 'phone_copy': vd.copies++; break;
+      case 'estado_change': vd.estadoCambios++; break;
+      case 'confirmacion': vd.confirmaciones++; break;
+    }
+  }
+
+  const rows = Object.values(byVend).sort((a, b) => (b.waClicks + b.confirmaciones) - (a.waClicks + a.confirmaciones));
+
+  document.getElementById('vendReporteBody').innerHTML = `
+  <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:8px 12px;color:var(--muted);font-weight:600;">Vendedor</th>
+          <th style="text-align:center;padding:8px 12px;color:var(--muted);font-weight:600;">Sesiones</th>
+          <th style="text-align:center;padding:8px 12px;color:var(--muted);font-weight:600;">Tiempo activo</th>
+          <th style="text-align:center;padding:8px 12px;color:var(--muted);font-weight:600;">WA abiertos</th>
+          <th style="text-align:center;padding:8px 12px;color:var(--muted);font-weight:600;">Números copiados</th>
+          <th style="text-align:center;padding:8px 12px;color:var(--muted);font-weight:600;">Cambios estado</th>
+          <th style="text-align:center;padding:8px 12px;color:var(--muted);font-weight:600;">Confirmaciones</th>
+          <th style="text-align:center;padding:8px 12px;color:var(--muted);font-weight:600;">Eficiencia</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(v => {
+          const mins = Math.round(v.tiempoMin);
+          const tiempoStr = mins >= 60 ? `${Math.floor(mins/60)}h ${mins%60}m` : `${mins}m`;
+          const contactos = v.waClicks + v.copies;
+          const efic = contactos > 0 ? Math.round(v.confirmaciones / contactos * 100) : 0;
+          const eficColor = efic >= 50 ? 'var(--green)' : efic >= 20 ? '#eab308' : 'var(--red)';
+          const alert = v.sessions > 2 && v.waClicks === 0 && v.copies === 0
+            ? '<span title="Abre el panel pero no contacta" style="color:#ef4444;margin-left:6px;font-size:0.72rem;">⚠️ Solo mira</span>' : '';
+          return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+            <td style="padding:8px 12px;font-weight:600;">${esc(v.nombre)}${alert}</td>
+            <td style="padding:8px 12px;text-align:center;color:var(--text);">${v.sessions}</td>
+            <td style="padding:8px 12px;text-align:center;color:var(--text);">${tiempoStr || '—'}</td>
+            <td style="padding:8px 12px;text-align:center;color:#25d366;font-weight:600;">${v.waClicks}</td>
+            <td style="padding:8px 12px;text-align:center;color:var(--text);">${v.copies}</td>
+            <td style="padding:8px 12px;text-align:center;color:var(--text);">${v.estadoCambios}</td>
+            <td style="padding:8px 12px;text-align:center;color:var(--blue);font-weight:600;">${v.confirmaciones}</td>
+            <td style="padding:8px 12px;text-align:center;font-weight:700;color:${eficColor};">${contactos > 0 ? efic + '%' : '—'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>
+  <div style="font-size:0.72rem;color:var(--muted);margin-top:10px;">Eficiencia = confirmaciones ÷ (WA abiertos + números copiados). ⚠️ Solo mira = tuvo sesiones pero no hizo ninguna acción real.</div>`;
 }
 
 function renderAssignTable() {
