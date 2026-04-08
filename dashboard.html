@@ -356,13 +356,17 @@
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>
         Resumen
       </button>
-      <button class="tab" data-tab="landing">
+      <button class="tab" data-tab="ventas">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h12l-4.5 5.5v4.5l-3-1.5V8.5L2 3z"/></svg>
-        Landing & Ventas <span id="aprobBadge" style="display:none;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:0.72rem;margin-left:2px;">0</span>
+        Ventas <span id="aprobBadge" style="display:none;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:0.72rem;margin-left:2px;">0</span>
       </button>
-      <button class="tab" data-tab="analisis">
+      <button class="tab" data-tab="landing">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="2"/><line x1="2" y1="6" x2="14" y2="6"/><line x1="5" y1="10" x2="9" y2="10"/></svg>
+        Landing
+      </button>
+      <button class="tab" data-tab="evento">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13V2M2 13h12"/><path d="M2 11l3-3.5 2.5 2L12 4"/></svg>
-        Análisis
+        Evento
       </button>
       <button class="tab" data-tab="pauta">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="12.5" r="1.2" fill="currentColor" stroke="none"/><path d="M5.2 10a4 4 0 0 1 5.6 0"/><path d="M3 7.8a7 7 0 0 1 10 0"/></svg>
@@ -383,39 +387,24 @@
 
       <!-- ── NEGOCIO ── -->
       <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;">💰 Negocio</div>
-      <div class="stats-row" style="margin-bottom:8px;grid-template-columns:repeat(8,1fr);">
-        <div class="stat-card" style="border-color:rgba(255,229,0,0.5);background:rgba(255,229,0,0.07);grid-column:span 1;">
-          <div class="s-label" style="color:var(--gold);">💰 Este mes</div>
-          <div class="s-value" id="ov-facturacion-mes" style="color:var(--gold);font-size:2.2rem;">$0</div>
+      <div class="stats-row" style="margin-bottom:8px;grid-template-columns:repeat(5,1fr);">
+        <div class="stat-card" style="border-color:rgba(255,229,0,0.5);background:rgba(255,229,0,0.06);">
+          <div class="s-label" style="color:var(--gold);">Este mes</div>
+          <div class="s-value" id="ov-facturacion-mes" style="color:var(--gold);font-size:2rem;">$0</div>
           <div class="s-sub" id="ov-facturacion-mes-label">Cargando…</div>
         </div>
         <div class="stat-card" style="border-color:rgba(255,229,0,0.2);">
           <div class="s-label">Facturación Total</div>
-          <div class="s-value" id="ov-facturacion" style="color:rgba(255,229,0,0.6);font-size:1.6rem;">$0</div>
+          <div class="s-value" id="ov-facturacion" style="color:rgba(255,229,0,0.7);font-size:1.6rem;">$0</div>
           <div class="s-sub">Histórico acumulado</div>
         </div>
         <div class="stat-card green">
-          <div class="s-label">Ventas (vendedores)</div>
+          <div class="s-label">Ventas aprobadas</div>
           <div class="s-value" id="ov-ventas">0</div>
-          <div class="s-sub" id="ov-ventas-sub">ventas de vendedores</div>
-        </div>
-        <div class="stat-card" style="border-color:rgba(168,85,247,0.3);">
-          <div class="s-label">Registrados</div>
-          <div class="s-value" id="ov-registrados" style="color:#a855f7;">0</div>
-          <div class="s-sub">Próximo jueves</div>
-        </div>
-        <div class="stat-card" style="border-color:rgba(4,80,224,0.3);">
-          <div class="s-label">Confirmados</div>
-          <div class="s-value" id="ov-confirmados" style="color:#0450E0;">0</div>
-          <div class="s-sub">Dijeron que sí</div>
-        </div>
-        <div class="stat-card" style="border-color:rgba(34,197,94,0.25);">
-          <div class="s-label">Esperados</div>
-          <div class="s-value" id="ov-esperados" style="color:#22c55e;">0</div>
-          <div class="s-sub" id="ov-esperados-sub">est. 25% de registrados</div>
+          <div class="s-sub" id="ov-ventas-sub">Por vendedores</div>
         </div>
         <div class="stat-card" style="border-color:rgba(249,115,22,0.3);">
-          <div class="s-label">Miembros</div>
+          <div class="s-label">Nuevos miembros</div>
           <div class="s-value" id="ov-miembros" style="color:var(--orange);">0</div>
           <div class="s-sub">Compraron acceso</div>
         </div>
@@ -426,33 +415,68 @@
         </div>
       </div>
 
-      <!-- ── LANDING ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:20px;">📊 Landing Page</div>
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="s-label">Total Registros</div>
-          <div class="s-value" id="ov-total">0</div>
-          <div class="s-sub">Todos los tiempos</div>
-        </div>
+      <!-- ── TRÁFICO & ASISTENCIA ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">Tráfico & Asistencia</div>
+      <div class="stats-row" style="grid-template-columns:repeat(6,1fr);margin-bottom:8px;">
         <div class="stat-card blue">
-          <div class="s-label">Visitas Totales</div>
+          <div class="s-label">Visitas</div>
           <div class="s-value" id="ov-views">0</div>
-          <div class="s-sub">Pageviews registradas</div>
+          <div class="s-sub">Pageviews</div>
         </div>
-        <div class="stat-card green">
-          <div class="s-label">Tasa de Conversión</div>
-          <div class="s-value" id="ov-cvr">0%</div>
-          <div class="s-sub">Registros / visitas</div>
+        <div class="stat-card" style="border-color:rgba(168,85,247,0.3);">
+          <div class="s-label">Registrados</div>
+          <div class="s-value" id="ov-total" style="color:#a855f7;">0</div>
+          <div class="s-sub">Próximo jueves</div>
         </div>
         <div class="stat-card white">
           <div class="s-label">Variante Líder</div>
           <div class="s-value" id="ov-winner">—</div>
-          <div class="s-sub" id="ov-winner-cvr">Sin datos aún</div>
+          <div class="s-sub" id="ov-winner-cvr">Sin datos</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-label">Tasa Confirmación</div>
+          <div class="s-value" id="ov-tasa-conf" style="color:var(--blue);">—</div>
+          <div class="s-sub">Confirmados / registrados</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-label">Tasa Asistencia</div>
+          <div class="s-value" id="ov-tasa-asist" style="color:var(--green);">—</div>
+          <div class="s-sub">Asistentes / confirmados</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-label">Conversión Final</div>
+          <div class="s-value" id="ov-tasa-conv" style="color:var(--gold);">—</div>
+          <div class="s-sub">Miembros / asistentes</div>
+        </div>
+      </div>
+
+      <!-- ── ADS & PAUTA ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">📣 Pauta</div>
+      <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:8px;">
+        <div class="stat-card">
+          <div class="s-label">Gasto del mes</div>
+          <div class="s-value" style="color:var(--muted);font-size:1.8rem;">$—</div>
+          <div class="s-sub">Meta Ads · próximamente</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-label">ROAS</div>
+          <div class="s-value" style="color:var(--muted);font-size:1.8rem;">—x</div>
+          <div class="s-sub">Retorno sobre inversión</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-label">Costo por registro</div>
+          <div class="s-value" style="color:var(--muted);font-size:1.8rem;">$—</div>
+          <div class="s-sub">CPL promedio</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-label">Campañas activas</div>
+          <div class="s-value" style="color:var(--muted);font-size:1.8rem;">—</div>
+          <div class="s-sub">Conectar Meta Ads API</div>
         </div>
       </div>
 
       <!-- ── EQUIPO ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:20px;">👥 Equipo esta semana</div>
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">👥 Equipo esta semana</div>
       <div class="card" style="padding:0;overflow:hidden;" id="ov-vendedores-card">
         <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
           <thead>
@@ -472,21 +496,55 @@
         </table>
       </div>
 
+      <!-- ── RECOMENDACIONES ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;margin-top:24px;">✅ Recomendaciones</div>
+      <div class="card" id="recomendaciones-card">
+        <div id="recomendaciones-list" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="color:var(--muted);font-size:0.85rem;">Cargando análisis…</div>
+        </div>
+      </div>
+
     </div>
 
-    <!-- ════════════ LANDING & VENTAS ════════════ -->
+    <!-- ════════════ LANDING ════════════ -->
     <div class="panel" id="tab-landing">
 
       <!-- ── A/B Test ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">🧪 Test A/B — Títulos</div>
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Test A/B — Títulos</div>
       <div id="abCards"></div>
       <div class="card" style="margin-top:0;margin-bottom:28px;">
         <div class="card-title">Comparación visual</div>
         <div class="chart-wrap"><canvas id="chartAB"></canvas></div>
       </div>
 
+      <!-- ── Comportamiento de visitantes ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Comportamiento de visitantes</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+        <div class="stat-card"><div class="s-label">Sesiones totales</div><div class="s-value" id="bhv-total">—</div><div class="s-sub">visitantes rastreados</div></div>
+        <div class="stat-card green"><div class="s-label">Se registraron</div><div class="s-value" id="bhv-conv">—</div><div class="s-sub">conversión</div></div>
+        <div class="stat-card" style="border-color:rgba(255,229,0,0.3)"><div class="s-label">Scroll promedio</div><div class="s-value" id="bhv-scroll" style="color:var(--gold)">—</div><div class="s-sub">% de la página</div></div>
+        <div class="stat-card" style="border-color:rgba(249,115,22,0.3)"><div class="s-label">Tiempo promedio</div><div class="s-value" id="bhv-time" style="color:var(--orange)">—</div><div class="s-sub">segundos en la página</div></div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div style="font-weight:700;font-size:0.88rem;">Sesiones de visitantes</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('todos')" id="af-todos">Todos</button>
+            <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('no_reg')" id="af-noreg">Sin registrar</button>
+            <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('reg')" id="af-reg">Registrados</button>
+            <button class="btn btn-outline btn-sm" onclick="loadAnalisis()">↺</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Email</th><th>Interés</th><th>Scroll</th><th>Tiempo</th><th>CTAs</th><th>Formulario</th><th>Registrado</th><th>Variante</th><th>Fecha</th></tr></thead>
+            <tbody id="analisisBody"><tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- ── Registros por día ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">📈 Registros por día</div>
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Registros por día</div>
       <div class="card" style="margin-bottom:28px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <span style="font-size:0.85rem;font-weight:700;">Últimos 14 días</span>
@@ -495,39 +553,76 @@
       </div>
 
       <!-- ── Lista de registros ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">📋 Registros</div>
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Registros</div>
       <div class="toolbar" style="margin-bottom:12px;">
-        <div>
-          <span id="reg-count-label" style="font-size:0.88rem;color:var(--muted);">0 registros</span>
-        </div>
+        <div><span id="reg-count-label" style="font-size:0.88rem;color:var(--muted);">0 registros</span></div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <input type="text" class="search-input" id="searchInput" placeholder="🔍  Buscar nombre o email…" oninput="filterRegistros()">
-          <button class="btn btn-outline btn-sm" onclick="refreshData()">🔄 Actualizar</button>
+          <button class="btn btn-outline btn-sm" onclick="refreshData()">↺ Actualizar</button>
           <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ CSV</button>
-          <button class="btn btn-red btn-sm" onclick="confirmReset()">🗑 Limpiar todo</button>
+          <button class="btn btn-red btn-sm" onclick="confirmReset()">Limpiar todo</button>
         </div>
       </div>
       <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>#</th><th></th><th>Nombre</th><th>Email</th>
-                <th>Teléfono</th><th>Variante</th><th>Interés</th><th>Fecha</th><th>Hora</th>
-              </tr>
-            </thead>
-            <tbody id="regBody">
-              <tr><td colspan="9"><div class="empty"><span class="empty-icon">📭</span>Aún no hay registros.</div></td></tr>
-            </tbody>
+            <thead><tr><th>#</th><th></th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Variante</th><th>Interés</th><th>Fecha</th><th>Hora</th></tr></thead>
+            <tbody id="regBody"><tr><td colspan="9"><div class="empty"><span class="empty-icon">📭</span>Aún no hay registros.</div></td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- ── Vendedores ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">👥 Equipo de Vendedores</div>
+    </div>
+
+    <!-- ════════════ VENTAS ════════════ -->
+    <div class="panel" id="tab-ventas">
+
+      <!-- ── Confirmados & seguimientos ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Confirmados & Seguimientos</div>
+      <div id="ventasAlert"></div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <span style="font-weight:700;font-size:0.88rem;">Leads activos</span>
+          <div style="display:flex;gap:8px;">
+            <select id="ventasFilterEstado" class="search-input" style="min-width:160px;" onchange="renderVentasLeads()">
+              <option value="">Todos los estados</option>
+              <option value="confirmado">Confirmados</option>
+              <option value="seguimiento">En seguimiento</option>
+              <option value="asistio">Asistieron</option>
+              <option value="interesado">Interesados</option>
+            </select>
+            <input type="text" class="search-input" id="ventasSearch" placeholder="🔍 Buscar…" oninput="renderVentasLeads()">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Estado</th><th>Vendedor</th><th>Categoría</th><th>Notas</th><th>Actualizado</th></tr></thead>
+            <tbody id="ventasLeadsBody"><tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Aprobaciones de ventas ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;margin-top:28px;">Aprobaciones de ventas</div>
+      <div id="aprobAlert"></div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:0.85rem;font-weight:700;">Ventas pendientes de aprobación</span>
+          <button class="btn btn-outline btn-sm" onclick="loadAprobaciones()">↺ Actualizar</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Lead</th><th>Vendedor</th><th>Monto</th><th>Tipo</th><th>Comisión</th><th>Comprobante</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr></thead>
+            <tbody id="aprobBody"><tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Equipo de Vendedores ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Equipo de Vendedores</div>
       <div id="vendAlert"></div>
       <div class="card" style="margin-bottom:12px;">
-        <div class="card-title">➕ Crear nuevo vendedor</div>
+        <div class="card-title">Crear nuevo vendedor</div>
         <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;">
           <div class="field-group" style="margin:0;"><label>Nombre</label><input type="text" id="newVendNombre" placeholder="Ej: Ana García"></div>
           <div class="field-group" style="margin:0;"><label>Contraseña</label><input type="text" id="newVendPass" placeholder="Ej: ana2024"></div>
@@ -537,24 +632,17 @@
       <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px;">
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>#</th><th>Nombre</th><th>Contraseña</th><th>Leads</th><th>Ventas</th>
-                <th>Comisión</th><th>Última actividad</th><th>Estado</th><th>Acción</th>
-              </tr>
-            </thead>
-            <tbody id="vendBody">
-              <tr><td colspan="9"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
-            </tbody>
+            <thead><tr><th>#</th><th>Nombre</th><th>Contraseña</th><th>Leads</th><th>Ventas</th><th>Comisión</th><th>Última actividad</th><th>Estado</th><th>Acción</th></tr></thead>
+            <tbody id="vendBody"><tr><td colspan="9"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
           </table>
         </div>
       </div>
       <div class="card" id="vendReporteCard" style="display:none;margin-bottom:12px;">
-        <div class="card-title">📊 Actividad del equipo</div>
+        <div class="card-title">Actividad del equipo</div>
         <div id="vendReporteBody"></div>
       </div>
       <div class="card" style="margin-bottom:28px;">
-        <div class="card-title">📋 Asignar leads a vendedores</div>
+        <div class="card-title">Asignar leads a vendedores</div>
         <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
           <input type="text" class="search-input" id="assignSearch" placeholder="🔍 Buscar lead…" oninput="renderAssignTable()">
           <select id="assignFilterVend" class="search-input" style="min-width:160px;" onchange="renderAssignTable()">
@@ -568,29 +656,6 @@
               <tbody id="assignBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
             </table>
           </div>
-        </div>
-      </div>
-
-      <!-- ── Aprobaciones ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">✅ Aprobaciones de Ventas</div>
-      <div id="aprobAlert"></div>
-      <div class="card" style="padding:0;overflow:hidden;">
-        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:0.85rem;font-weight:700;">Ventas pendientes de aprobación</span>
-          <button class="btn btn-outline btn-sm" onclick="loadAprobaciones()">🔄 Actualizar</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th><th>Lead</th><th>Vendedor</th><th>Monto</th>
-                <th>Tipo</th><th>Comisión</th><th>Comprobante</th><th>Fecha</th><th>Estado</th><th>Acción</th>
-              </tr>
-            </thead>
-            <tbody id="aprobBody">
-              <tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
-            </tbody>
-          </table>
         </div>
       </div>
 
@@ -649,52 +714,17 @@
 
     </div>
 
-    <!-- ════════════ ANÁLISIS ════════════ -->
-    <div class="panel" id="tab-analisis">
+    <!-- ════════════ EVENTO ════════════ -->
+    <div class="panel" id="tab-evento">
 
       <!-- Sub-tab nav -->
       <div style="display:flex;gap:2px;margin-bottom:24px;background:var(--card);border-radius:8px;padding:4px;width:fit-content;">
-        <button class="sub-tab active" id="st-landing" onclick="setAnalisisSubTab('landing')">📊 Landing Page</button>
-        <button class="sub-tab" id="st-evento" onclick="setAnalisisSubTab('evento')">🎥 Evento y Conversión</button>
-        <button class="sub-tab" id="st-transcript" onclick="setAnalisisSubTab('transcript')">📝 Transcripción</button>
-      </div>
-
-      <!-- ══ SUB: LANDING PAGE ══ -->
-      <div id="ast-landing">
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;" id="bhv-stats-row">
-          <div class="stat-card"><div class="s-label">Sesiones totales</div><div class="s-value" id="bhv-total">—</div><div class="s-sub">visitantes rastreados</div></div>
-          <div class="stat-card green"><div class="s-label">Se registraron</div><div class="s-value" id="bhv-conv">—</div><div class="s-sub">conversión</div></div>
-          <div class="stat-card gold"><div class="s-label">Scroll promedio</div><div class="s-value" id="bhv-scroll">—</div><div class="s-sub">% de la página</div></div>
-          <div class="stat-card orange"><div class="s-label">Tiempo promedio</div><div class="s-value" id="bhv-time">—</div><div class="s-sub">segundos en la página</div></div>
-        </div>
-        <div class="card" style="padding:0;overflow:hidden;">
-          <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-            <div style="font-weight:700;font-size:0.88rem;">Sesiones de visitantes</div>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('todos')" id="af-todos">Todos</button>
-              <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('no_reg')" id="af-noreg">Sin registrar</button>
-              <button class="btn btn-outline btn-sm" onclick="setAnalisisFilter('reg')" id="af-reg">Registrados</button>
-              <button class="btn btn-outline btn-sm" onclick="loadAnalisis()">🔄</button>
-            </div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th><th>Email</th><th>Interés</th><th>Scroll</th>
-                  <th>Tiempo</th><th>CTAs</th><th>Formulario</th><th>Registrado</th><th>Variante</th><th>Fecha</th>
-                </tr>
-              </thead>
-              <tbody id="analisisBody">
-                <tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <button class="sub-tab active" id="st-evento" onclick="setEventoSubTab('evento')">Retención & Asistencia</button>
+        <button class="sub-tab" id="st-transcript" onclick="setEventoSubTab('transcript')">Transcripción</button>
       </div>
 
       <!-- ══ SUB: EVENTO Y CONVERSIÓN ══ -->
-      <div id="ast-evento" style="display:none;">
+      <div id="ast-evento">
 
         <!-- YouTube-style big numbers -->
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:24px;">
@@ -980,10 +1010,11 @@ document.querySelectorAll('.tab').forEach(tab => {
     this.classList.add('active');
     document.getElementById('tab-' + this.dataset.tab).classList.add('active');
     if (this.dataset.tab === 'overview') renderOverview();
-    if (this.dataset.tab === 'landing') loadLandingTab();
-    if (this.dataset.tab === 'analisis')  setAnalisisSubTab(currentAnalisisSubTab || 'landing');
+    if (this.dataset.tab === 'ventas')   loadVentasTab();
+    if (this.dataset.tab === 'landing')  loadLandingTab();
+    if (this.dataset.tab === 'evento')   setEventoSubTab(currentEventoSubTab || 'evento');
     if (this.dataset.tab === 'miembros') loadMiembros();
-    if (this.dataset.tab === 'config') renderConfig();
+    if (this.dataset.tab === 'config')   renderConfig();
   });
 });
 
@@ -1000,7 +1031,6 @@ async function renderOverview() {
 
   document.getElementById('ov-total').textContent = totalConv;
   document.getElementById('ov-views').textContent = totalViews;
-  document.getElementById('ov-cvr').textContent   = totalCVR + '%';
 
   // Winner
   let best = null, bestCVR = -1;
@@ -1048,13 +1078,40 @@ async function renderOverview() {
     document.getElementById('ov-facturacion').textContent = '$' + facturacionTotal.toLocaleString('es-MX', {maximumFractionDigits:0});
     document.getElementById('ov-ventas').textContent = aprobadas.length;
     document.getElementById('ov-ventas-sub').textContent = `ventas de vendedores`;
-    document.getElementById('ov-registrados').textContent = totalRegistrados;
-    document.getElementById('ov-confirmados').textContent = confirmados;
-    document.getElementById('ov-esperados').textContent = esperados;
-    document.getElementById('ov-esperados-sub').textContent = `est. 25% de ${totalRegistrados} registrados`;
+    // ov-total already set above
     document.getElementById('ov-miembros').textContent = mbList.length;
     document.getElementById('ov-comisiones').textContent = '$' + comisionesMes.toLocaleString('es-MX', {maximumFractionDigits:0});
     document.getElementById('ov-comisiones-sub').textContent = MESES[ahora.getMonth()] + ' · ' + aprobMes.length + ' ventas';
+
+    // ── Tráfico & Asistencia ──
+    const tasaConf = totalRegistrados > 0 ? Math.round(confirmados / totalRegistrados * 100) : 0;
+    // Asistencia y conversión requieren datos de Zoom
+    let asistentes = 0;
+    try {
+      const asist = await fetchSB('/rest/v1/asistencias?select=email');
+      asistentes = (asist||[]).length;
+    } catch(e) {}
+    const tasaAsist = confirmados > 0 ? Math.round(asistentes / confirmados * 100) : 0;
+    const tasaConvFinal = asistentes > 0 ? Math.round(mbList.length / asistentes * 100) : 0;
+    document.getElementById('ov-tasa-conf').textContent = tasaConf + '%';
+    document.getElementById('ov-tasa-asist').textContent = tasaAsist > 0 ? tasaAsist + '%' : '—';
+    document.getElementById('ov-tasa-conv').textContent = tasaConvFinal > 0 ? tasaConvFinal + '%' : '—';
+
+    // ── Recomendaciones ──
+    const recs = [];
+    if (totalCVR < 30 && totalViews >= 20) recs.push({ color:'#f97316', icon:'📊', text:`Tasa de conversión de la landing baja (${totalCVR}%). Prueba optimizar el título o el formulario.` });
+    if (tasaConf < 30 && totalRegistrados >= 10) recs.push({ color:'#3b82f6', icon:'📞', text:`Solo el ${tasaConf}% de los registrados confirmaron. Empuja a los vendedores a contactar más leads.` });
+    if (tasaAsist < 40 && asistentes > 0) recs.push({ color:'#ef4444', icon:'🎥', text:`Tasa de asistencia baja (${tasaAsist}%). Refuerza los recordatorios antes del evento.` });
+    if (aprobMes.length === 0) recs.push({ color:'#a855f7', icon:'💰', text:`Sin ventas aprobadas este mes. Revisa si hay ventas pendientes de aprobación.` });
+    if (mbMes.length > 0 && facturacionMes > 0) recs.push({ color:'#22c55e', icon:'✅', text:`${mbMes.length} nuevo${mbMes.length>1?'s':''} miembro${mbMes.length>1?'s':''} este mes — $${facturacionMes.toLocaleString('es-MX',{maximumFractionDigits:0})} en facturación.` });
+    if (!recs.length) recs.push({ color:'var(--muted)', icon:'📋', text:'Todo parece en orden. Sigue monitoreando para ver nuevas recomendaciones.' });
+
+    document.getElementById('recomendaciones-list').innerHTML = recs.map(r => `
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:1.1rem;flex-shrink:0;">${r.icon}</span>
+        <span style="font-size:0.85rem;line-height:1.6;color:${r.color};">${r.text}</span>
+      </div>`).join('').replace(/border-bottom:[^;]+;([^<]*<\/div>\s*$)/m, (m,p) => m.replace('border-bottom:1px solid var(--border);',''));
+
   } catch(e) { /* silent fail — tables may not exist yet */ }
 
   // Vendor mini-summary
@@ -1463,24 +1520,69 @@ async function loadZoomStats() {
 ────────────────────────────────────── */
 async function loadLandingTab() {
   renderABTest();
+  loadAnalisis();
+  setAnalisisFilter('todos');
   loadBehaviorData().then(() => renderRegistros());
-  loadVendedoresAdmin();
+}
+
+async function loadVentasTab() {
+  loadVentasLeads();
   loadAprobaciones();
+  loadVendedoresAdmin();
+}
+
+async function loadVentasLeads() {
+  document.getElementById('ventasLeadsBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+  try {
+    const rows = await fetchSB('/rest/v1/lead_estados?select=*&order=updated_at.desc');
+    renderVentasLeads(rows || []);
+  } catch(e) {
+    document.getElementById('ventasLeadsBody').innerHTML = '<tr><td colspan="8"><div class="empty">Error cargando.</div></td></tr>';
+  }
+}
+
+let ventasLeadsCache = [];
+function renderVentasLeads(data) {
+  if (data) ventasLeadsCache = data;
+  const filterEstado = document.getElementById('ventasFilterEstado')?.value || '';
+  const search = (document.getElementById('ventasSearch')?.value || '').toLowerCase();
+  let rows = ventasLeadsCache;
+  if (filterEstado) rows = rows.filter(r => r.estado === filterEstado);
+  if (search) rows = rows.filter(r => (r.registro_email+r.vendedor+r.notas+r.notas_vendedor+'').toLowerCase().includes(search));
+
+  if (!rows.length) {
+    document.getElementById('ventasLeadsBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">📭</span>Sin resultados.</div></td></tr>';
+    return;
+  }
+  const ESTADO_COLOR = { confirmado:'#3b82f6', asistio:'#22c55e', seguimiento:'#f97316', interesado:'#a855f7', 'no-confirmado':'#ef4444' };
+  const fmt = d => d ? new Date(d).toLocaleDateString('es-MX') : '—';
+  document.getElementById('ventasLeadsBody').innerHTML = rows.map((r, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td class="bold">${esc(r.registro_email||'')}</td>
+      <td style="font-size:0.8rem;color:var(--text)">${esc(r.registro_email||'')}</td>
+      <td><span style="padding:2px 8px;border-radius:10px;font-size:0.72rem;font-weight:700;background:${ESTADO_COLOR[r.estado]||'#555'}22;color:${ESTADO_COLOR[r.estado]||'#aaa'}">${r.estado||'—'}</span></td>
+      <td style="font-size:0.82rem;color:var(--text)">${esc(r.asignado_a||r.vendedor||'—')}</td>
+      <td style="font-size:0.78rem;color:var(--muted)">${esc(r.categoria||'—')}</td>
+      <td style="font-size:0.78rem;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc((r.notas||'')+(r.notas_vendedor||''))}">${esc((r.notas||r.notas_vendedor||'—').substring(0,60))}</td>
+      <td style="font-size:0.78rem;color:var(--muted)">${fmt(r.updated_at)}</td>
+    </tr>`).join('');
 }
 
 /* ──────────────────────────────────────
-   ANÁLISIS SUB-TABS
+   EVENTO SUB-TABS
 ────────────────────────────────────── */
-let currentAnalisisSubTab = 'landing';
+let currentEventoSubTab = 'evento';
 
-function setAnalisisSubTab(sub) {
-  currentAnalisisSubTab = sub;
-  ['landing','evento','transcript'].forEach(s => {
-    document.getElementById('st-' + s).classList.toggle('active', s === sub);
-    document.getElementById('ast-' + s).style.display = s === sub ? '' : 'none';
+function setEventoSubTab(sub) {
+  currentEventoSubTab = sub;
+  ['evento','transcript'].forEach(s => {
+    const btn = document.getElementById('st-' + s);
+    const panel = document.getElementById('ast-' + s);
+    if (btn) btn.classList.toggle('active', s === sub);
+    if (panel) panel.style.display = s === sub ? '' : 'none';
   });
-  if (sub === 'landing') { loadAnalisis(); setAnalisisFilter('todos'); }
-  if (sub === 'evento')  { loadZoomStats(); loadCachedAnalysisEvento(); }
+  if (sub === 'evento')     { loadZoomStats(); loadCachedAnalysisEvento(); }
   if (sub === 'transcript') { loadCachedAnalysis(); }
 }
 
