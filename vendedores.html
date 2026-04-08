@@ -670,11 +670,14 @@ async function loadData() {
   estadosMap = {};
   estados.forEach(e => { estadosMap[e.registro_email] = e; });
 
-  // Only show leads assigned to me OR unassigned (no asignado_a)
+  // Only show leads assigned to me OR unassigned (no asignado_a), deduplicate by email
+  const seenEmails = new Set();
   allLeads = leads
     .map(r => ({ id: r.id, nombre: r.nombre || r.name || '', email: r.email || '', phone: r.phone || '', ts: r.ts }))
     .filter(l => {
       const e = estadosMap[l.email];
+      if (seenEmails.has(l.email)) return false;
+      seenEmails.add(l.email);
       return !e || !e.asignado_a || e.asignado_a === currentVendedor;
     });
 
