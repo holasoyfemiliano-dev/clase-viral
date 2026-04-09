@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proximity Creators — Inscripción</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Decorative swirls */
+    .swirl {
+      position: fixed;
+      opacity: 0.18;
+      pointer-events: none;
+    }
+    .swirl svg { fill: #fff; }
+
+    .swirl-tl { top: -60px; left: -60px; width: 260px; transform: rotate(15deg); }
+    .swirl-tr { top: -40px; right: -60px; width: 230px; transform: rotate(-20deg); }
+    .swirl-bl { bottom: -60px; left: -50px; width: 220px; transform: rotate(5deg); }
+    .swirl-br { bottom: -40px; right: -60px; width: 250px; transform: rotate(-10deg); }
+
+    /* Main container */
+    .container {
+      text-align: center;
+      padding: 40px 24px;
+      width: 100%;
+      max-width: 520px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .title {
+      font-size: clamp(22px, 5vw, 32px);
+      font-weight: 800;
+      letter-spacing: 1px;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .title .highlight { color: #f5c842; }
+
+    .subtitle {
+      font-size: 15px;
+      color: #ccc;
+      margin-bottom: 44px;
+    }
+
+    /* Buttons */
+    .btn-group {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .btn-main {
+      background: #6ecff6;
+      color: #0a0a0a;
+      border: none;
+      border-radius: 10px;
+      padding: 20px 36px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      min-width: 180px;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-main:hover { background: #9adff9; transform: translateY(-2px); }
+    .btn-main:active { transform: translateY(0); }
+
+    .btn-outline {
+      background: transparent;
+      color: #fff;
+      border: 1.5px solid #fff;
+      border-radius: 30px;
+      padding: 12px 36px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-outline:hover { background: #fff; color: #0a0a0a; }
+
+    /* Bank details card */
+    .bank-card {
+      display: none;
+      background: linear-gradient(135deg, #5bc8f5 0%, #1a8fc1 60%, #1a6fa0 100%);
+      border-radius: 18px;
+      padding: 28px 28px 24px;
+      text-align: left;
+      margin-bottom: 28px;
+      position: relative;
+      animation: slideDown 0.3s ease;
+    }
+    .bank-card.visible { display: block; }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .bank-card .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .bank-card .card-logo {
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+    }
+    .bank-card .card-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+
+    .bank-field {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      gap: 10px;
+    }
+    .bank-field:last-child { border-bottom: none; }
+
+    .bank-field-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.85);
+      white-space: nowrap;
+    }
+    .bank-field-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      text-align: right;
+      flex: 1;
+    }
+    .copy-btn {
+      background: rgba(255,255,255,0.25);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.45); }
+    .copy-btn.copied { background: #2ecc71; }
+
+    .bank-clabe-bar {
+      margin-top: 16px;
+      background: #0d4a6b;
+      border-radius: 8px;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .bank-clabe-bar span {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #fff;
+    }
+    .bank-clabe-bar .copy-btn { font-size: 12px; padding: 5px 12px; }
+
+    /* Close transfer */
+    .btn-close-transfer {
+      display: none;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #ccc;
+      font-size: 12px;
+      border-radius: 20px;
+      padding: 6px 16px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-close-transfer:hover { border-color: #fff; color: #fff; }
+    .btn-close-transfer.visible { display: inline-block; }
+
+    /* Logo */
+    .logo-wrap {
+      margin-top: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      opacity: 0.85;
+    }
+    .logo-wrap svg { width: 32px; height: 32px; }
+    .logo-text { font-size: 14px; font-weight: 700; line-height: 1.2; }
+    .logo-text span { display: block; }
+    .logo-text .brand { font-size: 10px; font-weight: 400; letter-spacing: 2px; color: #aaa; }
+  </style>
+</head>
+<body>
+
+  <!-- Decorative swirls (same shape as Proximity Brand logo) -->
+  <div class="swirl swirl-tl">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M100 10 C130 10,155 35,155 65 C155 95,130 110,100 110 C70 110,55 95,55 65 C55 35,70 10,100 10 Z M100 90 C120 90,135 80,135 65 C135 50,120 30,100 30 C80 30,65 50,65 65 C65 80,80 90,100 90 Z"/><path d="M30 130 C10 115,5 90,20 70 C35 50,60 48,75 62 C90 76,88 100,72 115 C56 130,50 145,65 155 C80 165,100 158,110 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M170 130 C190 115,195 90,180 70 C165 50,140 48,125 62 C110 76,112 100,128 115 C144 130,150 145,135 155 C120 165,100 158,90 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/></svg>
+  </div>
+  <div class="swirl swirl-tr">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M30 130 C10 115,5 90,20 70 C35 50,60 48,75 62 C90 76,88 100,72 115 C56 130,50 145,65 155 C80 165,100 158,110 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M170 130 C190 115,195 90,180 70 C165 50,140 48,125 62 C110 76,112 100,128 115 C144 130,150 145,135 155 C120 165,100 158,90 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/></svg>
+  </div>
+  <div class="swirl swirl-bl">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M30 130 C10 115,5 90,20 70 C35 50,60 48,75 62 C90 76,88 100,72 115 C56 130,50 145,65 155 C80 165,100 158,110 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M170 130 C190 115,195 90,180 70 C165 50,140 48,125 62 C110 76,112 100,128 115 C144 130,150 145,135 155 C120 165,100 158,90 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/></svg>
+  </div>
+  <div class="swirl swirl-br">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M30 130 C10 115,5 90,20 70 C35 50,60 48,75 62 C90 76,88 100,72 115 C56 130,50 145,65 155 C80 165,100 158,110 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M170 130 C190 115,195 90,180 70 C165 50,140 48,125 62 C110 76,112 100,128 115 C144 130,150 145,135 155 C120 165,100 158,90 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/></svg>
+  </div>
+
+  <div class="container">
+    <h1 class="title">TE DAMOS LA BIENVENIDA A<br>PROXIMITY <span class="highlight">CREATORS</span></h1>
+    <p class="subtitle">¿Cómo quieres realizar tu inscripción?</p>
+
+    <!-- Main action buttons -->
+    <div class="btn-group" id="mainButtons">
+      <button class="btn-main" onclick="showTransfer()">TRANSFERENCIA</button>
+      <button class="btn-main" onclick="goToCard()">TARJETA</button>
+    </div>
+
+    <!-- Bank transfer details -->
+    <div class="bank-card" id="bankCard">
+      <div class="card-header">
+        <!-- Proximity P logo -->
+        <svg class="card-logo" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" fill="white">
+          <text x="14" y="58" font-size="58" font-weight="900" font-family="Arial">P</text>
+        </svg>
+        <div class="card-title">DATOS BANCARIOS:</div>
+      </div>
+
+      <div class="bank-field">
+        <span class="bank-field-label">Nombre:</span>
+        <span class="bank-field-value">Francisco Emiliano Sanchez Lopez</span>
+        <button class="copy-btn" onclick="copyText('Francisco Emiliano Sanchez Lopez', this)">Copiar</button>
+      </div>
+      <div class="bank-field">
+        <span class="bank-field-label">Cuenta:</span>
+        <span class="bank-field-value">150 996 5288</span>
+        <button class="copy-btn" onclick="copyText('1509965288', this)">Copiar</button>
+      </div>
+      <div class="bank-field">
+        <span class="bank-field-label">CLABE:</span>
+        <span class="bank-field-value">012 180 01509965288 3</span>
+        <button class="copy-btn" onclick="copyText('012180015099652883', this)">Copiar</button>
+      </div>
+      <div class="bank-field">
+        <span class="bank-field-label">Tarjeta de débito:</span>
+        <span class="bank-field-value">4152 3143 7620 4056</span>
+        <button class="copy-btn" onclick="copyText('4152314376204056', this)">Copiar</button>
+      </div>
+      <div class="bank-field">
+        <span class="bank-field-label">Banco:</span>
+        <span class="bank-field-value">BBVA</span>
+        <button class="copy-btn" onclick="copyText('BBVA', this)">Copiar</button>
+      </div>
+
+      <div class="bank-clabe-bar">
+        <span>012180015099652883</span>
+        <button class="copy-btn" onclick="copyText('012180015099652883', this)">Copiar CLABE</button>
+      </div>
+    </div>
+
+    <!-- Close transfer -->
+    <button class="btn-close-transfer" id="closeBtn" onclick="hideTransfer()">← Volver</button>
+
+    <!-- Talk to advisor -->
+    <div>
+      <button class="btn-outline" onclick="goToAdvisor()">HABLAR CON UN ASESOR</button>
+    </div>
+
+    <!-- Logo -->
+    <div class="logo-wrap">
+      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" fill="white">
+        <circle cx="40" cy="40" r="36" fill="none" stroke="white" stroke-width="5"/>
+        <text x="18" y="56" font-size="44" font-weight="900" font-family="Arial" fill="white">P</text>
+      </svg>
+      <div class="logo-text">
+        <span>Proximity</span>
+        <span class="brand">BRAND</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CARD_URL    = 'https://link.fastpaydirect.com/payment-link/69a507833413b55430fd0766';
+    const ADVISOR_URL = 'https://wa.me/523338200524';
+
+    function showTransfer() {
+      document.getElementById('bankCard').classList.add('visible');
+      document.getElementById('closeBtn').classList.add('visible');
+    }
+
+    function hideTransfer() {
+      document.getElementById('bankCard').classList.remove('visible');
+      document.getElementById('closeBtn').classList.remove('visible');
+    }
+
+    function goToCard() {
+      window.open(CARD_URL, '_blank');
+    }
+
+    function goToAdvisor() {
+      window.open(ADVISOR_URL, '_blank');
+    }
+
+    function copyText(text, btn) {
+      navigator.clipboard.writeText(text).then(() => {
+        const original = btn.textContent;
+        btn.textContent = '✓ Copiado';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 2000);
+      }).catch(() => {
+        // Fallback for older browsers
+        const el = document.createElement('textarea');
+        el.value = text;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        btn.textContent = '✓ Copiado';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copiar';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
