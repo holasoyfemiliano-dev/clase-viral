@@ -184,6 +184,36 @@
     .copy-btn:hover  { background: rgba(255,255,255,0.4); }
     .copy-btn.copied { background: #27ae60; }
 
+    /* ── Investment banner ── */
+    .inversion-banner {
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .inversion-banner .inv-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.7);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .inversion-banner .inv-amount {
+      font-size: 20px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+    .inversion-banner .inv-pesos {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.75);
+      margin-top: 2px;
+    }
+
     .clabe-bar {
       margin-top: 14px;
       background: rgba(0,0,0,0.3);
@@ -299,6 +329,13 @@
         <div class="card-title">DATOS BANCARIOS:</div>
       </div>
 
+      <!-- Investment -->
+      <div class="inversion-banner">
+        <div class="inv-label">Inversión</div>
+        <div class="inv-amount">$409 USD</div>
+        <div class="inv-pesos" id="inv-pesos">calculando en pesos...</div>
+      </div>
+
       <div class="bank-field">
         <span class="bf-label">Nombre:</span>
         <span class="bf-value">Francisco Emiliano Sanchez Lopez</span>
@@ -390,6 +427,19 @@
     }
     function goToCard()    { window.open(CARD_URL, '_blank'); }
     function goToAdvisor() { window.open(ADVISOR_URL, '_blank'); }
+
+    // Fetch live USD→MXN rate
+    fetch('https://open.er-api.com/v6/latest/USD')
+      .then(r => r.json())
+      .then(data => {
+        const rate = data.rates && data.rates.MXN;
+        if (!rate) throw new Error();
+        const pesos = (409 * rate).toLocaleString('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+        document.getElementById('inv-pesos').textContent = `≈ ${pesos} MXN (tipo de cambio del día)`;
+      })
+      .catch(() => {
+        document.getElementById('inv-pesos').textContent = '≈ consulta el tipo de cambio del día';
+      });
 
     function copyText(text, btn) {
       const reset = () => {
