@@ -1,4 +1,7 @@
 {
+  "rewrites": [
+    { "source": "/pago", "destination": "/pago.html" }
+  ],
   "functions": {
     "api/zoom-sync.js": {
       "maxDuration": 30
@@ -10,6 +13,9 @@
       "maxDuration": 60
     },
     "api/optimize-variant.js": {
+      "maxDuration": 15
+    },
+    "api/meta-ads.js": {
       "maxDuration": 15
     }
   },
