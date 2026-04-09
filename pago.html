@@ -48,6 +48,79 @@
     .sym-7  { width:200px; height:200px; bottom:-60px;right:-70px;  opacity:0.13; transform:rotate(180deg); }
     .sym-8  { width:75px;  height:75px;  top:55%;     left:55%;     opacity:0.08; transform:rotate(30deg); }
 
+    /* ── Step transitions ── */
+    .step { display: none; }
+    .step.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .step.active { animation: fadeIn 0.35s ease; }
+
+    /* ── Form ── */
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.6);
+      text-align: left;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .form-input {
+      width: 100%;
+      background: rgba(255,255,255,0.07);
+      border: 1.5px solid rgba(255,255,255,0.18);
+      border-radius: 12px;
+      padding: 16px 18px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 18px;
+      -webkit-appearance: none;
+    }
+    .form-input::placeholder { color: rgba(255,255,255,0.3); }
+    .form-input:focus {
+      border-color: var(--gold);
+      background: rgba(255,255,255,0.10);
+    }
+    .form-input:focus::placeholder { color: rgba(255,255,255,0.18); }
+
+    .btn-submit {
+      background: linear-gradient(135deg, #d4a017 0%, #a87a10 100%);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 20px;
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      cursor: pointer;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      transition: filter 0.2s, transform 0.15s;
+      margin-top: 6px;
+    }
+    .btn-submit:hover  { filter: brightness(1.12); transform: translateY(-2px); }
+    .btn-submit:active { transform: translateY(0); filter: brightness(0.9); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .form-error {
+      font-size: 12px;
+      color: #ff6b6b;
+      margin-top: -12px;
+      margin-bottom: 14px;
+      text-align: left;
+      display: none;
+    }
+    .form-error.visible { display: block; }
+
     /* ── Main container ── */
     .container {
       text-align: center;
@@ -303,6 +376,29 @@
   <!-- Content -->
   <div class="container">
 
+    <!-- ── PASO 1: Formulario ── -->
+    <div class="step active" id="step1">
+      <h1 class="title">
+        PROXIMITY <span class="gold">CREATORS</span>
+      </h1>
+      <p class="subtitle" style="margin-bottom:28px;">Completa tus datos para continuar con tu inscripción</p>
+
+      <label class="form-label">Nombre completo</label>
+      <input class="form-input" id="f-nombre" type="text" placeholder="Tu nombre" autocomplete="name">
+
+      <label class="form-label">Correo electrónico</label>
+      <input class="form-input" id="f-email" type="email" placeholder="correo@ejemplo.com" autocomplete="email">
+      <p class="form-error" id="err-email">Ingresa un correo válido</p>
+
+      <label class="form-label">Teléfono / WhatsApp</label>
+      <input class="form-input" id="f-phone" type="tel" placeholder="+52 000 000 0000" autocomplete="tel">
+
+      <button class="btn-submit" id="btn-continuar" onclick="submitForm()">CONTINUAR →</button>
+    </div>
+
+    <!-- ── PASO 2: Opciones de pago ── -->
+    <div class="step" id="step2">
+
     <h1 class="title">
       TE DAMOS LA BIENVENIDA A<br>
       PROXIMITY <span class="gold">CREATORS</span>
@@ -414,11 +510,67 @@
       <p class="footer-copy">© 2026 Proximity Brand · Todos los derechos reservados</p>
     </div><!-- /footer -->
 
+    </div><!-- /step2 -->
+
   </div><!-- /container -->
 
   <script>
     const CARD_URL    = 'https://link.fastpaydirect.com/payment-link/69a507833413b55430fd0766';
     const ADVISOR_URL = 'https://wa.me/523338200524';
+
+    const SB_URL  = 'https://xpsvkhoeedinuvwrumvu.supabase.co';
+    const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3ZraG9lZWRpbnV2d3J1bXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MzQ1MzYsImV4cCI6MjA5MDUxMDUzNn0.Tj2wy12QK_nhb-IKxBMJ3XgIJ9r1cnSxp1eWrDSgR2M';
+
+    async function submitForm() {
+      const nombre = document.getElementById('f-nombre').value.trim();
+      const email  = document.getElementById('f-email').value.trim();
+      const phone  = document.getElementById('f-phone').value.trim();
+      const errEl  = document.getElementById('err-email');
+      const btn    = document.getElementById('btn-continuar');
+
+      // Validación básica
+      if (!nombre) { document.getElementById('f-nombre').focus(); return; }
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errEl.classList.add('visible');
+        document.getElementById('f-email').focus();
+        return;
+      }
+      errEl.classList.remove('visible');
+      if (!phone) { document.getElementById('f-phone').focus(); return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      // Guardar en Supabase
+      try {
+        await fetch(SB_URL + '/rest/v1/clase_viral_registros', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SB_ANON,
+            'Authorization': 'Bearer ' + SB_ANON,
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({ nombre, email, phone, variante: 'pago_proximity_creators' })
+        });
+      } catch(e) { /* continuar aunque falle */ }
+
+      // Ir al paso 2
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('step2').classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    // Enter en inputs avanza al siguiente o envía
+    ['f-nombre','f-email','f-phone'].forEach((id, i, arr) => {
+      document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (i < arr.length - 1) document.getElementById(arr[i+1]).focus();
+          else submitForm();
+        }
+      });
+    });
 
     function showTransfer() {
       document.getElementById('bankCard').classList.add('visible');
