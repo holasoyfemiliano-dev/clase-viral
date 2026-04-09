@@ -543,7 +543,7 @@
 
       // Guardar en Supabase
       try {
-        await fetch(SB_URL + '/rest/v1/clase_viral_registros', {
+        await fetch(SB_URL + '/rest/v1/proximity_creators_interesados', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -551,7 +551,7 @@
             'Authorization': 'Bearer ' + SB_ANON,
             'Prefer': 'return=minimal'
           },
-          body: JSON.stringify({ nombre, email, phone, variante: 'pago_proximity_creators' })
+          body: JSON.stringify({ nombre, email, phone })
         });
       } catch(e) { /* continuar aunque falle */ }
 
