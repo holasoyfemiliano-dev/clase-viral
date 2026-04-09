@@ -4,130 +4,142 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Proximity Creators — Inscripción</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --black: #000000;
+      --gold:  #f5c842;
+      --blue:  #6ecff6;
+    }
+
+    html, body {
+      height: 100%;
+    }
 
     body {
-      background: #0a0a0a;
+      background: var(--black);
       color: #fff;
-      font-family: 'Segoe UI', Arial, sans-serif;
+      font-family: 'Inter', sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+      overflow-x: hidden;
       position: relative;
     }
 
-    /* Decorative swirls */
-    .swirl {
+    /* ── Corner symbols ── */
+    .sym {
       position: fixed;
-      opacity: 0.18;
       pointer-events: none;
+      opacity: 0.12;
+      width: 280px;
+      height: 280px;
     }
-    .swirl svg { fill: #fff; }
+    .sym svg { width: 100%; height: 100%; }
 
-    .swirl-tl { top: -60px; left: -60px; width: 260px; transform: rotate(15deg); }
-    .swirl-tr { top: -40px; right: -60px; width: 230px; transform: rotate(-20deg); }
-    .swirl-bl { bottom: -60px; left: -50px; width: 220px; transform: rotate(5deg); }
-    .swirl-br { bottom: -40px; right: -60px; width: 250px; transform: rotate(-10deg); }
+    .sym-tl { top: -60px;  left: -60px;  transform: rotate(0deg); }
+    .sym-tr { top: -60px;  right: -60px; transform: rotate(90deg); }
+    .sym-bl { bottom: -60px; left: -60px;  transform: rotate(270deg); }
+    .sym-br { bottom: -60px; right: -60px; transform: rotate(180deg); }
 
-    /* Main container */
+    /* ── Main container ── */
     .container {
       text-align: center;
-      padding: 40px 24px;
+      padding: 48px 28px 40px;
       width: 100%;
-      max-width: 520px;
+      max-width: 540px;
       position: relative;
       z-index: 10;
     }
 
     .title {
-      font-size: clamp(22px, 5vw, 32px);
-      font-weight: 800;
-      letter-spacing: 1px;
-      line-height: 1.2;
-      margin-bottom: 12px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(34px, 8vw, 52px);
+      letter-spacing: 2px;
+      line-height: 1.05;
+      margin-bottom: 14px;
     }
-    .title .highlight { color: #f5c842; }
+    .title .gold { color: var(--gold); }
 
     .subtitle {
       font-size: 15px;
-      color: #ccc;
-      margin-bottom: 44px;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 48px;
+      letter-spacing: 0.3px;
     }
 
-    /* Buttons */
+    /* ── Buttons ── */
     .btn-group {
       display: flex;
-      gap: 20px;
+      gap: 18px;
       justify-content: center;
-      margin-bottom: 28px;
+      margin-bottom: 26px;
       flex-wrap: wrap;
     }
 
     .btn-main {
-      background: #6ecff6;
-      color: #0a0a0a;
+      background: var(--blue);
+      color: #000;
       border: none;
-      border-radius: 10px;
-      padding: 20px 36px;
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: 1.5px;
+      border-radius: 12px;
+      padding: 22px 38px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 2px;
       cursor: pointer;
-      min-width: 180px;
-      transition: background 0.2s, transform 0.15s;
+      min-width: 190px;
+      transition: filter 0.2s, transform 0.15s;
     }
-    .btn-main:hover { background: #9adff9; transform: translateY(-2px); }
+    .btn-main:hover  { filter: brightness(1.15); transform: translateY(-2px); }
     .btn-main:active { transform: translateY(0); }
 
     .btn-outline {
       background: transparent;
       color: #fff;
-      border: 1.5px solid #fff;
-      border-radius: 30px;
-      padding: 12px 36px;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 1px;
+      border: 1.5px solid rgba(255,255,255,0.6);
+      border-radius: 40px;
+      padding: 13px 40px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 2px;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
     }
-    .btn-outline:hover { background: #fff; color: #0a0a0a; }
+    .btn-outline:hover { background: #fff; color: #000; border-color: #fff; }
 
-    /* Bank details card */
+    /* ── Bank card ── */
     .bank-card {
       display: none;
-      background: linear-gradient(135deg, #5bc8f5 0%, #1a8fc1 60%, #1a6fa0 100%);
-      border-radius: 18px;
-      padding: 28px 28px 24px;
+      background: linear-gradient(135deg, #5bc8f5 0%, #1a8fc1 55%, #0f5f8c 100%);
+      border-radius: 20px;
+      padding: 24px 24px 20px;
       text-align: left;
-      margin-bottom: 28px;
-      position: relative;
-      animation: slideDown 0.3s ease;
+      margin-bottom: 24px;
+      animation: slideDown 0.28s ease;
     }
     .bank-card.visible { display: block; }
 
     @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-10px); }
+      from { opacity: 0; transform: translateY(-12px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .bank-card .card-header {
+    .card-head {
       display: flex;
       align-items: center;
       gap: 14px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
-    .bank-card .card-logo {
-      width: 48px;
-      height: 48px;
-      flex-shrink: 0;
-    }
-    .bank-card .card-title {
-      font-size: 18px;
+    .card-logo { width: 46px; height: 46px; flex-shrink: 0; }
+    .card-title {
+      font-size: 16px;
       font-weight: 900;
       color: #fff;
       letter-spacing: 1px;
@@ -135,178 +147,234 @@
 
     .bank-field {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 9px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.18);
+      gap: 8px;
     }
     .bank-field:last-child { border-bottom: none; }
 
-    .bank-field-label {
-      font-size: 12px;
+    .bf-label {
+      font-size: 11px;
       font-weight: 700;
-      color: rgba(255,255,255,0.85);
+      color: rgba(255,255,255,0.8);
       white-space: nowrap;
+      min-width: 90px;
     }
-    .bank-field-value {
-      font-size: 13px;
+    .bf-value {
+      font-size: 12px;
       font-weight: 600;
       color: #fff;
-      text-align: right;
       flex: 1;
     }
     .copy-btn {
-      background: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.22);
       border: none;
       border-radius: 6px;
       color: #fff;
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
       padding: 4px 10px;
       cursor: pointer;
       white-space: nowrap;
       transition: background 0.2s;
+      flex-shrink: 0;
     }
-    .copy-btn:hover { background: rgba(255,255,255,0.45); }
-    .copy-btn.copied { background: #2ecc71; }
+    .copy-btn:hover  { background: rgba(255,255,255,0.4); }
+    .copy-btn.copied { background: #27ae60; }
 
-    .bank-clabe-bar {
-      margin-top: 16px;
-      background: #0d4a6b;
-      border-radius: 8px;
-      padding: 10px 16px;
+    .clabe-bar {
+      margin-top: 14px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      padding: 11px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 10px;
     }
-    .bank-clabe-bar span {
+    .clabe-bar span {
       font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 2px;
+      font-weight: 800;
+      letter-spacing: 2.5px;
       color: #fff;
     }
-    .bank-clabe-bar .copy-btn { font-size: 12px; padding: 5px 12px; }
 
-    /* Close transfer */
-    .btn-close-transfer {
+    /* ── Back button ── */
+    .btn-back {
       display: none;
       background: transparent;
-      border: 1px solid rgba(255,255,255,0.3);
-      color: #ccc;
+      border: 1px solid rgba(255,255,255,0.22);
+      color: rgba(255,255,255,0.55);
       font-size: 12px;
+      font-weight: 600;
       border-radius: 20px;
-      padding: 6px 16px;
+      padding: 6px 18px;
       cursor: pointer;
       margin-bottom: 20px;
+      letter-spacing: 0.5px;
       transition: border-color 0.2s, color 0.2s;
     }
-    .btn-close-transfer:hover { border-color: #fff; color: #fff; }
-    .btn-close-transfer.visible { display: inline-block; }
+    .btn-back:hover { border-color: #fff; color: #fff; }
+    .btn-back.visible { display: inline-block; }
 
-    /* Logo */
+    /* ── Logo ── */
     .logo-wrap {
-      margin-top: 40px;
+      margin-top: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      opacity: 0.85;
+      opacity: 0.8;
     }
-    .logo-wrap svg { width: 32px; height: 32px; }
-    .logo-text { font-size: 14px; font-weight: 700; line-height: 1.2; }
-    .logo-text span { display: block; }
-    .logo-text .brand { font-size: 10px; font-weight: 400; letter-spacing: 2px; color: #aaa; }
+    .logo-wrap svg { width: 160px; height: auto; }
   </style>
 </head>
 <body>
 
-  <!-- Decorative swirls (same shape as Proximity Brand logo) -->
-  <div class="swirl swirl-tl">
-    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M100 10 C130 10,155 35,155 65 C155 95,130 110,100 110 C70 110,55 95,55 65 C55 35,70 10,100 10 Z M100 90 C120 90,135 80,135 65 C135 50,120 30,100 30 C80 30,65 50,65 65 C65 80,80 90,100 90 Z"/><path d="M30 130 C10 115,5 90,20 70 C35 50,60 48,75 62 C90 76,88 100,72 115 C56 130,50 145,65 155 C80 165,100 158,110 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M170 130 C190 115,195 90,180 70 C165 50,140 48,125 62 C110 76,112 100,128 115 C144 130,150 145,135 155 C120 165,100 158,90 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/></svg>
+  <!-- Real Proximity Brand symbols in corners -->
+  <div class="sym sym-tl">
+    <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" fill="#fff">
+      <path d="M110.09,382.69c15.94,7.76,33.06,13.51,51.01,16.94,2.24.43,4.47-.86,5.29-3.03l26.67-70.64c2.5-6.62,11.76-6.51,14.12.16l24.93,70.67c.78,2.21,3.01,3.55,5.29,3.14,18.68-3.43,36.46-9.36,52.98-17.46,2.87-1.41,3.62-5.2,1.48-7.6l-48.24-54c-23.19-25.96-63.38-25.96-86.57,0l-48.44,54.22c-2.14,2.4-1.39,6.2,1.49,7.6Z"/>
+      <path d="M1.81,170.28c-2.35,17.78-2.45,36.08-.12,54.46.29,2.3,2.19,4.05,4.47,4.17l74.45,3.92c6.98.37,9.74,9.34,4.21,13.67l-58.53,45.89c-1.83,1.43-2.4,4.01-1.3,6.07,8.98,16.97,20.04,32.3,32.73,45.74,2.2,2.33,5.99,1.89,7.58-.91l35.71-63.24c17.17-30.4,4.75-69.19-26.74-83.55l-65.79-30c-2.91-1.33-6.24.58-6.66,3.79Z"/>
+      <path d="M167.45.17c-17.39,3.23-34.57,8.78-51.08,16.71-2.06.99-3.12,3.36-2.52,5.6l19.32,73.06c1.81,6.85-5.75,12.28-11.51,8.29l-61.09-42.32c-1.91-1.32-4.5-1.08-6.1.62-13.13,13.91-24.08,29.31-32.76,45.71-1.51,2.85.08,6.37,3.2,7.03l70.3,14.93c33.79,7.18,66.32-16.79,70.05-51.62l7.8-72.76c.34-3.22-2.47-5.84-5.61-5.26Z"/>
+      <path d="M378.07,107.48c-8.4-15.79-18.91-30.65-31.44-44.14-1.57-1.69-4.12-1.97-6.03-.71l-62.51,41.22c-5.86,3.86-13.29-1.75-11.33-8.55l20.79-72.03c.65-2.25-.38-4.67-2.46-5.69C268,9.2,250.17,3.39,232.12.08c-3.13-.57-5.94,2.04-5.6,5.26l7.72,72.46c3.71,34.83,36.22,58.82,70.02,51.66l70.61-14.95c3.12-.66,4.71-4.19,3.2-7.04Z"/>
+      <path d="M342.55,343.89c12.21-12.98,22.89-27.72,31.66-43.98,1.1-2.03.57-4.58-1.2-6.04l-57.94-47.6c-5.43-4.46-2.46-13.37,4.52-13.57l73.94-2.19c2.31-.07,4.26-1.81,4.57-4.13,2.57-19.08,2.51-38.08.03-56.52-.43-3.2-3.75-5.11-6.66-3.78l-65.53,29.84c-31.5,14.34-43.94,53.13-26.79,83.54l35.82,63.52c1.58,2.81,5.38,3.26,7.58.91Z"/>
+    </svg>
   </div>
-  <div class="swirl swirl-tr">
-    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M30 130 C10 115,5 90,20 70 C35 50,60 48,75 62 C90 76,88 100,72 115 C56 130,50 145,65 155 C80 165,100 158,110 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M170 130 C190 115,195 90,180 70 C165 50,140 48,125 62 C110 76,112 100,128 115 C144 130,150 145,135 155 C120 165,100 158,90 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/></svg>
+  <div class="sym sym-tr">
+    <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" fill="#fff">
+      <path d="M110.09,382.69c15.94,7.76,33.06,13.51,51.01,16.94,2.24.43,4.47-.86,5.29-3.03l26.67-70.64c2.5-6.62,11.76-6.51,14.12.16l24.93,70.67c.78,2.21,3.01,3.55,5.29,3.14,18.68-3.43,36.46-9.36,52.98-17.46,2.87-1.41,3.62-5.2,1.48-7.6l-48.24-54c-23.19-25.96-63.38-25.96-86.57,0l-48.44,54.22c-2.14,2.4-1.39,6.2,1.49,7.6Z"/>
+      <path d="M1.81,170.28c-2.35,17.78-2.45,36.08-.12,54.46.29,2.3,2.19,4.05,4.47,4.17l74.45,3.92c6.98.37,9.74,9.34,4.21,13.67l-58.53,45.89c-1.83,1.43-2.4,4.01-1.3,6.07,8.98,16.97,20.04,32.3,32.73,45.74,2.2,2.33,5.99,1.89,7.58-.91l35.71-63.24c17.17-30.4,4.75-69.19-26.74-83.55l-65.79-30c-2.91-1.33-6.24.58-6.66,3.79Z"/>
+      <path d="M167.45.17c-17.39,3.23-34.57,8.78-51.08,16.71-2.06.99-3.12,3.36-2.52,5.6l19.32,73.06c1.81,6.85-5.75,12.28-11.51,8.29l-61.09-42.32c-1.91-1.32-4.5-1.08-6.1.62-13.13,13.91-24.08,29.31-32.76,45.71-1.51,2.85.08,6.37,3.2,7.03l70.3,14.93c33.79,7.18,66.32-16.79,70.05-51.62l7.8-72.76c.34-3.22-2.47-5.84-5.61-5.26Z"/>
+      <path d="M378.07,107.48c-8.4-15.79-18.91-30.65-31.44-44.14-1.57-1.69-4.12-1.97-6.03-.71l-62.51,41.22c-5.86,3.86-13.29-1.75-11.33-8.55l20.79-72.03c.65-2.25-.38-4.67-2.46-5.69C268,9.2,250.17,3.39,232.12.08c-3.13-.57-5.94,2.04-5.6,5.26l7.72,72.46c3.71,34.83,36.22,58.82,70.02,51.66l70.61-14.95c3.12-.66,4.71-4.19,3.2-7.04Z"/>
+      <path d="M342.55,343.89c12.21-12.98,22.89-27.72,31.66-43.98,1.1-2.03.57-4.58-1.2-6.04l-57.94-47.6c-5.43-4.46-2.46-13.37,4.52-13.57l73.94-2.19c2.31-.07,4.26-1.81,4.57-4.13,2.57-19.08,2.51-38.08.03-56.52-.43-3.2-3.75-5.11-6.66-3.78l-65.53,29.84c-31.5,14.34-43.94,53.13-26.79,83.54l35.82,63.52c1.58,2.81,5.38,3.26,7.58.91Z"/>
+    </svg>
   </div>
-  <div class="swirl swirl-bl">
-    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M30 130 C10 115,5 90,20 70 C35 50,60 48,75 62 C90 76,88 100,72 115 C56 130,50 145,65 155 C80 165,100 158,110 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M170 130 C190 115,195 90,180 70 C165 50,140 48,125 62 C110 76,112 100,128 115 C144 130,150 145,135 155 C120 165,100 158,90 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/></svg>
+  <div class="sym sym-bl">
+    <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" fill="#fff">
+      <path d="M110.09,382.69c15.94,7.76,33.06,13.51,51.01,16.94,2.24.43,4.47-.86,5.29-3.03l26.67-70.64c2.5-6.62,11.76-6.51,14.12.16l24.93,70.67c.78,2.21,3.01,3.55,5.29,3.14,18.68-3.43,36.46-9.36,52.98-17.46,2.87-1.41,3.62-5.2,1.48-7.6l-48.24-54c-23.19-25.96-63.38-25.96-86.57,0l-48.44,54.22c-2.14,2.4-1.39,6.2,1.49,7.6Z"/>
+      <path d="M1.81,170.28c-2.35,17.78-2.45,36.08-.12,54.46.29,2.3,2.19,4.05,4.47,4.17l74.45,3.92c6.98.37,9.74,9.34,4.21,13.67l-58.53,45.89c-1.83,1.43-2.4,4.01-1.3,6.07,8.98,16.97,20.04,32.3,32.73,45.74,2.2,2.33,5.99,1.89,7.58-.91l35.71-63.24c17.17-30.4,4.75-69.19-26.74-83.55l-65.79-30c-2.91-1.33-6.24.58-6.66,3.79Z"/>
+      <path d="M167.45.17c-17.39,3.23-34.57,8.78-51.08,16.71-2.06.99-3.12,3.36-2.52,5.6l19.32,73.06c1.81,6.85-5.75,12.28-11.51,8.29l-61.09-42.32c-1.91-1.32-4.5-1.08-6.1.62-13.13,13.91-24.08,29.31-32.76,45.71-1.51,2.85.08,6.37,3.2,7.03l70.3,14.93c33.79,7.18,66.32-16.79,70.05-51.62l7.8-72.76c.34-3.22-2.47-5.84-5.61-5.26Z"/>
+      <path d="M378.07,107.48c-8.4-15.79-18.91-30.65-31.44-44.14-1.57-1.69-4.12-1.97-6.03-.71l-62.51,41.22c-5.86,3.86-13.29-1.75-11.33-8.55l20.79-72.03c.65-2.25-.38-4.67-2.46-5.69C268,9.2,250.17,3.39,232.12.08c-3.13-.57-5.94,2.04-5.6,5.26l7.72,72.46c3.71,34.83,36.22,58.82,70.02,51.66l70.61-14.95c3.12-.66,4.71-4.19,3.2-7.04Z"/>
+      <path d="M342.55,343.89c12.21-12.98,22.89-27.72,31.66-43.98,1.1-2.03.57-4.58-1.2-6.04l-57.94-47.6c-5.43-4.46-2.46-13.37,4.52-13.57l73.94-2.19c2.31-.07,4.26-1.81,4.57-4.13,2.57-19.08,2.51-38.08.03-56.52-.43-3.2-3.75-5.11-6.66-3.78l-65.53,29.84c-31.5,14.34-43.94,53.13-26.79,83.54l35.82,63.52c1.58,2.81,5.38,3.26,7.58.91Z"/>
+    </svg>
   </div>
-  <div class="swirl swirl-br">
-    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M30 130 C10 115,5 90,20 70 C35 50,60 48,75 62 C90 76,88 100,72 115 C56 130,50 145,65 155 C80 165,100 158,110 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M170 130 C190 115,195 90,180 70 C165 50,140 48,125 62 C110 76,112 100,128 115 C144 130,150 145,135 155 C120 165,100 158,90 145" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round"/></svg>
+  <div class="sym sym-br">
+    <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" fill="#fff">
+      <path d="M110.09,382.69c15.94,7.76,33.06,13.51,51.01,16.94,2.24.43,4.47-.86,5.29-3.03l26.67-70.64c2.5-6.62,11.76-6.51,14.12.16l24.93,70.67c.78,2.21,3.01,3.55,5.29,3.14,18.68-3.43,36.46-9.36,52.98-17.46,2.87-1.41,3.62-5.2,1.48-7.6l-48.24-54c-23.19-25.96-63.38-25.96-86.57,0l-48.44,54.22c-2.14,2.4-1.39,6.2,1.49,7.6Z"/>
+      <path d="M1.81,170.28c-2.35,17.78-2.45,36.08-.12,54.46.29,2.3,2.19,4.05,4.47,4.17l74.45,3.92c6.98.37,9.74,9.34,4.21,13.67l-58.53,45.89c-1.83,1.43-2.4,4.01-1.3,6.07,8.98,16.97,20.04,32.3,32.73,45.74,2.2,2.33,5.99,1.89,7.58-.91l35.71-63.24c17.17-30.4,4.75-69.19-26.74-83.55l-65.79-30c-2.91-1.33-6.24.58-6.66,3.79Z"/>
+      <path d="M167.45.17c-17.39,3.23-34.57,8.78-51.08,16.71-2.06.99-3.12,3.36-2.52,5.6l19.32,73.06c1.81,6.85-5.75,12.28-11.51,8.29l-61.09-42.32c-1.91-1.32-4.5-1.08-6.1.62-13.13,13.91-24.08,29.31-32.76,45.71-1.51,2.85.08,6.37,3.2,7.03l70.3,14.93c33.79,7.18,66.32-16.79,70.05-51.62l7.8-72.76c.34-3.22-2.47-5.84-5.61-5.26Z"/>
+      <path d="M378.07,107.48c-8.4-15.79-18.91-30.65-31.44-44.14-1.57-1.69-4.12-1.97-6.03-.71l-62.51,41.22c-5.86,3.86-13.29-1.75-11.33-8.55l20.79-72.03c.65-2.25-.38-4.67-2.46-5.69C268,9.2,250.17,3.39,232.12.08c-3.13-.57-5.94,2.04-5.6,5.26l7.72,72.46c3.71,34.83,36.22,58.82,70.02,51.66l70.61-14.95c3.12-.66,4.71-4.19,3.2-7.04Z"/>
+      <path d="M342.55,343.89c12.21-12.98,22.89-27.72,31.66-43.98,1.1-2.03.57-4.58-1.2-6.04l-57.94-47.6c-5.43-4.46-2.46-13.37,4.52-13.57l73.94-2.19c2.31-.07,4.26-1.81,4.57-4.13,2.57-19.08,2.51-38.08.03-56.52-.43-3.2-3.75-5.11-6.66-3.78l-65.53,29.84c-31.5,14.34-43.94,53.13-26.79,83.54l35.82,63.52c1.58,2.81,5.38,3.26,7.58.91Z"/>
+    </svg>
   </div>
 
+  <!-- Content -->
   <div class="container">
-    <h1 class="title">TE DAMOS LA BIENVENIDA A<br>PROXIMITY <span class="highlight">CREATORS</span></h1>
+
+    <h1 class="title">
+      TE DAMOS LA BIENVENIDA A<br>
+      PROXIMITY <span class="gold">CREATORS</span>
+    </h1>
     <p class="subtitle">¿Cómo quieres realizar tu inscripción?</p>
 
-    <!-- Main action buttons -->
-    <div class="btn-group" id="mainButtons">
+    <!-- Action buttons -->
+    <div class="btn-group" id="mainBtns">
       <button class="btn-main" onclick="showTransfer()">TRANSFERENCIA</button>
       <button class="btn-main" onclick="goToCard()">TARJETA</button>
     </div>
 
-    <!-- Bank transfer details -->
+    <!-- Bank details card -->
     <div class="bank-card" id="bankCard">
-      <div class="card-header">
-        <!-- Proximity P logo -->
-        <svg class="card-logo" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" fill="white">
-          <text x="14" y="58" font-size="58" font-weight="900" font-family="Arial">P</text>
+      <div class="card-head">
+        <!-- Simbolo Blanco mini -->
+        <svg class="card-logo" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" fill="#fff">
+          <path d="M110.09,382.69c15.94,7.76,33.06,13.51,51.01,16.94,2.24.43,4.47-.86,5.29-3.03l26.67-70.64c2.5-6.62,11.76-6.51,14.12.16l24.93,70.67c.78,2.21,3.01,3.55,5.29,3.14,18.68-3.43,36.46-9.36,52.98-17.46,2.87-1.41,3.62-5.2,1.48-7.6l-48.24-54c-23.19-25.96-63.38-25.96-86.57,0l-48.44,54.22c-2.14,2.4-1.39,6.2,1.49,7.6Z"/>
+          <path d="M1.81,170.28c-2.35,17.78-2.45,36.08-.12,54.46.29,2.3,2.19,4.05,4.47,4.17l74.45,3.92c6.98.37,9.74,9.34,4.21,13.67l-58.53,45.89c-1.83,1.43-2.4,4.01-1.3,6.07,8.98,16.97,20.04,32.3,32.73,45.74,2.2,2.33,5.99,1.89,7.58-.91l35.71-63.24c17.17-30.4,4.75-69.19-26.74-83.55l-65.79-30c-2.91-1.33-6.24.58-6.66,3.79Z"/>
+          <path d="M167.45.17c-17.39,3.23-34.57,8.78-51.08,16.71-2.06.99-3.12,3.36-2.52,5.6l19.32,73.06c1.81,6.85-5.75,12.28-11.51,8.29l-61.09-42.32c-1.91-1.32-4.5-1.08-6.1.62-13.13,13.91-24.08,29.31-32.76,45.71-1.51,2.85.08,6.37,3.2,7.03l70.3,14.93c33.79,7.18,66.32-16.79,70.05-51.62l7.8-72.76c.34-3.22-2.47-5.84-5.61-5.26Z"/>
+          <path d="M378.07,107.48c-8.4-15.79-18.91-30.65-31.44-44.14-1.57-1.69-4.12-1.97-6.03-.71l-62.51,41.22c-5.86,3.86-13.29-1.75-11.33-8.55l20.79-72.03c.65-2.25-.38-4.67-2.46-5.69C268,9.2,250.17,3.39,232.12.08c-3.13-.57-5.94,2.04-5.6,5.26l7.72,72.46c3.71,34.83,36.22,58.82,70.02,51.66l70.61-14.95c3.12-.66,4.71-4.19,3.2-7.04Z"/>
+          <path d="M342.55,343.89c12.21-12.98,22.89-27.72,31.66-43.98,1.1-2.03.57-4.58-1.2-6.04l-57.94-47.6c-5.43-4.46-2.46-13.37,4.52-13.57l73.94-2.19c2.31-.07,4.26-1.81,4.57-4.13,2.57-19.08,2.51-38.08.03-56.52-.43-3.2-3.75-5.11-6.66-3.78l-65.53,29.84c-31.5,14.34-43.94,53.13-26.79,83.54l35.82,63.52c1.58,2.81,5.38,3.26,7.58.91Z"/>
         </svg>
         <div class="card-title">DATOS BANCARIOS:</div>
       </div>
 
       <div class="bank-field">
-        <span class="bank-field-label">Nombre:</span>
-        <span class="bank-field-value">Francisco Emiliano Sanchez Lopez</span>
-        <button class="copy-btn" onclick="copyText('Francisco Emiliano Sanchez Lopez', this)">Copiar</button>
+        <span class="bf-label">Nombre:</span>
+        <span class="bf-value">Francisco Emiliano Sanchez Lopez</span>
+        <button class="copy-btn" onclick="copyText('Francisco Emiliano Sanchez Lopez',this)">COPIAR</button>
       </div>
       <div class="bank-field">
-        <span class="bank-field-label">Cuenta:</span>
-        <span class="bank-field-value">150 996 5288</span>
-        <button class="copy-btn" onclick="copyText('1509965288', this)">Copiar</button>
+        <span class="bf-label">Cuenta:</span>
+        <span class="bf-value">150 996 5288</span>
+        <button class="copy-btn" onclick="copyText('1509965288',this)">COPIAR</button>
       </div>
       <div class="bank-field">
-        <span class="bank-field-label">CLABE:</span>
-        <span class="bank-field-value">012 180 01509965288 3</span>
-        <button class="copy-btn" onclick="copyText('012180015099652883', this)">Copiar</button>
+        <span class="bf-label">CLABE:</span>
+        <span class="bf-value">012 180 01509965288 3</span>
+        <button class="copy-btn" onclick="copyText('012180015099652883',this)">COPIAR</button>
       </div>
       <div class="bank-field">
-        <span class="bank-field-label">Tarjeta de débito:</span>
-        <span class="bank-field-value">4152 3143 7620 4056</span>
-        <button class="copy-btn" onclick="copyText('4152314376204056', this)">Copiar</button>
+        <span class="bf-label">Tarjeta débito:</span>
+        <span class="bf-value">4152 3143 7620 4056</span>
+        <button class="copy-btn" onclick="copyText('4152314376204056',this)">COPIAR</button>
       </div>
       <div class="bank-field">
-        <span class="bank-field-label">Banco:</span>
-        <span class="bank-field-value">BBVA</span>
-        <button class="copy-btn" onclick="copyText('BBVA', this)">Copiar</button>
+        <span class="bf-label">Banco:</span>
+        <span class="bf-value">BBVA</span>
+        <button class="copy-btn" onclick="copyText('BBVA',this)">COPIAR</button>
       </div>
 
-      <div class="bank-clabe-bar">
+      <div class="clabe-bar">
         <span>012180015099652883</span>
-        <button class="copy-btn" onclick="copyText('012180015099652883', this)">Copiar CLABE</button>
+        <button class="copy-btn" onclick="copyText('012180015099652883',this)">COPIAR CLABE</button>
       </div>
     </div>
 
-    <!-- Close transfer -->
-    <button class="btn-close-transfer" id="closeBtn" onclick="hideTransfer()">← Volver</button>
+    <!-- Back button -->
+    <button class="btn-back" id="backBtn" onclick="hideTransfer()">← Volver</button>
 
-    <!-- Talk to advisor -->
-    <div>
-      <button class="btn-outline" onclick="goToAdvisor()">HABLAR CON UN ASESOR</button>
-    </div>
+    <!-- Advisor -->
+    <button class="btn-outline" onclick="goToAdvisor()">HABLAR CON UN ASESOR</button>
 
-    <!-- Logo -->
+    <!-- Logo — Secundario Blanco SVG -->
     <div class="logo-wrap">
-      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" fill="white">
-        <circle cx="40" cy="40" r="36" fill="none" stroke="white" stroke-width="5"/>
-        <text x="18" y="56" font-size="44" font-weight="900" font-family="Arial" fill="white">P</text>
+      <svg viewBox="0 0 600 177" xmlns="http://www.w3.org/2000/svg" fill="#fff">
+        <g>
+          <path d="M48.72,169.34c7.06,3.43,14.63,5.98,22.57,7.49.99.19,1.98-.38,2.34-1.34l11.8-31.26c1.11-2.93,5.2-2.88,6.25.07l11.03,31.27c.34.98,1.33,1.57,2.34,1.39,8.26-1.52,16.13-4.14,23.44-7.73,1.27-.62,1.6-2.3.66-3.36l-21.35-23.89c-10.26-11.49-28.05-11.49-38.31,0l-21.44,23.99c-.95,1.06-.61,2.74.66,3.36Z"/>
+          <path d="M.8,75.35c-1.04,7.87-1.08,15.96-.05,24.1.13,1.02.97,1.79,1.98,1.84l32.94,1.74c3.09.16,4.31,4.13,1.86,6.05l-25.9,20.31c-.81.63-1.06,1.77-.58,2.69,3.97,7.51,8.87,14.29,14.48,20.24.98,1.03,2.65.84,3.35-.4l15.8-27.98c7.6-13.45,2.1-30.62-11.83-36.97l-29.11-13.28c-1.29-.59-2.76.26-2.95,1.67Z"/>
+          <path d="M74.1.07c-7.7,1.43-15.3,3.89-22.6,7.39-.91.44-1.38,1.49-1.12,2.48l8.55,32.33c.8,3.03-2.54,5.44-5.1,3.67l-27.03-18.72c-.84-.58-1.99-.48-2.7.27-5.81,6.15-10.66,12.97-14.5,20.23-.67,1.26.04,2.82,1.42,3.11l31.11,6.61c14.95,3.18,29.35-7.43,31-22.84l3.45-32.2c.15-1.42-1.09-2.59-2.48-2.33Z"/>
+          <path d="M167.3,47.56c-3.72-6.99-8.37-13.56-13.91-19.53-.69-.75-1.82-.87-2.67-.31l-27.66,18.24c-2.59,1.71-5.88-.77-5.01-3.78l9.2-31.87c.29-1-.17-2.07-1.09-2.52-7.56-3.7-15.45-6.28-23.44-7.74-1.39-.25-2.63.9-2.48,2.33l3.42,32.06c1.64,15.41,16.03,26.03,30.98,22.86l31.24-6.62c1.38-.29,2.09-1.85,1.42-3.11Z"/>
+          <path d="M151.58,152.17c5.4-5.74,10.13-12.27,14.01-19.46.48-.9.25-2.03-.53-2.67l-25.64-21.06c-2.4-1.97-1.09-5.91,2-6.01l32.72-.97c1.02-.03,1.89-.8,2.02-1.83,1.14-8.44,1.11-16.85.02-25.01-.19-1.42-1.66-2.26-2.95-1.67l-29,13.2c-13.94,6.35-19.44,23.51-11.86,36.96l15.85,28.11c.7,1.24,2.38,1.44,3.36.4Z"/>
+        </g>
+        <g>
+          <g>
+            <path d="M234.56,16.09h-25.38v9.19h24.55c7.54,0,12.32,4.32,12.32,11.31s-4.87,11.31-12.41,11.31h-13.88v-8.9c0-5.84-4.73-10.57-10.57-10.57v52.03h10.57v-23.35h14.8c13.42,0,22.25-8.09,22.25-20.5s-8.83-20.5-22.25-20.5Z"/>
+            <path d="M320.27,32.82c-13.28,0-23.99,10.82-23.99,24.09,0,14.43,9.66,24.08,24,24.08s24-9.65,24-24.09-9.66-24.09-24.01-24.09ZM320.28,72.54c-8.37,0-13.79-6.53-13.79-15.63s5.42-15.63,13.79-15.63,13.88,6.53,13.88,15.63-5.52,15.63-13.88,15.63Z"/>
+            <path d="M399.06,33.38v47.08h10.02v-37.05c0-5.54-4.49-10.02-10.02-10.02Z"/>
+            <path d="M473.53,32.82c-7.81,0-13.06,3.49-16.09,8.55-2.76-5.88-8.37-8.55-14.62-8.55-6.99,0-11.22,3.22-13.7,6.62l-1.01-6.07h-8.73v47.08h10.02v-26.11c0-7.72,4.23-12.96,11.03-12.96,6.44,0,9.93,4.14,9.93,11.59v27.49h9.93v-26.39c0-7.82,4.32-12.69,11.12-12.69,6.44,0,9.84,4.14,9.84,11.59v27.49h10.02v-28.04c0-14.16-8-19.58-17.74-19.58Z"/>
+            <path d="M360.64,58.98l-15.65,21.47h11.03l5.11-7.09c3.13-4.35,2.93-10.26-.49-14.38h0Z"/>
+            <polygon points="391.23 33.38 380.1 33.38 368.8 49.19 357.67 33.38 345.99 33.38 362.54 56.36 368.34 63.35 380.56 80.45 392.24 80.45 374.68 56.36 391.23 33.38"/>
+            <path d="M537.57,66.66v-11.46c0-5.48-4.45-9.93-9.93-9.93v22.4c0,8.55,3.77,12.78,12.78,12.78h9.29v-8.73h-6.99c-3.77,0-5.15-1.38-5.15-5.06Z"/>
+            <path d="M589.43,33.38l-12.87,35.77-12.96-35.77h-26.02v-13.15h-9.93v13.15h-8.18v8.73h8.18v.02h9.93v-.02h18.7l14.77,38.53-.89,2.39c-1.38,3.86-2.3,4.78-6.16,4.78h-6.99v8.73h10.67c6.9,0,8.92-3.31,11.86-10.94l20.47-52.23h-10.57Z"/>
+            <path d="M264.17,45.27v35.18h10.02v-25.16c0-5.54-4.49-10.02-10.02-10.02Z"/>
+            <path d="M264.17,42.13h29.34v-8.75h-20.59c-4.83,0-8.75,3.92-8.75,8.75Z"/>
+            <path d="M501.11,33.38v47.08h10.02v-37.05c0-5.54-4.49-10.02-10.02-10.02Z"/>
+            <rect x="501.11" y="20.23" width="10.02" height="10.02"/>
+            <rect x="399.06" y="20.23" width="10.02" height="10.02"/>
+          </g>
+          <g>
+            <path d="M209.19,96.54h21.88c12.96,0,20.23,6.34,20.23,16.55,0,7.82-4.51,12.69-11.58,14.53,8.46,1.29,14.43,6.16,14.43,15.35,0,11.13-7.72,17.93-22.71,17.93h-22.25v-64.36ZM231.25,125.78c9.56,0,15.08-4.69,15.08-12.41s-5.33-12.32-15.08-12.32h-17.1v24.73h17.1ZM231.44,156.39c11.68,0,17.65-5.06,17.65-13.15s-6.44-12.96-17.65-12.96h-17.29v26.11h17.29Z"/>
+            <path d="M264.08,114.28h4.14l.55,10.02c1.84-5.61,5.52-10.02,14.43-10.02h2.39v4.51h-3.4c-10.94,0-13.42,9.01-13.42,18.48v23.63h-4.69v-46.62Z"/>
+            <path d="M288.53,148.12c0-8.73,6.44-13.88,18.39-13.88h15.81v-4.05c0-7.82-4.97-12.32-13.7-12.32-8,0-12.87,3.77-14.07,9.47h-4.69c1.2-8.46,8.27-13.61,18.94-13.61,11.68,0,18.2,5.98,18.2,16.64v21.7c0,3.59,1.38,4.51,4.14,4.51h1.75v4.32h-2.76c-5.15,0-7.63-2.21-7.63-7.08v-2.76c-2.48,5.88-8.37,10.39-17.93,10.39s-16.46-5.06-16.46-13.33ZM322.73,141.96v-3.68h-16.18c-8.64,0-13.24,3.4-13.24,9.56s4.6,9.56,12.04,9.56c11.03,0,17.38-6.44,17.38-15.45Z"/>
+            <path d="M339.83,114.28h4.14l.55,10.21c2.48-6.34,8.18-10.76,16.83-10.76,10.57,0,18.39,6.07,18.39,20.32v26.85h-4.69v-26.57c0-10.67-5.33-16.27-14.34-16.27-10.39,0-16.18,7.08-16.18,18.48v24.37h-4.69v-46.62Z"/>
+            <path d="M388.84,137.55c0-14.07,9.19-23.81,21.97-23.81,8.92,0,15.26,4.69,17.84,11.68v-28.87h4.69v64.36h-4.04l-.64-11.31c-2.76,6.8-8.92,11.86-17.84,11.86-12.78,0-21.97-9.19-21.97-23.91ZM428.74,137.64c0-11.59-7.17-19.77-17.56-19.77s-17.56,8.18-17.56,19.68,7.17,19.68,17.56,19.68,17.56-8.09,17.56-19.58Z"/>
+          </g>
+        </g>
       </svg>
-      <div class="logo-text">
-        <span>Proximity</span>
-        <span class="brand">BRAND</span>
-      </div>
     </div>
-  </div>
+
+  </div><!-- /container -->
 
   <script>
     const CARD_URL    = 'https://link.fastpaydirect.com/payment-link/69a507833413b55430fd0766';
@@ -314,45 +382,34 @@
 
     function showTransfer() {
       document.getElementById('bankCard').classList.add('visible');
-      document.getElementById('closeBtn').classList.add('visible');
+      document.getElementById('backBtn').classList.add('visible');
     }
-
     function hideTransfer() {
       document.getElementById('bankCard').classList.remove('visible');
-      document.getElementById('closeBtn').classList.remove('visible');
+      document.getElementById('backBtn').classList.remove('visible');
     }
-
-    function goToCard() {
-      window.open(CARD_URL, '_blank');
-    }
-
-    function goToAdvisor() {
-      window.open(ADVISOR_URL, '_blank');
-    }
+    function goToCard()    { window.open(CARD_URL, '_blank'); }
+    function goToAdvisor() { window.open(ADVISOR_URL, '_blank'); }
 
     function copyText(text, btn) {
+      const reset = () => {
+        btn.textContent = 'COPIAR';
+        btn.classList.remove('copied');
+      };
       navigator.clipboard.writeText(text).then(() => {
-        const original = btn.textContent;
-        btn.textContent = '✓ Copiado';
+        btn.textContent = '✓ LISTO';
         btn.classList.add('copied');
-        setTimeout(() => {
-          btn.textContent = original;
-          btn.classList.remove('copied');
-        }, 2000);
+        setTimeout(reset, 2000);
       }).catch(() => {
-        // Fallback for older browsers
         const el = document.createElement('textarea');
         el.value = text;
         document.body.appendChild(el);
         el.select();
         document.execCommand('copy');
         document.body.removeChild(el);
-        btn.textContent = '✓ Copiado';
+        btn.textContent = '✓ LISTO';
         btn.classList.add('copied');
-        setTimeout(() => {
-          btn.textContent = 'Copiar';
-          btn.classList.remove('copied');
-        }, 2000);
+        setTimeout(reset, 2000);
       });
     }
   </script>
