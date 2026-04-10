@@ -875,7 +875,7 @@
       <!-- Secondary stats -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;" id="zoom-stats-row">
         <div class="stat-card"><div class="s-label">Total asistentes</div><div class="s-value" id="zm-total">—</div><div class="s-sub">todas las clases</div></div>
-        <div class="stat-card green"><div class="s-label">% Asistencia</div><div class="s-value" id="zm-pct">—</div><div class="s-sub">asistentes / confirmados</div></div>
+        <div class="stat-card green"><div class="s-label">% Asistencia</div><div class="s-value" id="zm-pct">—</div><div class="s-sub">asistentes / registrados</div></div>
         <div class="stat-card gold"><div class="s-label">Tiempo promedio</div><div class="s-value" id="zm-tiempo">—</div><div class="s-sub">minutos en clase</div></div>
         <div class="stat-card" style="border-color:rgba(168,85,247,0.3)"><div class="s-label">Identificados</div><div class="s-value" id="zm-match" style="color:#a855f7">—</div><div class="s-sub">emails cruzados</div></div>
       </div>
@@ -1944,15 +1944,17 @@ async function syncZoom() {
 
 async function loadZoomStats() {
   try {
-    const [asistencias, estados] = await Promise.all([
+    const [asistencias, estados, registros] = await Promise.all([
       fetchSB('/rest/v1/asistencias?select=email,duracion_minutos,meeting_id,clase_fecha'),
-      fetchSB('/rest/v1/lead_estados?select=estado')
+      fetchSB('/rest/v1/lead_estados?select=estado'),
+      fetchSB('/rest/v1/clase_viral_registros?select=id')
     ]);
 
     const total = asistencias.length;
-    const confirmados = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado)).length;
     const asistieron = (estados||[]).filter(e => e.estado === 'asistio').length;
-    const pct = confirmados > 0 ? Math.round(asistieron / confirmados * 100) : 0;
+    // Denominador = total registrados (no el estado actual, que cambia tras la sesión)
+    const totalRegistrados = (registros||[]).length || 1;
+    const pct = Math.round(asistieron / totalRegistrados * 100);
     const avgMin = total > 0 ? Math.round(asistencias.reduce((s,a) => s + (a.duracion_minutos||0), 0) / total) : 0;
     const conEmail = asistencias.filter(a => a.email).length;
 
