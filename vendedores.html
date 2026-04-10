@@ -264,6 +264,7 @@
     .estado-pendiente_confirmar { color: #eab308; border-color: rgba(234,179,8,0.4); background: rgba(234,179,8,0.08); }
     .estado-numero_invalido     { color: var(--red); border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.08); }
     .estado-no_asistira         { color: #6b7280; border-color: rgba(107,114,128,0.4); background: rgba(107,114,128,0.08); }
+    .estado-no_asistio          { color: #9ca3af; border-color: rgba(156,163,175,0.35); background: rgba(156,163,175,0.06); }
     .estado-confirmado     { color: var(--blue);   border-color: rgba(4,80,224,0.4); background: rgba(4,80,224,0.08); }
     .estado-asistio        { color: var(--purple); border-color: rgba(168,85,247,0.4); background: rgba(168,85,247,0.08); }
     .estado-interesado     { color: #f97316; border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.08); }
@@ -723,6 +724,7 @@ const ESTADOS = {
   pendiente_confirmar:  { label: 'Pendiente por confirmar', color: '#eab308' },
   numero_invalido:      { label: 'Número inválido',          color: '#ef4444' },
   no_asistira:          { label: 'No asistirá',              color: '#6b7280' },
+  no_asistio:           { label: 'No asistió',               color: '#9ca3af' },
   confirmado:           { label: 'Confirmado',               color: '#0450E0' },
   asistio:              { label: 'Asistió',                  color: '#a855f7' },
   interesado:           { label: '🔥 Interesado',            color: '#f97316' },
@@ -1214,7 +1216,7 @@ function renderLeads() {
       if (!grp.length) return '';
       const ESTADO_COLORS = {
         por_confirmar: 'var(--muted)', pendiente_confirmar: '#eab308',
-        numero_invalido: 'var(--red)', no_asistira: '#6b7280',
+        numero_invalido: 'var(--red)', no_asistira: '#6b7280', no_asistio: '#9ca3af',
         confirmado: 'var(--blue)', asistio: 'var(--purple)',
         interesado: '#f97316',
         compro_evento: 'var(--green)', seguimiento: 'var(--orange)',
@@ -1248,7 +1250,7 @@ function renderLeads() {
         <table>
           <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>
           <tbody>${leads.slice().sort((a,b) => {
-            const DONE = ['confirmado','asistio','compro_evento','seguimiento_exitoso','no_asistira'];
+            const DONE = ['confirmado','asistio','no_asistio','compro_evento','seguimiento_exitoso','no_asistira'];
             const aD = DONE.includes((estadosMap[a.email]||{}).estado||'por_confirmar');
             const bD = DONE.includes((estadosMap[b.email]||{}).estado||'por_confirmar');
             return aD === bD ? 0 : aD ? 1 : -1;
