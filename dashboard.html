@@ -2713,30 +2713,11 @@ async function uploadVTT(input) {
   const rows = await fetchSB('/rest/v1/clase_analisis?select=*&order=updated_at.desc&limit=1');
   const cached = rows?.[0];
 
-  // Determine if this is a new event or an update to existing
-  // Treat as new event if: the latest row already has transcript AND no explicit meetingId was given
-  const latestHasTranscript = cached?.transcript_segments && cached.transcript_segments.length > 0;
+  // Always update the existing row (or create one if none exists)
   let effectiveMeetingId = meetingId || cached?.meeting_id;
 
-  if (!meetingId && latestHasTranscript) {
-    // New event — create a new row with a timestamp-based ID
-    const newId = 'vtt_' + Date.now();
-    effectiveMeetingId = newId;
-    try {
-      await fetchSB('/rest/v1/clase_analisis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-        body: JSON.stringify({
-          meeting_id: newId,
-          transcript_segments: transcriptSegments,
-          start_time: new Date().toISOString(),
-          total_participants: 0,
-          updated_at: new Date().toISOString()
-        })
-      });
-    } catch(e) { console.error('Insert new event failed', e); }
-  } else if (effectiveMeetingId) {
-    // Update existing row
+  if (effectiveMeetingId) {
+    // Update existing row with transcript
     try {
       await fetchSB('/rest/v1/clase_analisis?meeting_id=eq.' + encodeURIComponent(effectiveMeetingId), {
         method: 'PATCH',
@@ -2744,6 +2725,22 @@ async function uploadVTT(input) {
         body: JSON.stringify({ transcript_segments: transcriptSegments, updated_at: new Date().toISOString() })
       });
     } catch(e) { console.error('Save transcript failed', e); }
+  } else {
+    // No row exists — create one keyed by timestamp
+    effectiveMeetingId = 'vtt_' + Date.now();
+    try {
+      await fetchSB('/rest/v1/clase_analisis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+          meeting_id: effectiveMeetingId,
+          transcript_segments: transcriptSegments,
+          start_time: new Date().toISOString(),
+          total_participants: 0,
+          updated_at: new Date().toISOString()
+        })
+      });
+    } catch(e) { console.error('Insert new event failed', e); }
   }
 
   // Re-render the retention section with the new transcript
