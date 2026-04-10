@@ -2448,6 +2448,7 @@ function renderAnalisis() {
 ────────────────────────────────────── */
 let retentionChart = null;
 let topicTimeline = [];
+let transcriptLookup = {}; // minute → text, for tooltip fallback
 
 async function loadCachedAnalysis() {
   // Load the most recent cached analysis from Supabase
@@ -2757,7 +2758,10 @@ async function uploadVTT(input) {
     aiSummary: cached?.ai_summary || null,
     aiNextSteps: cached?.ai_next_steps || null,
     aiAnalysis: cached?.ai_analysis || null,
-    onAnalysisDone: () => finish(true, `✅ Análisis completo — ${transcriptSegments.length} minutos procesados`)
+    onAnalysisDone: (ok) => finish(true, ok
+      ? `✅ Transcripción + análisis guardados — ${transcriptSegments.length} minutos`
+      : `✅ Transcripción guardada — ${transcriptSegments.length} minutos (análisis pendiente)`
+    )
   }, container);
 
   input.value = '';
@@ -2768,6 +2772,11 @@ function renderTranscriptAnalysis(data, container) {
 
   // Pre-load full analysis — priority: Supabase (pre-computed by webhook) > localStorage > fetch on demand
   topicTimeline = [];
+  // Build transcript lookup for chart tooltips (minute → text snippet)
+  transcriptLookup = {};
+  if (transcript && transcript.length) {
+    transcript.forEach(s => { transcriptLookup[s.minute] = s.text; });
+  }
   const cacheKey = `analysis_${meetingId}`;
 
   // Determine the pre-computed analysis to use (before DOM is built, so we can set topicTimeline for the chart)
@@ -2866,28 +2875,24 @@ function renderTranscriptAnalysis(data, container) {
     html += `<div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:12px 16px;font-size:0.85rem;color:#86efac;margin-bottom:20px;">✅ No hay momentos de abandono masivo. ¡Buena retención en toda la clase!</div>`;
   }
 
-  // Transcript timeline (collapsible)
+  // Transcript timeline (visible by default)
   if (transcript && transcript.length > 0) {
-    html += `<details style="background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
-      <summary style="padding:12px 18px;cursor:pointer;font-size:0.85rem;font-weight:700;color:var(--text);user-select:none;">📝 Transcripción completa por minuto (${transcript.length} segmentos)</summary>
-      <div style="max-height:400px;overflow-y:auto;padding:0 18px 16px;">
-        <table style="width:100%;border-collapse:collapse;font-size:0.8rem;margin-top:8px;">
-          <thead><tr style="border-bottom:1px solid var(--border);">
-            <th style="text-align:left;padding:6px 8px;color:var(--muted);font-weight:600;width:70px;">Min</th>
-            <th style="text-align:left;padding:6px 8px;color:var(--muted);font-weight:600;">Texto</th>
-          </tr></thead>
+    html += `<div style="background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 18px;font-size:0.85rem;font-weight:700;color:var(--text);border-bottom:1px solid var(--border);">📝 Transcripción por minuto — ${transcript.length} segmentos</div>
+      <div style="max-height:340px;overflow-y:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
           <tbody>
             ${transcript.map(s => {
               const isCritical = criticalMoments.some(cm => Math.abs(cm.minute - s.minute) <= 2);
               return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);${isCritical?'background:rgba(239,68,68,0.06);':''}">
-                <td style="padding:6px 8px;color:${isCritical?'#fca5a5':'var(--muted)'};font-weight:${isCritical?700:400};white-space:nowrap;">${isCritical?'🔴 ':''} ${s.minute}:00</td>
-                <td style="padding:6px 8px;color:var(--text);line-height:1.5;">${esc(s.text)}</td>
+                <td style="padding:7px 14px;color:${isCritical?'#fca5a5':'var(--muted)'};font-weight:${isCritical?700:400};white-space:nowrap;width:64px;">${isCritical?'🔴':'⏱'} ${s.minute}m</td>
+                <td style="padding:7px 14px;color:var(--text);line-height:1.55;">${esc(s.text)}</td>
               </tr>`;
             }).join('')}
           </tbody>
         </table>
       </div>
-    </details>`;
+    </div>`;
   }
 
   // Mejora de contenido + Momentos clipeables
@@ -2963,7 +2968,7 @@ function renderTranscriptAnalysis(data, container) {
     if (boxRec) boxRec.innerHTML = `<div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;color:var(--text);">🎯 Recomendaciones para la próxima clase</div><div style="font-size:0.8rem;color:var(--muted);">⏳ Analizando con IA…</div>`;
     if (boxClips) boxClips.innerHTML = `<div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;color:var(--text);">✂️ Momentos clipeables</div><div style="font-size:0.8rem;color:var(--muted);">⏳ Identificando momentos…</div>`;
 
-    const callDone = () => { if (typeof onAnalysisDone === 'function') onAnalysisDone(); };
+    const callDone = (ok=false) => { if (typeof onAnalysisDone === 'function') onAnalysisDone(ok); };
 
     fetch('/api/analyze-clase', {
       method: 'POST',
@@ -2988,16 +2993,17 @@ function renderTranscriptAnalysis(data, container) {
             body: JSON.stringify({ ai_analysis: analysis, updated_at: new Date().toISOString() })
           }).catch(() => {});
         }
+        callDone(true);
       } else {
-        // Claude returned an error — show retry button
         const errMsg = analysis.error || 'Error al analizar';
-        if (boxRec) boxRec.innerHTML += `<div style="font-size:0.75rem;color:#fca5a5;margin-top:6px;">⚠️ ${errMsg}</div>`;
+        if (boxRec) boxRec.innerHTML = `<div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;color:var(--text);">🎯 Recomendaciones para la próxima clase</div><div style="font-size:0.78rem;color:#fca5a5;">⚠️ ${esc(errMsg)}</div>`;
+        if (boxClips) boxClips.innerHTML = `<div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;color:var(--text);">✂️ Momentos clipeables</div><div style="font-size:0.78rem;color:var(--muted);">Disponible cuando el análisis esté activo.</div>`;
+        callDone(false);
       }
-      callDone();
     })
     .catch(e => {
-      if (boxRec) boxRec.innerHTML += `<div style="font-size:0.75rem;color:#fca5a5;margin-top:6px;">⚠️ Error de conexión. Sube el .vtt de nuevo para reintentar.</div>`;
-      callDone();
+      if (boxRec) boxRec.innerHTML = `<div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;color:var(--text);">🎯 Recomendaciones para la próxima clase</div><div style="font-size:0.78rem;color:#fca5a5;">⚠️ Error de conexión al analizar.</div>`;
+      callDone(false);
     });
   }
 
@@ -3058,8 +3064,15 @@ function renderTranscriptAnalysis(data, container) {
                 if (ctx.dataset.yAxisID !== 'yCount') return;
                 const min = retention[ctx.dataIndex].minute;
                 const lines = [];
+                // Topic from Claude analysis (if available)
                 const seg = topicTimeline.find(t => min >= t.minute_start && min <= t.minute_end);
-                if (seg) lines.push(`📌 ${seg.topic}`);
+                if (seg) {
+                  lines.push(`📌 ${seg.topic}`);
+                } else {
+                  // Fall back to raw transcript text at this minute (or ±1 min)
+                  const txt = transcriptLookup[min] || transcriptLookup[min-1] || transcriptLookup[min+1];
+                  if (txt) lines.push(`💬 ${txt.substring(0, 80)}${txt.length > 80 ? '…' : ''}`);
+                }
                 if (criticalMinutes.has(min)) lines.push('⚠️ Momento crítico');
                 return lines.length ? lines : undefined;
               }
