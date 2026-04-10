@@ -2495,14 +2495,68 @@ async function analyzeTranscript() {
   }
 }
 
+function showProgressBar(el, label) {
+  let pct = 0;
+  el.style.cssText = 'display:block;font-size:0.82rem;padding:10px 12px;border-radius:6px;width:100%;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.3);color:#c084fc;';
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+      <span id="vtt-progress-label">${label}</span>
+      <span id="vtt-progress-pct">0%</span>
+    </div>
+    <div style="background:rgba(255,255,255,0.08);border-radius:4px;height:6px;overflow:hidden;">
+      <div id="vtt-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#a855f7,#c084fc);border-radius:4px;transition:width 0.4s ease;"></div>
+    </div>`;
+
+  // Simulate progress: fast to 30%, slow crawl to 85%, stops there until done
+  const intervals = [
+    { target: 30, step: 3,  delay: 80  },
+    { target: 60, step: 1,  delay: 200 },
+    { target: 85, step: 0.5, delay: 400 }
+  ];
+  let phase = 0;
+  let timer = null;
+
+  function tick() {
+    const { target, step, delay } = intervals[phase];
+    pct = Math.min(pct + step, target);
+    const bar = document.getElementById('vtt-progress-bar');
+    const pctEl = document.getElementById('vtt-progress-pct');
+    if (bar) bar.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = Math.round(pct) + '%';
+    if (pct < target) {
+      timer = setTimeout(tick, delay);
+    } else if (phase < intervals.length - 1) {
+      phase++;
+      timer = setTimeout(tick, intervals[phase].delay);
+    }
+  }
+  tick();
+
+  return function finish(success, msg) {
+    clearTimeout(timer);
+    const bar = document.getElementById('vtt-progress-bar');
+    const pctEl = document.getElementById('vtt-progress-pct');
+    const labelEl = document.getElementById('vtt-progress-label');
+    if (bar) { bar.style.transition = 'width 0.6s ease'; bar.style.width = '100%'; }
+    if (pctEl) pctEl.textContent = '100%';
+    setTimeout(() => {
+      if (success) {
+        el.style.cssText = 'display:block;font-size:0.82rem;padding:8px 12px;border-radius:6px;width:100%;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);color:#4ade80;';
+        el.textContent = msg;
+      } else {
+        el.style.cssText = 'display:block;font-size:0.82rem;padding:8px 12px;border-radius:6px;width:100%;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;';
+        el.textContent = msg;
+      }
+    }, 700);
+  };
+}
+
 async function uploadVTT(input) {
   const file = input.files[0];
   if (!file) return;
 
   const resultEl = document.getElementById('zoomSyncResult');
-  resultEl.style.display = 'block';
-  resultEl.style.cssText = 'display:block;font-size:0.82rem;padding:8px 12px;border-radius:6px;width:100%;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.3);color:#c084fc;';
-  resultEl.textContent = '⏳ Procesando transcripción…';
+  const finish = showProgressBar(resultEl, '📄 Leyendo transcripción…');
 
   const meetingId = document.getElementById('zoomMeetingId').value.trim() || null;
   const vttText = await file.text();
@@ -2541,10 +2595,13 @@ async function uploadVTT(input) {
     .sort((a, b) => a.minute - b.minute);
 
   if (!transcriptSegments.length) {
-    resultEl.style.cssText = 'display:block;font-size:0.82rem;padding:8px 12px;border-radius:6px;width:100%;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;';
-    resultEl.textContent = '❌ No se encontraron segmentos en el archivo. ¿Es un .vtt válido?';
+    finish(false, '❌ No se encontraron segmentos en el archivo. ¿Es un .vtt válido?');
     return;
   }
+
+  // Update label while saving + analyzing
+  const labelEl = document.getElementById('vtt-progress-label');
+  if (labelEl) labelEl.textContent = '☁️ Guardando y analizando con IA…';
 
   // Save to Supabase if we have a meeting ID
   if (meetingId) {
@@ -2572,16 +2629,15 @@ async function uploadVTT(input) {
     transcriptWarning: null,
     aiSummary: cached?.ai_summary || null,
     aiNextSteps: cached?.ai_next_steps || null,
-    aiAnalysis: cached?.ai_analysis || null
+    aiAnalysis: cached?.ai_analysis || null,
+    onAnalysisDone: () => finish(true, `✅ Análisis completo — ${transcriptSegments.length} minutos procesados`)
   }, container);
 
-  resultEl.style.cssText = 'display:block;font-size:0.82rem;padding:8px 12px;border-radius:6px;width:100%;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);color:#4ade80;';
-  resultEl.textContent = `✅ Transcripción cargada — ${transcriptSegments.length} minutos procesados`;
   input.value = '';
 }
 
 function renderTranscriptAnalysis(data, container) {
-  const { retention, criticalMoments, transcript, totalParticipants, startTime, transcriptWarning, aiSummary, aiNextSteps, meetingId, aiAnalysis } = data;
+  const { retention, criticalMoments, transcript, totalParticipants, startTime, transcriptWarning, aiSummary, aiNextSteps, meetingId, aiAnalysis, onAnalysisDone } = data;
 
   // Pre-load full analysis — priority: Supabase (pre-computed by webhook) > localStorage > fetch on demand
   topicTimeline = [];
@@ -2805,9 +2861,12 @@ function renderTranscriptAnalysis(data, container) {
             body: JSON.stringify({ ai_analysis: analysis, updated_at: new Date().toISOString() })
           }).catch(() => {});
         }
+        if (typeof onAnalysisDone === 'function') onAnalysisDone();
       }
     })
-    .catch(() => {});
+    .catch(() => { if (typeof onAnalysisDone === 'function') onAnalysisDone(); });
+  } else if (typeof onAnalysisDone === 'function') {
+    onAnalysisDone();
   }
 
   // Render Chart.js retention curve
