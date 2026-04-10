@@ -15,32 +15,46 @@ module.exports = async function handler(req, res) {
     'Content-Type': 'application/json'
   };
 
-  // Get latest row with ai_summary but missing ai_analysis
+  // Get latest row missing ai_analysis — accepts rows with ai_summary OR transcript_segments
   const rowRes = await fetch(
-    `${SB_URL}/rest/v1/clase_analisis?select=*&ai_summary=not.is.null&ai_analysis=is.null&order=updated_at.desc&limit=1`,
+    `${SB_URL}/rest/v1/clase_analisis?select=*&ai_analysis=is.null&order=updated_at.desc&limit=1`,
     { headers: sbHeaders }
   );
   const rows = await rowRes.json();
   if (!rows || !rows.length) return res.status(200).json({ message: 'Nothing to backfill — all rows already have ai_analysis' });
 
   const row = rows[0];
-  const { meeting_id, ai_summary, critical_moments, total_participants } = row;
+  const { meeting_id, ai_summary, transcript_segments, critical_moments, total_participants } = row;
+
+  if (!ai_summary && (!transcript_segments || !transcript_segments.length)) {
+    return res.status(200).json({ message: 'No hay ai_summary ni transcript_segments para analizar', meeting_id });
+  }
 
   // Build prompt context from critical moments
   const criticalCtx = (critical_moments || []).map(cm =>
     `- Minuto ${cm.minute}: ${cm.prevPct}% → ${cm.pct}% (−${cm.drop}% en 5 min)`
   ).join('\n');
 
+  // Use ai_summary if available, else build from transcript
+  let claseContext;
+  if (ai_summary) {
+    claseContext = `RESUMEN DE LA CLASE (generado por Zoom AI):\n${ai_summary.substring(0, 3000)}`;
+  } else {
+    const transcriptText = transcript_segments
+      .map(s => `[min ${s.minute}] ${s.text}`)
+      .join('\n')
+      .substring(0, 4000);
+    claseContext = `TRANSCRIPCIÓN DE LA CLASE (minuto a minuto):\n${transcriptText}`;
+  }
+
   const prompt = `Eres un estratega de contenido experto. Analiza esta clase en vivo y dame dos cosas:
 
 DATOS DE LA CLASE:
-- Total asistentes: ${total_participants}
-- Duración: ~140 minutos
+- Total asistentes: ${total_participants || 'desconocido'}
 - Caídas de audiencia más importantes:
 ${criticalCtx || 'Sin datos de caída'}
 
-RESUMEN DE LA CLASE (generado por Zoom AI):
-${(ai_summary || '').substring(0, 3000)}
+${claseContext}
 
 ---
 
@@ -57,7 +71,7 @@ Responde en JSON con exactamente esta estructura:
   ]
 }
 
-Para recomendaciones: enfócate en el minuto 55-65 donde más gente se fue.
+Para recomendaciones: enfócate en los minutos donde más gente se fue.
 Para momentos clipeables: 4-5 momentos más poderosos.
 Para topic_timeline: 8-10 segmentos de ~15-20 min cada uno.
 Responde SOLO el JSON, sin texto adicional.`;
