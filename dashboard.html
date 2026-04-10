@@ -3588,9 +3588,16 @@ async function deleteAssignLead(id, email, nombre) {
   renderOverview();
 }
 
-function fetchSB(path) {
-  return fetch(SB_URL + path, { headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE } })
-    .then(r => r.ok ? r.json() : []);
+function fetchSB(path, opts = {}) {
+  const { headers: extraHeaders, ...rest } = opts;
+  return fetch(SB_URL + path, {
+    ...rest,
+    headers: {
+      'apikey': SB_SERVICE,
+      'Authorization': 'Bearer ' + SB_SERVICE,
+      ...(extraHeaders || {})
+    }
+  }).then(r => r.ok ? r.json() : []);
 }
 
 /* ──────────────────────────────────────
