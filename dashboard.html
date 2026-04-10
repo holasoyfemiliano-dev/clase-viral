@@ -885,6 +885,22 @@
         <div style="padding:40px;text-align:center;color:var(--muted);font-size:0.85rem;">Sincroniza una clase para ver la curva de retención</div>
       </div>
 
+      <!-- Evolución del Speech -->
+      <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-size:0.95rem;font-weight:700;color:var(--text);">🧠 Evolución del Speech</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">Compara todas las clases para construir el speech óptimo</div>
+          </div>
+          <button onclick="loadSpeechEvolution()" id="speech-evo-btn"
+            style="background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.35);color:#c084fc;border-radius:8px;padding:7px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;">
+            📊 Analizar evolución
+          </button>
+        </div>
+        <div id="speech-evo-result" style="font-size:0.82rem;color:var(--muted);">
+          Sube las transcripciones .vtt de todas tus clases y presiona "Analizar evolución" para que la IA compare cómo ha evolucionado tu speech.
+        </div>
+      </div>
 
     </div>
 
@@ -2552,6 +2568,95 @@ function showProgressBar(el, label) {
   };
 }
 
+async function loadSpeechEvolution() {
+  const btn = document.getElementById('speech-evo-btn');
+  const result = document.getElementById('speech-evo-result');
+  btn.disabled = true;
+  btn.textContent = '⏳ Analizando…';
+  result.innerHTML = '<div style="color:var(--muted);">⏳ Comparando todas las clases con IA…</div>';
+
+  try {
+    const res = await fetch('/api/compare-events', {
+      headers: { 'Authorization': 'Bearer proximity-dash-2026' }
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      result.innerHTML = `<div style="color:var(--muted);">${data.error}</div>`;
+      return;
+    }
+
+    const TREND_ICON = { mejoro: '📈', empeoro: '📉', estable: '➡️' };
+    const TREND_COLOR = { mejoro: '#22c55e', empeoro: '#ef4444', estable: '#eab308' };
+
+    result.innerHTML = `
+      <div style="margin-bottom:14px;font-size:0.78rem;color:var(--muted);">
+        Basado en <strong style="color:var(--text);">${data.eventCount} clases</strong>
+      </div>
+
+      ${data.evolucion?.length ? `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:8px;">📈 Evolución por aspecto</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          ${data.evolucion.map(e => `
+            <div style="background:rgba(0,0,0,0.3);border-left:3px solid ${TREND_COLOR[e.tendencia]||'#6b7280'};border-radius:0 6px 6px 0;padding:9px 12px;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+                <span>${TREND_ICON[e.tendencia]||'•'}</span>
+                <span style="font-size:0.82rem;font-weight:700;color:var(--text);">${esc(e.aspecto)}</span>
+              </div>
+              <div style="font-size:0.78rem;color:var(--muted);line-height:1.5;">${esc(e.descripcion)}</div>
+            </div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${data.mejores_momentos?.length ? `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:8px;">✅ Momentos que funcionan — replicar</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          ${data.mejores_momentos.map(m => `
+            <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:6px;padding:9px 12px;">
+              <div style="font-size:0.8rem;font-weight:600;color:#4ade80;margin-bottom:3px;">Clase ${m.evento_idx} · min ~${m.minuto_aprox}</div>
+              <div style="font-size:0.78rem;color:var(--text);margin-bottom:3px;">${esc(m.descripcion)}</div>
+              <div style="font-size:0.75rem;color:var(--muted);">→ ${esc(m.replicar)}</div>
+            </div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${data.peores_momentos?.length ? `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:8px;">⚠️ Patrones de deserción</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          ${data.peores_momentos.map(m => `
+            <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:9px 12px;">
+              <div style="font-size:0.78rem;color:#fca5a5;margin-bottom:3px;">${esc(m.descripcion)} (típico: min ${m.minuto_tipico})</div>
+              <div style="font-size:0.75rem;color:var(--muted);">💡 ${esc(m.solucion)}</div>
+            </div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${data.speech_optimo ? `
+      <div>
+        <div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:8px;">🎯 Speech óptimo recomendado</div>
+        <div style="background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:14px;">
+          <div style="font-size:0.8rem;color:var(--text);line-height:1.7;margin-bottom:10px;">${esc(data.speech_optimo.resumen)}</div>
+          ${data.speech_optimo.estructura?.length ? `
+          <div style="font-size:0.78rem;font-weight:600;color:#c084fc;margin-bottom:6px;">Estructura sugerida:</div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            ${data.speech_optimo.estructura.map((f, i) => `
+              <div style="font-size:0.78rem;color:var(--muted);padding:4px 8px;background:rgba(0,0,0,0.3);border-radius:4px;">
+                <strong style="color:#c084fc;">${i+1}.</strong> ${esc(f)}
+              </div>`).join('')}
+          </div>` : ''}
+        </div>
+      </div>` : ''}`;
+  } catch(e) {
+    result.innerHTML = `<div style="color:#fca5a5;">Error: ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📊 Analizar evolución';
+  }
+}
+
 async function uploadVTT(input) {
   const file = input.files[0];
   if (!file) return;
@@ -2607,10 +2712,31 @@ async function uploadVTT(input) {
   // Fetch latest row to get the real meeting_id (hidden input may be empty)
   const rows = await fetchSB('/rest/v1/clase_analisis?select=*&order=updated_at.desc&limit=1');
   const cached = rows?.[0];
-  const effectiveMeetingId = meetingId || cached?.meeting_id;
 
-  // Save transcript_segments to Supabase using the real meeting_id
-  if (effectiveMeetingId) {
+  // Determine if this is a new event or an update to existing
+  // Treat as new event if: the latest row already has transcript AND no explicit meetingId was given
+  const latestHasTranscript = cached?.transcript_segments && cached.transcript_segments.length > 0;
+  let effectiveMeetingId = meetingId || cached?.meeting_id;
+
+  if (!meetingId && latestHasTranscript) {
+    // New event — create a new row with a timestamp-based ID
+    const newId = 'vtt_' + Date.now();
+    effectiveMeetingId = newId;
+    try {
+      await fetchSB('/rest/v1/clase_analisis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+          meeting_id: newId,
+          transcript_segments: transcriptSegments,
+          start_time: new Date().toISOString(),
+          total_participants: 0,
+          updated_at: new Date().toISOString()
+        })
+      });
+    } catch(e) { console.error('Insert new event failed', e); }
+  } else if (effectiveMeetingId) {
+    // Update existing row
     try {
       await fetchSB('/rest/v1/clase_analisis?meeting_id=eq.' + encodeURIComponent(effectiveMeetingId), {
         method: 'PATCH',

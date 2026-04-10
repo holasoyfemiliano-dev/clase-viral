@@ -26,6 +26,9 @@
     },
     "api/backfill-analysis.js": {
       "maxDuration": 30
+    },
+    "api/compare-events.js": {
+      "maxDuration": 45
     }
   },
   "crons": [
