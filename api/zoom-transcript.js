@@ -47,26 +47,46 @@ module.exports = async function handler(req, res) {
     }
     const accessToken = tokenData.access_token;
 
-    // 2. Get cloud recordings for this meeting
-    const recRes = await fetch(
-      `https://api.zoom.us/v2/meetings/${meetingId}/recordings`,
+    // 2. Get UUID via reports API (required for transcript endpoint)
+    const reportRes = await fetch(
+      `https://api.zoom.us/v2/report/meetings/${meetingId}`,
       { headers: { 'Authorization': `Bearer ${accessToken}` } }
     );
-    const recData = await recRes.json();
+    const reportData = await reportRes.json();
+    const uuid = reportData.uuid;
 
-    if (!recRes.ok) {
-      return res.status(500).json({
-        error: recData.code === 3301
-          ? 'No hay grabaciones para este meeting. Asegúrate de que la clase se haya grabado en la nube.'
-          : 'Error al obtener grabaciones de Zoom',
-        detail: recData
-      });
+    // 3. Get recordings — try UUID first (AI Companion transcripts need it), fallback to numeric ID
+    let recData = null;
+    if (uuid) {
+      const enc = uuid.startsWith('/') || uuid.includes('//')
+        ? encodeURIComponent(encodeURIComponent(uuid))
+        : encodeURIComponent(uuid);
+      const r = await fetch(
+        `https://api.zoom.us/v2/meetings/${enc}/recordings`,
+        { headers: { 'Authorization': `Bearer ${accessToken}` } }
+      );
+      const d = await r.json();
+      if (r.ok) recData = d;
     }
 
-    const startTime = recData.start_time;
+    if (!recData) {
+      const r = await fetch(
+        `https://api.zoom.us/v2/meetings/${meetingId}/recordings`,
+        { headers: { 'Authorization': `Bearer ${accessToken}` } }
+      );
+      recData = await r.json();
+      if (!r.ok) {
+        return res.status(500).json({
+          error: 'No se encontraron grabaciones/transcripciones para este meeting.',
+          detail: recData
+        });
+      }
+    }
+
+    const startTime = recData.start_time || reportData.start_time;
     const recordingFiles = recData.recording_files || [];
 
-    // 3. Get asistencias from Supabase (needed regardless of transcript)
+    // 4. Get asistencias from Supabase (needed regardless of transcript)
     const asistRes = await fetch(
       `${SB_URL}/rest/v1/asistencias?meeting_id=eq.${encodeURIComponent(meetingId)}&select=*`,
       { headers: sbHeaders }
@@ -79,10 +99,10 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // 4. Build retention curve from asistencias + recording start_time
+    // 5. Build retention curve from asistencias + recording start_time
     const retention = buildRetention(asistencias, startTime);
 
-    // 5. Try to get transcript (VTT)
+    // 6. Try to get transcript (VTT)
     const transcriptFile = recordingFiles.find(f =>
       f.file_type === 'TRANSCRIPT' || f.recording_type === 'audio_transcript'
     );
@@ -105,10 +125,10 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    // 6. Find critical moments (>=10% drop in a 5-min window)
+    // 7. Find critical moments (>=10% drop in a 5-min window)
     const criticalMoments = findCriticalMoments(retention, transcriptByMinute);
 
-    // 7. Cache in Supabase (upsert by meeting_id)
+    // 8. Cache in Supabase (upsert by meeting_id)
     const payload = {
       meeting_id: String(meetingId),
       start_time: startTime || null,

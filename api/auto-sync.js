@@ -134,6 +134,15 @@ module.exports = async function handler(req, res) {
         if (!Array.isArray(registrados) || registrados.length === 0) continue;
         matched++;
 
+        // Don't downgrade if already at a higher-intent state
+        const HIGHER_STATES = ['interesado', 'compro_evento', 'seguimiento', 'seguimiento_exitoso'];
+        const currentRes = await fetch(
+          `${SB_URL}/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(p.user_email)}&select=estado`,
+          { headers: sbHeaders }
+        );
+        const currentEstado = await currentRes.json();
+        if (Array.isArray(currentEstado) && currentEstado[0] && HIGHER_STATES.includes(currentEstado[0].estado)) continue;
+
         const patchRes = await fetch(
           `${SB_URL}/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(p.user_email)}`,
           {
@@ -147,7 +156,7 @@ module.exports = async function handler(req, res) {
           await fetch(`${SB_URL}/rest/v1/lead_estados`, {
             method: 'POST',
             headers: { ...sbHeaders, 'Prefer': 'return=minimal' },
-            body: JSON.stringify({ registro_email: p.user_email, estado: 'asistio', vendedor: null, updated_at: new Date().toISOString() })
+            body: JSON.stringify({ registro_email: p.user_email, estado: 'asistio', vendedor: '', updated_at: new Date().toISOString() })
           });
         }
       }

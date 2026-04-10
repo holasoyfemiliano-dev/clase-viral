@@ -67,6 +67,50 @@
     .tab.active svg { opacity: 1; }
     body > *:not(.bg-blobs) { position: relative; z-index: 1; }
 
+    /* ── PAUTA / META ADS ── */
+    .pauta-preset {
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      padding: 5px 11px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
+      transition: background .15s, color .15s;
+    }
+    .pauta-preset.active { background: var(--blue); color: var(--white); }
+    .pauta-preset:hover:not(.active) { background: var(--card2); color: var(--white); }
+    .p-status {
+      display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: .04em;
+    }
+    .p-status.active  { background: rgba(34,197,94,.18); color: #22c55e; }
+    .p-status.paused  { background: rgba(255,255,255,.08); color: var(--muted); }
+    .p-status.deleted, .p-status.archived { background: rgba(239,68,68,.12); color: var(--red); }
+    .p-action-btn {
+      padding: 4px 9px; border-radius: 6px; border: 1px solid var(--border); background: var(--card);
+      color: var(--text); font-size: 0.72rem; cursor: pointer; transition: background .15s, color .15s;
+    }
+    .p-action-btn:hover { background: var(--card2); color: var(--white); }
+    .p-action-btn.pause-btn:hover { border-color: rgba(239,68,68,.4); color: var(--red); }
+    .p-action-btn.play-btn:hover  { border-color: rgba(34,197,94,.4); color: var(--green); }
+    #pauta-budget-modal.open { display: flex !important; }
+    .btn-sm { padding: 7px 13px; font-size: 0.78rem; }
+
+    /* ── BEHAVIOR TOOLTIP ── */
+    #bhv-tooltip {
+      position: fixed; z-index: 9999; pointer-events: none;
+      background: rgba(4,13,26,0.97);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px; padding: 14px 16px; width: 280px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+      opacity: 0; transition: opacity 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+    #bhv-tooltip.visible { opacity: 1; }
+    .btt-title { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+    .btt-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 7px; font-size: 0.8rem; line-height: 1.4; }
+    .btt-row:last-child { margin-bottom: 0; }
+    .btt-icon { flex-shrink: 0; font-size: 0.9rem; margin-top: 1px; }
+    .btt-text { color: var(--text); }
+    .btt-text strong { color: var(--white); }
+    .btt-score { display: inline-block; margin-top: 10px; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+
     /* ── LAYOUT ── */
     .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
@@ -304,6 +348,9 @@
   <div class="bg-blob-gold"></div>
 </div>
 
+<!-- BEHAVIOR TOOLTIP -->
+<div id="bhv-tooltip"></div>
+
 <!-- LOGIN -->
 <div id="dashLogin">
   <div class="dash-login-box">
@@ -417,83 +464,108 @@
 
       <!-- ── TRÁFICO & ASISTENCIA ── -->
       <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">Tráfico & Asistencia</div>
-      <div class="stats-row" style="grid-template-columns:repeat(6,1fr);margin-bottom:8px;">
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:8px;">
         <div class="stat-card blue">
-          <div class="s-label">Visitas</div>
+          <div class="s-label">Visitas Landing</div>
           <div class="s-value" id="ov-views">0</div>
-          <div class="s-sub">Pageviews</div>
+          <div class="s-sub">Sesiones rastreadas</div>
         </div>
         <div class="stat-card" style="border-color:rgba(168,85,247,0.3);">
           <div class="s-label">Registrados</div>
           <div class="s-value" id="ov-total" style="color:#a855f7;">0</div>
-          <div class="s-sub">Próximo jueves</div>
-        </div>
-        <div class="stat-card white">
-          <div class="s-label">Variante Líder</div>
-          <div class="s-value" id="ov-winner">—</div>
-          <div class="s-sub" id="ov-winner-cvr">Sin datos</div>
+          <div class="s-sub">Para el próximo jueves</div>
         </div>
         <div class="stat-card">
-          <div class="s-label">Tasa Confirmación</div>
-          <div class="s-value" id="ov-tasa-conf" style="color:var(--blue);">—</div>
-          <div class="s-sub">Confirmados / registrados</div>
+          <div class="s-label">Confirmación</div>
+          <div class="s-value" id="ov-tasa-conf" style="color:var(--blue);font-size:1.5rem;">—</div>
+          <div class="s-sub" id="ov-tasa-conf-sub">confirmados / registrados</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(34,197,94,0.25);">
+          <div class="s-label">Asistencia real</div>
+          <div class="s-value" id="ov-tasa-asist" style="color:var(--green);font-size:1.5rem;">—</div>
+          <div class="s-sub" id="ov-tasa-asist-sub">asistentes / registrados</div>
+          <div id="ov-pred-asist" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(34,197,94,0.15);">
+            <div style="font-size:0.68rem;font-weight:700;color:rgba(34,197,94,0.6);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">★ predicción próxima clase</div>
+            <div style="font-size:1.1rem;font-weight:800;color:#4ade80;" id="ov-pred-asist-val">—</div>
+            <div style="font-size:0.72rem;color:var(--muted);" id="ov-pred-asist-sub">asistentes estimados</div>
+          </div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(255,214,0,0.25);">
+          <div class="s-label">Conversión</div>
+          <div class="s-value" id="ov-tasa-conv" style="color:var(--gold);font-size:1.5rem;">—</div>
+          <div class="s-sub" id="ov-tasa-conv-sub">ventas / asistentes · este corte</div>
+          <div id="ov-pred-conv" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,214,0,0.15);">
+            <div style="font-size:0.68rem;font-weight:700;color:rgba(255,214,0,0.6);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">★ predicción próxima clase</div>
+            <div style="font-size:1.1rem;font-weight:800;color:var(--gold);" id="ov-pred-conv-val">—</div>
+            <div style="font-size:0.72rem;color:var(--muted);" id="ov-pred-conv-sub">ventas estimadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── EMBUDO DE VENTAS ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">🔥 Embudo de ventas</div>
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:8px;">
+        <div class="stat-card" style="border-color:rgba(249,115,22,0.4);background:rgba(249,115,22,0.05);">
+          <div class="s-label" style="color:#f97316;">Interesados</div>
+          <div class="s-value" id="ov-int-total" style="color:#f97316;font-size:2rem;">—</div>
+          <div class="s-sub">Llegaron a la página de pago</div>
         </div>
         <div class="stat-card">
-          <div class="s-label">Tasa Asistencia</div>
-          <div class="s-value" id="ov-tasa-asist" style="color:var(--green);">—</div>
-          <div class="s-sub">Asistentes / confirmados</div>
+          <div class="s-label">Interesados hoy</div>
+          <div class="s-value" id="ov-int-hoy" style="color:var(--white);font-size:2rem;">—</div>
+          <div class="s-sub">Nuevos hoy</div>
         </div>
         <div class="stat-card">
-          <div class="s-label">Conversión Final</div>
-          <div class="s-value" id="ov-tasa-conv" style="color:var(--gold);">—</div>
-          <div class="s-sub">Miembros / asistentes</div>
+          <div class="s-label">Interesados semana</div>
+          <div class="s-value" id="ov-int-semana" style="color:var(--blue);font-size:2rem;">—</div>
+          <div class="s-sub">Últimos 7 días</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(249,115,22,0.3);">
+          <div class="s-label">Seguimientos</div>
+          <div class="s-value" id="ov-seguimientos" style="color:#f97316;font-size:2rem;">—</div>
+          <div class="s-sub">En proceso por vendedores</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(255,229,0,0.35);">
+          <div class="s-label">Seguimientos exitosos</div>
+          <div class="s-value" id="ov-seg-exitosos" style="color:var(--gold);font-size:2rem;">—</div>
+          <div class="s-sub">Cerraron después del evento</div>
         </div>
       </div>
 
       <!-- ── ADS & PAUTA ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">📣 Pauta</div>
-      <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:8px;">
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">📣 Pauta · Meta Ads <span id="ov-pauta-period" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:0.68rem;margin-left:6px;">últimos 7 días</span></div>
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:8px;">
         <div class="stat-card">
-          <div class="s-label">Gasto del mes</div>
-          <div class="s-value" style="color:var(--muted);font-size:1.8rem;">$—</div>
-          <div class="s-sub">Meta Ads · próximamente</div>
+          <div class="s-label">Gasto</div>
+          <div class="s-value" id="ov-pauta-spend" style="font-size:1.8rem;">$—</div>
+          <div class="s-sub" id="ov-pauta-spend-sub">Meta Ads</div>
         </div>
         <div class="stat-card">
-          <div class="s-label">ROAS</div>
-          <div class="s-value" style="color:var(--muted);font-size:1.8rem;">—x</div>
-          <div class="s-sub">Retorno sobre inversión</div>
+          <div class="s-label">Leads generados</div>
+          <div class="s-value" id="ov-pauta-leads" style="color:var(--green);font-size:1.8rem;">—</div>
+          <div class="s-sub">desde pauta</div>
         </div>
         <div class="stat-card">
-          <div class="s-label">Costo por registro</div>
-          <div class="s-value" style="color:var(--muted);font-size:1.8rem;">$—</div>
+          <div class="s-label">Costo por Lead</div>
+          <div class="s-value" id="ov-pauta-cpl" style="font-size:1.8rem;">$—</div>
           <div class="s-sub">CPL promedio</div>
         </div>
         <div class="stat-card">
+          <div class="s-label">Impresiones</div>
+          <div class="s-value" id="ov-pauta-impressions" style="color:var(--blue);font-size:1.8rem;">—</div>
+          <div class="s-sub">CTR <span id="ov-pauta-ctr">—</span>%</div>
+        </div>
+        <div class="stat-card">
           <div class="s-label">Campañas activas</div>
-          <div class="s-value" style="color:var(--muted);font-size:1.8rem;">—</div>
-          <div class="s-sub">Conectar Meta Ads API</div>
+          <div class="s-value" id="ov-pauta-active" style="color:var(--gold);font-size:1.8rem;">—</div>
+          <div class="s-sub">de <span id="ov-pauta-total">—</span> campañas</div>
         </div>
       </div>
 
       <!-- ── EQUIPO ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">👥 Equipo esta semana</div>
-      <div class="card" style="padding:0;overflow:hidden;" id="ov-vendedores-card">
-        <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
-          <thead>
-            <tr style="border-bottom:1px solid var(--border);">
-              <th style="text-align:left;padding:10px 16px;color:var(--muted);font-weight:600;">Vendedor</th>
-              <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">Sesiones</th>
-              <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">Tiempo</th>
-              <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">WA abiertos</th>
-              <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">Confirmaciones</th>
-              <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">Eficiencia</th>
-              <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">Estado</th>
-            </tr>
-          </thead>
-          <tbody id="ov-vend-body">
-            <tr><td colspan="7" style="padding:20px;text-align:center;color:var(--muted);font-size:0.82rem;">Cargando…</td></tr>
-          </tbody>
-        </table>
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">Equipo de ventas</div>
+      <div id="ov-vendedores-card" style="min-height:80px;">
+        <div style="padding:20px;text-align:center;color:var(--muted);font-size:0.82rem;">Cargando…</div>
       </div>
 
       <!-- ── RECOMENDACIONES ── -->
@@ -577,8 +649,59 @@
     <!-- ════════════ VENTAS ════════════ -->
     <div class="panel" id="tab-ventas">
 
-      <!-- ── Confirmados & seguimientos ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Confirmados & Seguimientos</div>
+      <!-- ── Resumen rápido ── -->
+      <div class="stats-row" style="grid-template-columns:repeat(6,1fr);margin-bottom:20px;" id="ventas-stats-row">
+        <div class="stat-card" style="border-color:rgba(168,85,247,0.3)"><div class="s-label">Registros</div><div class="s-value" id="vs-registros" style="color:#a855f7">—</div><div class="s-sub">Total leads</div></div>
+        <div class="stat-card blue"><div class="s-label">Confirmados</div><div class="s-value" id="vs-confirmados">—</div><div class="s-sub">Dijeron que sí</div></div>
+        <div class="stat-card" style="border-color:rgba(249,115,22,0.3)"><div class="s-label">Seguimientos</div><div class="s-value" id="vs-seguimientos" style="color:var(--orange)">—</div><div class="s-sub">En proceso</div></div>
+        <div class="stat-card green"><div class="s-label">Ventas</div><div class="s-value" id="vs-ventas">—</div><div class="s-sub">Aprobadas</div></div>
+        <div class="stat-card" style="border-color:rgba(255,229,0,0.3)"><div class="s-label">Comisiones</div><div class="s-value" id="vs-comisiones" style="color:var(--gold);font-size:1.4rem">$—</div><div class="s-sub" id="vs-comisiones-sub">Este mes</div></div>
+        <div class="stat-card"><div class="s-label">Top Nicho</div><div class="s-value" id="vs-nicho" style="font-size:1rem;color:var(--text)">—</div><div class="s-sub">Categoría líder</div></div>
+      </div>
+
+      <!-- ── Equipo de Vendedores ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Equipo de Vendedores</div>
+      <div id="vendAlert"></div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px;">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Nombre</th><th>Contraseña</th><th>Leads</th><th>Ventas</th><th>Comisión</th><th>Última actividad</th><th>Estado</th><th>Acción</th></tr></thead>
+            <tbody id="vendBody"><tr><td colspan="9"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" id="vendReporteCard" style="display:none;margin-bottom:12px;">
+        <div class="card-title">Actividad del equipo</div>
+        <div id="vendReporteBody"></div>
+      </div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">Crear nuevo vendedor</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;">
+          <div class="field-group" style="margin:0;"><label>Nombre</label><input type="text" id="newVendNombre" placeholder="Ej: Ana García"></div>
+          <div class="field-group" style="margin:0;"><label>Contraseña</label><input type="text" id="newVendPass" placeholder="Ej: ana2024"></div>
+          <button class="btn btn-gold" onclick="crearVendedor()">Crear →</button>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:28px;">
+        <div class="card-title">Asignar leads a vendedores</div>
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <input type="text" class="search-input" id="assignSearch" placeholder="🔍 Buscar lead…" oninput="renderAssignTable()">
+          <select id="assignFilterVend" class="search-input" style="min-width:160px;" onchange="renderAssignTable()">
+            <option value="">Todos los leads</option>
+          </select>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;margin-bottom:0;">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Registro</th><th>Asignado a</th></tr></thead>
+              <tbody id="assignBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Leads ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Leads</div>
       <div id="ventasAlert"></div>
       <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
         <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
@@ -596,8 +719,26 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Estado</th><th>Vendedor</th><th>Categoría</th><th>Notas</th><th>Actualizado</th></tr></thead>
-            <tbody id="ventasLeadsBody"><tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+            <thead><tr><th>#</th><th></th><th>Nombre</th><th>Email</th><th>Estado</th><th>Vendedor</th><th>Categoría</th><th>Notas</th><th>Actualizado</th></tr></thead>
+            <tbody id="ventasLeadsBody"><tr><td colspan="9"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Interesados ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;margin-top:28px;">🔥 Interesados · Abrieron página de pago</div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <span style="font-weight:700;font-size:0.88rem;">Personas que llegaron a la página de pago</span>
+          <div style="display:flex;gap:8px;">
+            <input type="text" class="search-input" id="intSearch" placeholder="🔍 Buscar…" oninput="renderInteresados()">
+            <button class="btn btn-outline btn-sm" onclick="loadInteresados()">↺ Actualizar</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Fecha</th></tr></thead>
+            <tbody id="interesadosBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
           </table>
         </div>
       </div>
@@ -618,47 +759,6 @@
         </div>
       </div>
 
-      <!-- ── Equipo de Vendedores ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Equipo de Vendedores</div>
-      <div id="vendAlert"></div>
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title">Crear nuevo vendedor</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;">
-          <div class="field-group" style="margin:0;"><label>Nombre</label><input type="text" id="newVendNombre" placeholder="Ej: Ana García"></div>
-          <div class="field-group" style="margin:0;"><label>Contraseña</label><input type="text" id="newVendPass" placeholder="Ej: ana2024"></div>
-          <button class="btn btn-gold" onclick="crearVendedor()">Crear →</button>
-        </div>
-      </div>
-      <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px;">
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>Nombre</th><th>Contraseña</th><th>Leads</th><th>Ventas</th><th>Comisión</th><th>Última actividad</th><th>Estado</th><th>Acción</th></tr></thead>
-            <tbody id="vendBody"><tr><td colspan="9"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card" id="vendReporteCard" style="display:none;margin-bottom:12px;">
-        <div class="card-title">Actividad del equipo</div>
-        <div id="vendReporteBody"></div>
-      </div>
-      <div class="card" style="margin-bottom:28px;">
-        <div class="card-title">Asignar leads a vendedores</div>
-        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-          <input type="text" class="search-input" id="assignSearch" placeholder="🔍 Buscar lead…" oninput="renderAssignTable()">
-          <select id="assignFilterVend" class="search-input" style="min-width:160px;" onchange="renderAssignTable()">
-            <option value="">Todos los leads</option>
-          </select>
-        </div>
-        <div class="card" style="padding:0;overflow:hidden;margin-bottom:0;">
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Registro</th><th>Asignado a</th></tr></thead>
-              <tbody id="assignBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <!-- ════════════ MIEMBROS ════════════ -->
@@ -674,10 +774,26 @@
 
       <div id="miembrosAlert"></div>
 
-      <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
+      <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">
         <div class="stat-card green"><div class="s-label">Total Miembros</div><div class="s-value" id="mb-total">0</div><div class="s-sub">Histórico</div></div>
         <div class="stat-card white"><div class="s-label">Esta Semana</div><div class="s-value" id="mb-semana">0</div><div class="s-sub">Últimos 7 días</div></div>
         <div class="stat-card" style="border-color:rgba(255,229,0,0.3)"><div class="s-label">Este Mes</div><div class="s-value" id="mb-mes" style="color:var(--gold)">0</div><div class="s-sub">Últimos 30 días</div></div>
+      </div>
+
+      <!-- Aprobaciones de ventas (comisiones) -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Aprobaciones pendientes</div>
+      <div id="aprobAlertMiembros"></div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:0.85rem;font-weight:700;">Ventas pendientes de aprobación</span>
+          <button class="btn btn-outline btn-sm" onclick="loadAprobaciones()">↺ Actualizar</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Lead</th><th>Vendedor</th><th>Monto</th><th>Tipo</th><th>Comisión</th><th>Comprobante</th><th>Registro</th><th>Estado</th><th>Acción</th></tr></thead>
+            <tbody id="aprobBodyMiembros"><tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Agregar manualmente -->
@@ -717,103 +833,199 @@
     <!-- ════════════ EVENTO ════════════ -->
     <div class="panel" id="tab-evento">
 
-      <!-- Sub-tab nav -->
-      <div style="display:flex;gap:2px;margin-bottom:24px;background:var(--card);border-radius:8px;padding:4px;width:fit-content;">
-        <button class="sub-tab active" id="st-evento" onclick="setEventoSubTab('evento')">Retención & Asistencia</button>
-        <button class="sub-tab" id="st-transcript" onclick="setEventoSubTab('transcript')">Transcripción</button>
-      </div>
-
-      <!-- ══ SUB: EVENTO Y CONVERSIÓN ══ -->
-      <div id="ast-evento">
-
-        <!-- YouTube-style big numbers -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:24px;">
-          <div style="padding:24px 28px;border-right:1px solid var(--border);">
-            <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;font-weight:600;">ASISTENTES</div>
-            <div style="font-size:2.4rem;font-weight:800;" id="yt-asistentes">—</div>
-            <div style="font-size:0.78rem;color:var(--muted);margin-top:4px;" id="yt-asistentes-sub">última clase</div>
-          </div>
-          <div style="padding:24px 28px;border-right:1px solid var(--border);">
-            <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;font-weight:600;">RETENCIÓN PROMEDIO</div>
-            <div style="font-size:2.4rem;font-weight:800;" id="yt-retencion">—</div>
-            <div style="font-size:0.78rem;color:var(--muted);margin-top:4px;">del total que entró</div>
-          </div>
-          <div style="padding:24px 28px;">
-            <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;font-weight:600;">TIEMPO PROMEDIO EN CLASE</div>
-            <div style="font-size:2.4rem;font-weight:800;" id="yt-tiempo">—</div>
-            <div style="font-size:0.78rem;color:var(--muted);margin-top:4px;" id="yt-tiempo-sub">minutos</div>
-          </div>
+      <!-- Big numbers first -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:24px;">
+        <div style="padding:22px 24px;border-right:1px solid var(--border);">
+          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">ASISTENTES</div>
+          <div style="font-size:2.2rem;font-weight:800;" id="yt-asistentes">—</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;" id="yt-asistentes-sub">última clase</div>
         </div>
-
-        <!-- Zoom sync -->
-        <div style="background:rgba(4,80,224,0.06);border:1px solid rgba(4,80,224,0.2);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:200px;">
-            <div style="font-weight:700;font-size:0.88rem;margin-bottom:2px;">🎥 Sincronizar clase</div>
-            <div style="font-size:0.78rem;color:var(--muted);">Importa asistencia de Zoom para actualizar las métricas</div>
-          </div>
-          <input type="text" id="zoomMeetingId" placeholder="Meeting ID"
-            style="padding:9px 14px;border-radius:6px;border:1px solid var(--border);background:var(--dark);color:var(--white);font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;width:200px;">
-          <button class="btn btn-gold" onclick="syncZoom()" id="zoomSyncBtn">Sincronizar →</button>
-          <div id="zoomSyncResult" style="display:none;font-size:0.82rem;padding:8px 12px;border-radius:6px;width:100%;"></div>
+        <div style="padding:22px 24px;border-right:1px solid var(--border);">
+          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">RETENCIÓN</div>
+          <div style="font-size:2.2rem;font-weight:800;" id="yt-retencion">—</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">promedio</div>
         </div>
-
-        <!-- Retention curve (existing renderTranscriptAnalysis target) -->
-        <div id="ast-evento-retention">
-          <div style="padding:40px;text-align:center;color:var(--muted);font-size:0.85rem;">Sincroniza una clase para ver la curva de retención</div>
+        <div style="padding:22px 24px;border-right:1px solid var(--border);">
+          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">TIEMPO PROMEDIO</div>
+          <div style="font-size:2.2rem;font-weight:800;" id="yt-tiempo">—</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;" id="yt-tiempo-sub">minutos</div>
         </div>
-
-        <!-- Zoom stats -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px;" id="zoom-stats-row">
-          <div class="stat-card"><div class="s-label">Total asistentes</div><div class="s-value" id="zm-total">—</div><div class="s-sub">todas las clases</div></div>
-          <div class="stat-card green"><div class="s-label">% Asistencia</div><div class="s-value" id="zm-pct">—</div><div class="s-sub">asistentes / confirmados</div></div>
-          <div class="stat-card gold"><div class="s-label">Tiempo promedio</div><div class="s-value" id="zm-tiempo">—</div><div class="s-sub">minutos en clase</div></div>
-          <div class="stat-card" style="border-color:rgba(168,85,247,0.3)"><div class="s-label">Identificados</div><div class="s-value" id="zm-match" style="color:#a855f7">—</div><div class="s-sub">emails cruzados</div></div>
+        <div style="padding:22px 24px;border-right:1px solid var(--border);">
+          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">IDENTIFICADOS</div>
+          <div style="font-size:2.2rem;font-weight:800;color:#a855f7;" id="yt-identificados">—</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">emails cruzados</div>
+        </div>
+        <div style="padding:22px 24px;">
+          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">% CONVERSIÓN</div>
+          <div style="font-size:2.2rem;font-weight:800;color:#22c55e;" id="yt-conversion">—</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">ventas / asistentes</div>
         </div>
       </div>
 
-      <!-- ══ SUB: TRANSCRIPCIÓN ══ -->
-      <div id="ast-transcript" style="display:none;">
-        <div style="background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:200px;">
-            <div style="font-weight:700;font-size:0.88rem;margin-bottom:2px;">📊 Análisis de Transcripción</div>
-            <div style="font-size:0.78rem;color:var(--muted);">Detecta en qué minuto se va la gente y qué se estaba diciendo</div>
-          </div>
-          <input type="text" id="transcriptMeetingId" placeholder="Meeting ID"
-            style="padding:9px 14px;border-radius:6px;border:1px solid rgba(168,85,247,0.4);background:var(--dark);color:var(--white);font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;width:200px;">
-          <button class="btn" style="background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.4);color:#c084fc;" onclick="analyzeTranscript()" id="transcriptBtn">Analizar →</button>
-        </div>
-        <div id="transcriptResult" style="display:none;"></div>
+      <!-- Transcript upload -->
+      <div style="margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <label style="padding:9px 18px;border-radius:6px;border:1px solid rgba(168,85,247,0.4);background:rgba(168,85,247,0.08);color:#c084fc;font-size:0.85rem;font-weight:600;cursor:pointer;white-space:nowrap;">
+          📄 Subir transcripción .vtt
+          <input type="file" id="vttFileInput" accept=".vtt,.txt" style="display:none;" onchange="uploadVTT(this)">
+        </label>
+        <input type="hidden" id="zoomMeetingId" value="">
+        <div id="zoomSyncResult" style="display:none;font-size:0.82rem;padding:8px 12px;border-radius:6px;"></div>
       </div>
+
+      <!-- Secondary stats -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;" id="zoom-stats-row">
+        <div class="stat-card"><div class="s-label">Total asistentes</div><div class="s-value" id="zm-total">—</div><div class="s-sub">todas las clases</div></div>
+        <div class="stat-card green"><div class="s-label">% Asistencia</div><div class="s-value" id="zm-pct">—</div><div class="s-sub">asistentes / confirmados</div></div>
+        <div class="stat-card gold"><div class="s-label">Tiempo promedio</div><div class="s-value" id="zm-tiempo">—</div><div class="s-sub">minutos en clase</div></div>
+        <div class="stat-card" style="border-color:rgba(168,85,247,0.3)"><div class="s-label">Identificados</div><div class="s-value" id="zm-match" style="color:#a855f7">—</div><div class="s-sub">emails cruzados</div></div>
+      </div>
+
+      <!-- Retention curve -->
+      <div id="ast-evento-retention" style="margin-bottom:24px;">
+        <div style="padding:40px;text-align:center;color:var(--muted);font-size:0.85rem;">Sincroniza una clase para ver la curva de retención</div>
+      </div>
+
 
     </div>
 
     <!-- ════════════ PAUTA ════════════ -->
+    <!-- ════════════ PAUTA / META ADS ════════════ -->
     <div class="panel" id="tab-pauta">
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:320px;text-align:center;gap:16px;">
-        <div style="font-size:3rem;">📣</div>
-        <div style="font-size:1.2rem;font-weight:700;">Pauta — Próximamente</div>
-        <div style="font-size:0.85rem;color:var(--muted);max-width:400px;line-height:1.7;">
-          Aquí conectaremos la API de Meta Ads para ver gasto, ROAS y resultados de campañas directamente en el dashboard.
+
+      <div class="sec" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h2>Pauta · Meta Ads</h2>
+          <p>Campañas, gasto y resultados en tiempo real.</p>
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 20px;font-size:0.82rem;">
-            <div style="color:var(--muted);margin-bottom:4px;">Gasto del mes</div>
-            <div style="font-size:1.4rem;font-weight:700;color:var(--muted);">$—</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div style="display:flex;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:4px;">
+            <button class="pauta-preset active" data-preset="today">Hoy</button>
+            <button class="pauta-preset" data-preset="last_7d">7 días</button>
+            <button class="pauta-preset" data-preset="last_14d">14 días</button>
+            <button class="pauta-preset" data-preset="last_30d">30 días</button>
+            <button class="pauta-preset" data-preset="last_month">Mes anterior</button>
           </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 20px;font-size:0.82rem;">
-            <div style="color:var(--muted);margin-bottom:4px;">ROAS</div>
-            <div style="font-size:1.4rem;font-weight:700;color:var(--muted);">—x</div>
+          <button class="btn btn-sm" id="pauta-refresh-btn" onclick="loadPautaTab()" style="gap:6px;">
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 2.5v4h-4"/><path d="M2.5 13.5v-4h4"/><path d="M13.5 6.5A6 6 0 1 0 12 12"/></svg>
+            Actualizar
+          </button>
+        </div>
+      </div>
+
+      <div id="pauta-alert" style="display:none;"></div>
+
+      <!-- Summary cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;">
+        <div class="card" style="padding:18px 20px;">
+          <div style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Gasto total</div>
+          <div id="p-spend" style="font-size:1.55rem;font-weight:700;">$—</div>
+          <div id="p-spend-sub" style="font-size:0.72rem;color:var(--muted);margin-top:2px;">— MXN</div>
+        </div>
+        <div class="card" style="padding:18px 20px;">
+          <div style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Leads</div>
+          <div id="p-leads" style="font-size:1.55rem;font-weight:700;">—</div>
+          <div id="p-leads-sub" style="font-size:0.72rem;color:var(--muted);margin-top:2px;">registros generados</div>
+        </div>
+        <div class="card" style="padding:18px 20px;">
+          <div style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Costo por Lead</div>
+          <div id="p-cpl" style="font-size:1.55rem;font-weight:700;">$—</div>
+          <div id="p-cpl-sub" style="font-size:0.72rem;color:var(--muted);margin-top:2px;">por registro</div>
+        </div>
+        <div class="card" style="padding:18px 20px;">
+          <div style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Impresiones</div>
+          <div id="p-impressions" style="font-size:1.55rem;font-weight:700;">—</div>
+          <div id="p-impressions-sub" style="font-size:0.72rem;color:var(--muted);margin-top:2px;">CTR <span id="p-ctr">—</span>%</div>
+        </div>
+        <div class="card" style="padding:18px 20px;">
+          <div style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">CPM</div>
+          <div id="p-cpm" style="font-size:1.55rem;font-weight:700;">$—</div>
+          <div id="p-cpm-sub" style="font-size:0.72rem;color:var(--muted);margin-top:2px;">por 1,000 impresiones</div>
+        </div>
+        <div class="card" style="padding:18px 20px;">
+          <div style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Campañas activas</div>
+          <div id="p-active-count" style="font-size:1.55rem;font-weight:700;">—</div>
+          <div id="p-active-sub" style="font-size:0.72rem;color:var(--muted);margin-top:2px;">de <span id="p-total-count">—</span> campañas</div>
+        </div>
+      </div>
+
+      <!-- Campaigns table -->
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-weight:600;font-size:0.9rem;">Campañas</div>
+          <div id="pauta-loading" style="font-size:0.78rem;color:var(--muted);display:none;">Cargando…</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table id="pauta-table" style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+            <thead>
+              <tr style="background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);">
+                <th style="text-align:left;padding:10px 16px;color:var(--muted);font-weight:600;white-space:nowrap;">Campaña</th>
+                <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">Estado</th>
+                <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">Presupuesto/día</th>
+                <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">Gasto</th>
+                <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">Impresiones</th>
+                <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">Alcance</th>
+                <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">Clics</th>
+                <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">CTR%</th>
+                <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">Leads</th>
+                <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">CPL</th>
+                <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="pauta-tbody">
+              <tr><td colspan="11" style="text-align:center;padding:40px;color:var(--muted);">Haz clic en "Actualizar" para cargar campañas.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Adsets drawer -->
+      <div id="pauta-adsets-drawer" style="display:none;margin-top:16px;">
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-weight:600;font-size:0.87rem;">Conjuntos de anuncios — <span id="pauta-adsets-campaign-name" style="color:var(--muted);font-weight:400;"></span></div>
+            <button onclick="document.getElementById('pauta-adsets-drawer').style.display='none'" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;">✕</button>
           </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 20px;font-size:0.82rem;">
-            <div style="color:var(--muted);margin-bottom:4px;">Costo por registro</div>
-            <div style="font-size:1.4rem;font-weight:700;color:var(--muted);">$—</div>
-          </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 20px;font-size:0.82rem;">
-            <div style="color:var(--muted);margin-bottom:4px;">Campañas activas</div>
-            <div style="font-size:1.4rem;font-weight:700;color:var(--muted);">—</div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+              <thead>
+                <tr style="background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);">
+                  <th style="text-align:left;padding:10px 16px;color:var(--muted);font-weight:600;">Conjunto</th>
+                  <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">Estado</th>
+                  <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">Presup./día</th>
+                  <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">Gasto</th>
+                  <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">Impresiones</th>
+                  <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">Clics</th>
+                  <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">CTR%</th>
+                  <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">Leads</th>
+                  <th style="text-align:right;padding:10px 12px;color:var(--muted);font-weight:600;">CPL</th>
+                  <th style="text-align:center;padding:10px 12px;color:var(--muted);font-weight:600;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="pauta-adsets-tbody"></tbody>
+            </table>
           </div>
         </div>
       </div>
+
+      <!-- Budget edit modal -->
+      <div id="pauta-budget-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9000;align-items:center;justify-content:center;">
+        <div style="background:#0e1e36;border:1px solid var(--border);border-radius:14px;padding:28px;width:360px;max-width:90vw;">
+          <div style="font-weight:700;font-size:1rem;margin-bottom:16px;">Editar presupuesto diario</div>
+          <div style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;" id="pauta-budget-name"></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+            <span style="color:var(--muted);font-size:0.9rem;">$</span>
+            <input type="number" id="pauta-budget-input" min="1" step="0.01" placeholder="0.00"
+              style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--white);font-size:1rem;outline:none;">
+            <span style="font-size:0.78rem;color:var(--muted);" id="pauta-budget-currency">MXN/día</span>
+          </div>
+          <div id="pauta-budget-alert" style="font-size:0.78rem;color:var(--red);margin-bottom:12px;display:none;"></div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn" style="flex:1;" onclick="document.getElementById('pauta-budget-modal').style.display='none'">Cancelar</button>
+            <button class="btn btn-gold" style="flex:1;" onclick="pautaSaveBudget()">Guardar</button>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- ════════════ CONFIG ════════════ -->
@@ -1003,18 +1215,27 @@ function fmtFull(d) {
 /* ──────────────────────────────────────
    TABS
 ────────────────────────────────────── */
+function activateTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const tabEl = document.querySelector(`.tab[data-tab="${tabName}"]`);
+  const panelEl = document.getElementById('tab-' + tabName);
+  if (!tabEl || !panelEl) return;
+  tabEl.classList.add('active');
+  panelEl.classList.add('active');
+  localStorage.setItem('dash_active_tab', tabName);
+  if (tabName === 'overview') renderOverview();
+  if (tabName === 'ventas')   loadVentasTab();
+  if (tabName === 'landing')  loadLandingTab();
+  if (tabName === 'evento')   loadEventoTab();
+  if (tabName === 'pauta')    loadPautaTab();
+  if (tabName === 'miembros') loadMiembros();
+  if (tabName === 'config')   renderConfig();
+}
+
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', function() {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    this.classList.add('active');
-    document.getElementById('tab-' + this.dataset.tab).classList.add('active');
-    if (this.dataset.tab === 'overview') renderOverview();
-    if (this.dataset.tab === 'ventas')   loadVentasTab();
-    if (this.dataset.tab === 'landing')  loadLandingTab();
-    if (this.dataset.tab === 'evento')   setEventoSubTab(currentEventoSubTab || 'evento');
-    if (this.dataset.tab === 'miembros') loadMiembros();
-    if (this.dataset.tab === 'config')   renderConfig();
+    activateTab(this.dataset.tab);
   });
 });
 
@@ -1024,30 +1245,26 @@ document.querySelectorAll('.tab').forEach(tab => {
 let chartRegistros = null;
 
 async function renderOverview() {
-  const regs = getRegistrations();
-  const totalViews = ['A','B','C','D'].reduce((s,v) => s + getViews(v), 0);
-  const totalConv  = regs.length;
-  const totalCVR   = cvr(totalViews, totalConv);
-
-  document.getElementById('ov-total').textContent = totalConv;
-  document.getElementById('ov-views').textContent = totalViews;
-
-  // Winner
-  let best = null, bestCVR = -1;
-  ['A','B','C','D'].forEach(v => {
-    const c = cvr(getViews(v), getConv(v));
-    if (c > bestCVR) { bestCVR = c; best = v; }
-  });
-  document.getElementById('ov-winner').textContent     = best || '—';
-  document.getElementById('ov-winner-cvr').textContent = best ? `CVR: ${bestCVR}%` : 'Sin datos aún';
+  // Use Supabase for accurate A/B view counts (localStorage is device-specific)
+  let sbTotalViews = 0, totalCVR = 0;
+  try {
+    const bhvCount = await fetchSB('/rest/v1/page_behavior?select=id');
+    sbTotalViews = (bhvCount||[]).length;
+  } catch(e) {}
+  const sbRegsLocal = getRegistrations();
+  const totalCon = sbRegsLocal.length;
+  totalCVR = sbTotalViews > 0 ? Math.round(totalCon / sbTotalViews * 100) : 0;
+  document.getElementById('ov-total').textContent = totalCon;
+  document.getElementById('ov-views').textContent = sbTotalViews;
 
   // ── Business metrics from Supabase ──
   try {
-    const [ventas, estados, miembros, sbRegs] = await Promise.all([
+    const [ventas, estados, miembros, sbRegs, interesados] = await Promise.all([
       fetchSB('/rest/v1/ventas?select=monto,tipo,aprobado,comision_porcentaje,created_at&order=created_at.desc'),
       fetchSB('/rest/v1/lead_estados?select=estado,registro_email'),
       fetchSB('/rest/v1/miembros?select=id,monto_pagado,fecha_ingreso'),
       fetchSB('/rest/v1/clase_viral_registros?select=id'),
+      fetchSB('/rest/v1/proximity_creators_interesados?select=id,created_at'),
     ]);
 
     const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -1084,24 +1301,125 @@ async function renderOverview() {
     document.getElementById('ov-comisiones-sub').textContent = MESES[ahora.getMonth()] + ' · ' + aprobMes.length + ' ventas';
 
     // ── Tráfico & Asistencia ──
-    const tasaConf = totalRegistrados > 0 ? Math.round(confirmados / totalRegistrados * 100) : 0;
+    // ── Corte semanal: desde el último jueves a las 7 PM ──
+    function lastThursdayCut() {
+      const d = new Date();
+      const day = d.getDay(); // 0=Sun … 4=Thu
+      const daysBack = day >= 4 ? day - 4 : day + 3; // days since last Thursday
+      const cut = new Date(d);
+      cut.setDate(d.getDate() - daysBack);
+      cut.setHours(19, 0, 0, 0); // 7 PM
+      // If today is Thursday but before 7 PM, go back one more week
+      if (daysBack === 0 && d < cut) cut.setDate(cut.getDate() - 7);
+      return cut;
+    }
+    const corteFecha = lastThursdayCut();
+
     // Asistencia y conversión requieren datos de Zoom
     let asistentes = 0;
     try {
       const asist = await fetchSB('/rest/v1/asistencias?select=email');
       asistentes = (asist||[]).length;
     } catch(e) {}
-    const tasaAsist = confirmados > 0 ? Math.round(asistentes / confirmados * 100) : 0;
-    const tasaConvFinal = asistentes > 0 ? Math.round(mbList.length / asistentes * 100) : 0;
-    document.getElementById('ov-tasa-conf').textContent = tasaConf + '%';
-    document.getElementById('ov-tasa-asist').textContent = tasaAsist > 0 ? tasaAsist + '%' : '—';
-    document.getElementById('ov-tasa-conv').textContent = tasaConvFinal > 0 ? tasaConvFinal + '%' : '—';
+
+    // Ventas aprobadas en este corte (desde el último jueves)
+    const ventasCorte = aprobadas.filter(v => v.created_at && new Date(v.created_at) >= corteFecha).length;
+
+    // Show exact numbers "X / Y"
+    document.getElementById('ov-tasa-conf').textContent = confirmados + ' / ' + totalRegistrados;
+    document.getElementById('ov-tasa-conf-sub').textContent = 'confirmados de ' + totalRegistrados + ' registrados';
+    // Asistencia real = asistentes / registrados (no confirmados — confirmado no implica asistencia)
+    document.getElementById('ov-tasa-asist').textContent = asistentes > 0 ? asistentes + ' / ' + totalRegistrados : '—';
+    document.getElementById('ov-tasa-asist-sub').textContent = asistentes > 0 ? asistentes + ' asistentes de ' + totalRegistrados + ' registrados' : 'sin datos de Zoom aún';
+    document.getElementById('ov-tasa-conv').textContent = asistentes > 0 ? ventasCorte + ' / ' + asistentes : '—';
+    document.getElementById('ov-tasa-conv-sub').textContent = asistentes > 0 ? ventasCorte + ' ventas de ' + asistentes + ' asistentes · desde ' + corteFecha.toLocaleDateString('es-MX') : 'ventas este corte / asistentes';
+
+    // ── Predicciones (solo cuando hay suficiente data histórica) ──
+    // Tasa histórica asistencia = asistentes_histórico / registrados_histórico
+    // Tasa histórica conversión = ventas_aprobadas_histórico / asistentes_histórico
+    const MIN_DATA = 5; // mínimo de asistentes para confiar en las tasas
+    if (asistentes >= MIN_DATA && totalRegistrados >= MIN_DATA) {
+      const histAsistRate = asistentes / totalRegistrados; // e.g. 0.30
+      const histConvRate  = aprobadas.length > 0 ? aprobadas.length / asistentes : 0; // e.g. 0.07
+
+      const predAsist = Math.round(confirmados * histAsistRate);
+      const predVentas = Math.round(predAsist * histConvRate);
+
+      const pctAsist = Math.round(histAsistRate * 100);
+      const pctConv  = Math.round(histConvRate * 100);
+
+      const predAsistEl = document.getElementById('ov-pred-asist');
+      predAsistEl.style.display = 'block';
+      document.getElementById('ov-pred-asist-val').textContent = '~' + predAsist + ' personas';
+      document.getElementById('ov-pred-asist-sub').textContent = confirmados + ' confirmados × ' + pctAsist + '% tasa histórica';
+
+      const predConvEl = document.getElementById('ov-pred-conv');
+      predConvEl.style.display = 'block';
+      document.getElementById('ov-pred-conv-val').textContent = '~' + predVentas + ' ventas';
+      document.getElementById('ov-pred-conv-sub').textContent = predAsist + ' est. asistentes × ' + pctConv + '% tasa histórica';
+    }
+
+    // ── Embudo de ventas: Interesados + Seguimientos ──
+    {
+      const intList = interesados || [];
+      const hoyMidnight = new Date(); hoyMidnight.setHours(0,0,0,0);
+      const semAtras = new Date(Date.now() - 7 * 86400000);
+      const intHoy = intList.filter(r => new Date(r.created_at) >= hoyMidnight).length;
+      const intSem = intList.filter(r => new Date(r.created_at) >= semAtras).length;
+      const elTotal = document.getElementById('ov-int-total');
+      const elHoy   = document.getElementById('ov-int-hoy');
+      const elSem   = document.getElementById('ov-int-semana');
+      if (elTotal) elTotal.textContent = intList.length;
+      if (elHoy)   elHoy.textContent   = intHoy;
+      if (elSem)   elSem.textContent   = intSem;
+
+      const seguimientosCnt = (estados||[]).filter(e => e.estado === 'seguimiento').length;
+      const segExitososCnt  = (estados||[]).filter(e => e.estado === 'seguimiento_exitoso').length;
+      const elSeg  = document.getElementById('ov-seguimientos');
+      const elSExt = document.getElementById('ov-seg-exitosos');
+      if (elSeg)  elSeg.textContent  = seguimientosCnt;
+      if (elSExt) elSExt.textContent = segExitososCnt;
+    }
+
+    // ── Pauta / Meta Ads ──
+    try {
+      const metaRes = await fetch('/api/meta-ads?action=campaigns&date_preset=last_30d', {
+        headers: { 'Authorization': `Bearer ${DASHBOARD_SECRET}` }
+      });
+      if (metaRes.ok) {
+        const { campaigns } = await metaRes.json();
+        let totalSpend = 0, totalLeads = 0, totalImpressions = 0, totalClicks = 0, activeCnt = 0;
+        (campaigns || []).forEach(c => {
+          totalSpend += parseFloat(c.spend || 0);
+          totalLeads += parseInt(c.leads || 0);
+          totalImpressions += parseInt(c.impressions || 0);
+          totalClicks += parseInt(c.clicks || 0);
+          if (c.status === 'ACTIVE') activeCnt++;
+        });
+        const avgCpl = totalLeads > 0 ? (totalSpend / totalLeads) : null;
+        const avgCtr = totalImpressions > 0 ? (totalClicks / totalImpressions * 100).toFixed(2) : '—';
+        const fmt$ = n => '$' + parseFloat(n).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        const fmtN = n => parseInt(n).toLocaleString('es-MX');
+        document.getElementById('ov-pauta-spend').textContent = fmt$(totalSpend);
+        document.getElementById('ov-pauta-spend').style.color = totalSpend > 0 ? 'var(--white)' : 'var(--muted)';
+        document.getElementById('ov-pauta-spend-sub').textContent = 'últimos 30 días';
+        document.getElementById('ov-pauta-leads').textContent = fmtN(totalLeads);
+        document.getElementById('ov-pauta-cpl').textContent = avgCpl ? fmt$(avgCpl) : '$—';
+        document.getElementById('ov-pauta-impressions').textContent = fmtN(totalImpressions);
+        document.getElementById('ov-pauta-ctr').textContent = avgCtr;
+        document.getElementById('ov-pauta-active').textContent = activeCnt;
+        document.getElementById('ov-pauta-total').textContent = (campaigns || []).length;
+        document.getElementById('ov-pauta-period').textContent = 'últimos 30 días';
+      }
+    } catch(e) { /* silent — pauta optional */ }
 
     // ── Recomendaciones ──
     const recs = [];
-    if (totalCVR < 30 && totalViews >= 20) recs.push({ color:'#f97316', icon:'📊', text:`Tasa de conversión de la landing baja (${totalCVR}%). Prueba optimizar el título o el formulario.` });
-    if (tasaConf < 30 && totalRegistrados >= 10) recs.push({ color:'#3b82f6', icon:'📞', text:`Solo el ${tasaConf}% de los registrados confirmaron. Empuja a los vendedores a contactar más leads.` });
-    if (tasaAsist < 40 && asistentes > 0) recs.push({ color:'#ef4444', icon:'🎥', text:`Tasa de asistencia baja (${tasaAsist}%). Refuerza los recordatorios antes del evento.` });
+    const tasaConf = totalRegistrados > 0 ? Math.round(confirmados / totalRegistrados * 100) : 0;
+    const tasaAsist = totalRegistrados > 0 ? Math.round(asistentes / totalRegistrados * 100) : 0;
+    if (totalCVR < 30 && totalViews >= 20) recs.push({ color:'#f97316', icon:'📊', text:`Conversión de landing baja — solo ${totalCon} registros de ${sbTotalViews} visitas. Prueba optimizar el título o formulario.` });
+    if (tasaConf < 30 && totalRegistrados >= 10) recs.push({ color:'#3b82f6', icon:'📞', text:`Solo ${confirmados} de ${totalRegistrados} registrados confirmaron. Empuja a los vendedores a contactar más leads.` });
+    if (tasaAsist < 40 && asistentes > 0) recs.push({ color:'#ef4444', icon:'🎥', text:`Asistencia baja — ${asistentes} de ${confirmados} confirmados asistieron. Refuerza los recordatorios.` });
     if (aprobMes.length === 0) recs.push({ color:'#a855f7', icon:'💰', text:`Sin ventas aprobadas este mes. Revisa si hay ventas pendientes de aprobación.` });
     if (mbMes.length > 0 && facturacionMes > 0) recs.push({ color:'#22c55e', icon:'✅', text:`${mbMes.length} nuevo${mbMes.length>1?'s':''} miembro${mbMes.length>1?'s':''} este mes — $${facturacionMes.toLocaleString('es-MX',{maximumFractionDigits:0})} en facturación.` });
     if (!recs.length) recs.push({ color:'var(--muted)', icon:'📋', text:'Todo parece en orden. Sigue monitoreando para ver nuevas recomendaciones.' });
@@ -1116,38 +1434,164 @@ async function renderOverview() {
 
   // Vendor mini-summary
   try {
-    const [vends, actividad] = await Promise.all([
-      fetchSB('/rest/v1/vendedores?select=nombre,activo,last_active&order=nombre'),
-      fetchSB('/rest/v1/vendedor_actividad?select=vendedor,accion,ts&order=ts.desc&limit=500'),
+    // Time references for weekly/daily filters
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const hoyISO = hoy.toISOString();
+    // Corte semanal = último jueves 7 PM
+    const corteSem = (() => {
+      const d = new Date(); const day = d.getDay();
+      const back = day >= 4 ? day - 4 : day + 3;
+      const c = new Date(d); c.setDate(d.getDate() - back); c.setHours(19,0,0,0);
+      if (back === 0 && d < c) c.setDate(c.getDate() - 7);
+      return c;
+    })();
+    const corteSemISO = corteSem.toISOString();
+
+    const [vends, actividad, actividadHoy, ventasVend, leadsVend] = await Promise.all([
+      fetchSB('/rest/v1/vendedores?select=nombre,activo,last_active,apodo,foto_url&order=nombre'),
+      fetchSB('/rest/v1/vendedor_actividad?select=vendedor,accion,detalle,ts&order=ts.desc&limit=1000'),
+      fetchSB(`/rest/v1/vendedor_actividad?select=vendedor,accion,detalle&accion=eq.session_end&ts=gte.${encodeURIComponent(hoyISO)}`),
+      fetchSB('/rest/v1/ventas?select=vendedor,monto,tipo,aprobado,comision_porcentaje'),
+      fetchSB('/rest/v1/lead_estados?select=vendedor,asignado_a,estado,updated_at'),
     ]);
+
+    // ── Confirmados: use CURRENT estado (not activity log) ──
+    // This correctly reflects if a lead was changed back to por_confirmar
+    const CONF_ESTADOS = new Set(['confirmado','asistio','seguimiento_exitoso','compro_evento']);
+    const confActual = {}, confHoy = {}, confSemana = {};
+    (leadsVend||[]).forEach(e => {
+      const name = e.vendedor;
+      if (!name) return;
+      if (CONF_ESTADOS.has(e.estado)) {
+        confActual[name] = (confActual[name]||0) + 1;
+        const upd = new Date(e.updated_at);
+        if (upd >= hoy) confHoy[name] = (confHoy[name]||0) + 1;
+        else if (upd >= corteSem) confSemana[name] = (confSemana[name]||0) + 1;
+      }
+    });
+
+    // ── Per-vendor time: today vs total ──
+    const tiempoHoyMap = {};
+    (actividadHoy||[]).forEach(a => {
+      const mins = a.detalle ? parseInt(a.detalle) : 0;
+      if (!isNaN(mins) && mins > 0) tiempoHoyMap[a.vendedor] = (tiempoHoyMap[a.vendedor]||0) + mins;
+    });
+
     const byVend = {};
-    (vends||[]).forEach(v => { byVend[v.nombre] = { nombre: v.nombre, activo: v.activo, last_active: v.last_active, sessions:0, tiempoMin:0, waClicks:0, confirmaciones:0 }; });
-    const sessions = {};
+    (vends||[]).forEach(v => { byVend[v.nombre] = { nombre: v.nombre, apodo: v.apodo||null, foto_url: v.foto_url||null, activo: v.activo, last_active: v.last_active, sessions:0, tiempoMin:0, waClicks:0, ventas:0, comisiones:0, leadsAsignados:0 }; });
     for (const a of (actividad||[])) {
-      if (!byVend[a.vendedor]) byVend[a.vendedor] = { nombre: a.vendedor, activo: false, sessions:0, tiempoMin:0, waClicks:0, confirmaciones:0 };
+      if (!byVend[a.vendedor]) byVend[a.vendedor] = { nombre: a.vendedor, activo: false, sessions:0, tiempoMin:0, waClicks:0, ventas:0, comisiones:0, leadsAsignados:0 };
       const vd = byVend[a.vendedor];
-      if (a.accion === 'session_start') { vd.sessions++; sessions[a.vendedor] = new Date(a.ts); }
-      else if (a.accion === 'session_end' && sessions[a.vendedor]) { vd.tiempoMin += (new Date(a.ts) - sessions[a.vendedor]) / 60000; delete sessions[a.vendedor]; }
+      if (a.accion === 'session_start') { vd.sessions++; }
+      else if (a.accion === 'session_end') {
+        const mins = a.detalle ? parseInt(a.detalle) : 0;
+        if (!isNaN(mins)) vd.tiempoMin += mins;
+      }
       else if (a.accion === 'wa_click') vd.waClicks++;
-      else if (a.accion === 'confirmacion') vd.confirmaciones++;
     }
+    // Tally ventas and leads per vendor
+    (ventasVend||[]).forEach(vv => {
+      const vd = byVend[vv.vendedor];
+      if (!vd) return;
+      if (vv.aprobado) {
+        vd.ventas++;
+        const r = (vv.comision_porcentaje != null ? vv.comision_porcentaje : (vv.tipo==='compro_evento'?5:10)) / 100;
+        vd.comisiones += Number(vv.monto||0) * r;
+      }
+    });
+    (leadsVend||[]).forEach(le => {
+      const name = le.asignado_a || le.vendedor;
+      if (byVend[name]) byVend[name].leadsAsignados++;
+    });
+
     const rows = Object.values(byVend);
-    document.getElementById('ov-vend-body').innerHTML = rows.length ? rows.map(v => {
-      const mins = Math.round(v.tiempoMin);
-      const tiempoStr = mins >= 60 ? `${Math.floor(mins/60)}h ${mins%60}m` : mins > 0 ? `${mins}m` : '—';
-      const efic = v.waClicks > 0 ? Math.round(v.confirmaciones / v.waClicks * 100) : null;
-      const lastAct = v.last_active ? (() => { const d = Math.floor((Date.now()-new Date(v.last_active))/86400000); return d===0?'Hoy':d===1?'Ayer':`hace ${d}d`; })() : 'Nunca';
-      const lastColor = !v.last_active ? 'var(--muted)' : (() => { const d=Math.floor((Date.now()-new Date(v.last_active))/86400000); return d>5?'var(--red)':d>2?'#eab308':'var(--green)'; })();
-      return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
-        <td style="padding:10px 16px;font-weight:600;">${esc(v.nombre)}</td>
-        <td style="text-align:center;padding:10px 12px;color:var(--text);">${v.sessions||0}</td>
-        <td style="text-align:center;padding:10px 12px;color:var(--text);">${tiempoStr}</td>
-        <td style="text-align:center;padding:10px 12px;color:#25d366;font-weight:600;">${v.waClicks||0}</td>
-        <td style="text-align:center;padding:10px 12px;color:var(--blue);font-weight:600;">${v.confirmaciones||0}</td>
-        <td style="text-align:center;padding:10px 12px;font-weight:700;color:${efic!=null?(efic>=50?'var(--green)':efic>=20?'#eab308':'var(--red)'):'var(--muted)'};">${efic!=null?efic+'%':'—'}</td>
-        <td style="text-align:center;padding:10px 12px;font-size:0.78rem;color:${lastColor};">${lastAct}</td>
-      </tr>`;
-    }).join('') : '<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--muted);">Sin vendedores aún</td></tr>';
+    const vendCard = document.getElementById('ov-vendedores-card');
+    if (!rows.length) {
+      vendCard.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.85rem;">Sin vendedores aún</div>';
+    } else {
+      vendCard.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;padding:16px;">` +
+        rows.map(v => {
+          const fmtMins = m => { const r = Math.round(m); return r >= 60 ? `${Math.floor(r/60)}h ${r%60}m` : r > 0 ? `${r}m` : '0m'; };
+          const tiempoTotal = fmtMins(v.tiempoMin);
+          const tiempoHoy   = fmtMins(tiempoHoyMap[v.nombre] || 0);
+          const tiempoAvg   = v.sessions > 0 ? fmtMins(v.tiempoMin / v.sessions) : '—';
+          const d = v.last_active ? Math.floor((Date.now()-new Date(v.last_active))/86400000) : 999;
+          const statusLabel = d === 0 ? 'Activo hoy' : d === 1 ? 'Activo ayer' : d < 4 ? `Hace ${d}d` : d < 8 ? 'Esta semana' : 'Inactivo';
+          const statusDot = d === 0 ? '#22c55e' : d < 4 ? '#eab308' : '#ef4444';
+          const displayName = v.apodo || v.nombre;
+          const initials = displayName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+          const avatarHtml = v.foto_url
+            ? `<img src="${esc(v.foto_url)}" alt="${esc(displayName)}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,214,0,0.4);flex-shrink:0;">`
+            : `<div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgba(26,111,255,0.4),rgba(255,214,0,0.3));border:2px solid rgba(255,214,0,0.3);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;flex-shrink:0;">${initials}</div>`;
+          const cActual = confActual[v.nombre] || 0;
+          const cHoy    = confHoy[v.nombre]    || 0;
+          const cSem    = confSemana[v.nombre] || 0;
+          return `
+          <div style="background:rgba(255,255,255,0.04);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;">
+
+            <!-- Header: avatar + nombre + ventas -->
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              ${avatarHtml}
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:700;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(displayName)}</div>
+                <div style="display:flex;align-items:center;gap:5px;margin-top:3px;">
+                  <span style="width:7px;height:7px;border-radius:50%;background:${statusDot};display:inline-block;flex-shrink:0;"></span>
+                  <span style="font-size:0.72rem;color:var(--muted);">${statusLabel}</span>
+                </div>
+              </div>
+              <div style="text-align:right;flex-shrink:0;">
+                <div style="font-size:1.5rem;font-weight:800;color:var(--gold);line-height:1;">${v.ventas||0}</div>
+                <div style="font-size:0.62rem;color:var(--muted);margin-top:2px;">ventas</div>
+              </div>
+            </div>
+
+            <!-- Confirmados: hoy / semana / total -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px;">
+              <div style="background:rgba(168,85,247,0.09);border:1px solid rgba(168,85,247,0.22);border-radius:8px;padding:8px 4px;text-align:center;" title="Confirmados desde las 12am de hoy">
+                <div style="font-size:0.58rem;font-weight:700;color:rgba(168,85,247,0.7);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Hoy</div>
+                <div style="font-size:1.35rem;font-weight:800;color:#c084fc;line-height:1;">${cHoy}</div>
+                <div style="font-size:0.6rem;color:var(--muted);margin-top:1px;">desde 12am</div>
+              </div>
+              <div style="background:rgba(26,111,255,0.09);border:1px solid rgba(26,111,255,0.22);border-radius:8px;padding:8px 4px;text-align:center;" title="Confirmados esta semana (ciclo desde el jueves) pero antes de hoy">
+                <div style="font-size:0.58rem;font-weight:700;color:rgba(26,111,255,0.7);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Semana</div>
+                <div style="font-size:1.35rem;font-weight:800;color:#60a5fa;line-height:1;">${cSem}</div>
+                <div style="font-size:0.6rem;color:var(--muted);margin-top:1px;">días anteriores</div>
+              </div>
+              <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:8px 4px;text-align:center;" title="Total de leads actualmente confirmados (estado actual en la DB)">
+                <div style="font-size:0.58rem;font-weight:700;color:rgba(34,197,94,0.7);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Total</div>
+                <div style="font-size:1.35rem;font-weight:800;color:#4ade80;line-height:1;">${cActual}</div>
+                <div style="font-size:0.6rem;color:var(--muted);margin-top:1px;">confirmados</div>
+              </div>
+            </div>
+
+            <!-- Comisiones -->
+            <div style="background:rgba(255,214,0,0.07);border:1px solid rgba(255,214,0,0.15);border-radius:8px;padding:9px 12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:0.72rem;color:var(--muted);">Comisiones ganadas</span>
+              <span style="font-weight:800;font-size:1rem;color:var(--gold);">$${(v.comisiones||0).toLocaleString('es-MX',{maximumFractionDigits:0})}</span>
+            </div>
+
+            <!-- 4 stats: leads · WA · tiempo hoy · promedio sesión -->
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;text-align:center;">
+              <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:8px 6px;">
+                <div style="font-weight:700;font-size:1rem;color:var(--blue);">${v.leadsAsignados||0}</div>
+                <div style="font-size:0.62rem;color:var(--muted);">Leads asignados</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:8px 6px;">
+                <div style="font-weight:700;font-size:1rem;color:#25d366;">${v.waClicks||0}</div>
+                <div style="font-size:0.62rem;color:var(--muted);">Clicks WA</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:8px 6px;">
+                <div style="font-weight:700;font-size:1rem;color:#fb923c;">${tiempoHoy}</div>
+                <div style="font-size:0.62rem;color:var(--muted);">Tiempo hoy</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:8px 6px;">
+                <div style="font-weight:700;font-size:1rem;color:var(--text);">${tiempoAvg}</div>
+                <div style="font-size:0.62rem;color:var(--muted);">Promedio/sesión</div>
+              </div>
+            </div>
+          </div>`;
+        }).join('') + '</div>';
+    }
   } catch(e) { /* silent */ }
 }
 
@@ -1171,35 +1615,57 @@ function getLast14Days(regs) {
 ────────────────────────────────────── */
 let chartAB = null;
 
-function renderABTest() {
+async function renderABTest() {
   const cfg = getConfig();
   const container = document.getElementById('abCards');
-  container.innerHTML = '';
+  container.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:12px">Cargando datos A/B…</div>';
 
+  // Fetch real data from Supabase
+  let sbViews = {A:0,B:0,C:0,D:0}, sbConvs = {A:0,B:0,C:0,D:0};
+  try {
+    const [bhvRows, regRows] = await Promise.all([
+      fetchSB('/rest/v1/page_behavior?select=variant'),
+      fetchSB('/rest/v1/clase_viral_registros?select=variante'),
+    ]);
+    (bhvRows||[]).forEach(r => { const v = (r.variant||'').toUpperCase(); if (sbViews[v] !== undefined) sbViews[v]++; });
+    (regRows||[]).forEach(r => { const v = (r.variante||'').toUpperCase(); if (sbConvs[v] !== undefined) sbConvs[v]++; });
+  } catch(e) {}
+
+  const COLORS = {A:'#1a6fff',B:'#ffd600',C:'#22c55e',D:'#ef4444'};
   let best = null, bestCVR = -1;
   ['A','B','C','D'].forEach(v => {
-    const c = cvr(getViews(v), getConv(v));
+    const c = cvr(sbViews[v], sbConvs[v]);
     if (c > bestCVR) { bestCVR = c; best = v; }
   });
 
-  ['A','B','C','D'].forEach(v => {
-    const views = getViews(v), conv = getConv(v), c = cvr(views, conv);
-    const isW = (v === best && views > 0);
-    container.innerHTML += `
-      <div class="card" style="border-left: 3px solid var(--${v==='A'?'blue':v==='B'?'gold':v==='C'?'green':'red'});">
-        <div class="card-title">
-          <span><span class="var-badge var-${v}">${v}</span>${isW ? ' &nbsp;<span class="winner-badge">🏆 Líder actual</span>' : ''}</span>
-          <span style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold)">${c}% CVR</span>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text);margin-bottom:16px;line-height:1.5;font-style:italic;">"${cfg.variants[v]}"</p>
-        <div style="display:flex;gap:24px;font-size:0.82rem;color:var(--muted);">
-          <span><strong style="color:var(--white);font-size:1rem">${views}</strong> visitas</span>
-          <span><strong style="color:var(--gold);font-size:1rem">${conv}</strong> registros</span>
-        </div>
-      </div>`;
-  });
+  container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">` +
+    ['A','B','C','D'].map(v => {
+      const views = sbViews[v], conv = sbConvs[v], c = cvr(views, conv);
+      const isW = (v === best && views > 0);
+      const pct = views > 0 ? Math.round(conv / views * 100) : 0;
+      return `
+        <div style="background:var(--card);backdrop-filter:blur(12px);border:1px solid ${COLORS[v]}33;border-top:2px solid ${COLORS[v]};border-radius:10px;padding:18px 16px;position:relative;">
+          ${isW ? `<div style="position:absolute;top:10px;right:10px;background:${COLORS[v]}22;color:${COLORS[v]};font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:10px;">LÍDER</div>` : ''}
+          <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.15em;color:${COLORS[v]};margin-bottom:10px;">VARIANTE ${v}</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:2.6rem;line-height:1;color:${isW?COLORS[v]:'var(--white)'};">${c}%</div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-bottom:12px;">conversión</div>
+          <p style="font-size:0.78rem;color:var(--text);line-height:1.4;font-style:italic;margin-bottom:14px;">"${esc((cfg.variants[v]||'').substring(0,70))}"</p>
+          <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--muted);">
+            <span><b style="color:var(--white)">${views}</b> visitas</span>
+            <span><b style="color:${COLORS[v]}">${conv}</b> registros</span>
+          </div>
+          <div style="margin-top:10px;background:rgba(255,255,255,0.06);border-radius:4px;height:4px;overflow:hidden;">
+            <div style="height:100%;background:${COLORS[v]};width:${Math.min(pct,100)}%;transition:width 0.6s;"></div>
+          </div>
+        </div>`;
+    }).join('') + '</div>';
 
   // Auto-optimize underperforming variants (async, non-blocking)
+  // Sync localStorage views with Supabase data so autoOptimize has real numbers
+  ['A','B','C','D'].forEach(v => {
+    if (sbViews[v] > getViews(v)) localStorage.setItem('ab_views_' + v, sbViews[v]);
+    if (sbConvs[v] > getConv(v)) localStorage.setItem('ab_conv_' + v, sbConvs[v]);
+  });
   autoOptimizeVariants(best, bestCVR);
 
   // Chart AB
@@ -1210,16 +1676,16 @@ function renderABTest() {
     data: {
       labels: ['Variante A', 'Variante B', 'Variante C', 'Variante D'],
       datasets: [
-        { label: 'Visitas', data: ['A','B','C','D'].map(getViews), backgroundColor: 'rgba(4,80,224,0.5)', borderColor: '#0450E0', borderWidth: 1 },
-        { label: 'Registros', data: ['A','B','C','D'].map(getConv), backgroundColor: 'rgba(255,229,0,0.6)', borderColor: '#FFE500', borderWidth: 1 }
+        { label: 'Visitas', data: ['A','B','C','D'].map(v => sbViews[v]), backgroundColor: 'rgba(26,111,255,0.4)', borderColor: '#1a6fff', borderWidth: 1 },
+        { label: 'Registros', data: ['A','B','C','D'].map(v => sbConvs[v]), backgroundColor: 'rgba(255,214,0,0.5)', borderColor: '#ffd600', borderWidth: 1 }
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: '#888', font: { size: 12 } } } },
+      plugins: { legend: { labels: { color: '#6a88b0', font: { size: 12 } } } },
       scales: {
-        x: { ticks: { color: '#666' }, grid: { color: '#1e1e1e' } },
-        y: { ticks: { color: '#666', stepSize: 1 }, grid: { color: '#1e1e1e' }, min: 0 }
+        x: { ticks: { color: '#6a88b0' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#6a88b0', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.04)' }, min: 0 }
       }
     }
   });
@@ -1494,6 +1960,15 @@ async function loadZoomStats() {
     document.getElementById('zm-pct').textContent = pct + '%';
     document.getElementById('zm-tiempo').textContent = avgMin + 'min';
     document.getElementById('zm-match').textContent = conEmail;
+    // Also update big numbers row
+    if (document.getElementById('yt-asistentes').textContent === '—' && total > 0) {
+      document.getElementById('yt-asistentes').textContent = total;
+    }
+    if (document.getElementById('yt-tiempo').textContent === '—' && avgMin > 0) {
+      document.getElementById('yt-tiempo').textContent = avgMin + 'min';
+    }
+    const ytId = document.getElementById('yt-identificados');
+    if (ytId) ytId.textContent = conEmail || '—';
 
     // Historial por meeting
     const byMeeting = {};
@@ -1502,9 +1977,11 @@ async function loadZoomStats() {
       byMeeting[a.meeting_id].count++;
     });
     const meetings = Object.entries(byMeeting);
-    if (meetings.length > 0) {
-      document.getElementById('zoomHistorial').style.display = 'block';
-      document.getElementById('zoomHistorialList').innerHTML = meetings.map(([id, d]) =>
+    const histEl = document.getElementById('zoomHistorial');
+    const histListEl = document.getElementById('zoomHistorialList');
+    if (histEl && histListEl && meetings.length > 0) {
+      histEl.style.display = 'block';
+      histListEl.innerHTML = meetings.map(([id, d]) =>
         `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--card);border-radius:6px;margin-bottom:6px;font-size:0.82rem;">
           <span style="color:var(--muted)">Meeting <strong style="color:var(--text)">${id}</strong></span>
           <span style="color:var(--text)">${d.fecha || '—'}</span>
@@ -1526,9 +2003,49 @@ async function loadLandingTab() {
 }
 
 async function loadVentasTab() {
+  loadVentasStats();
   loadVentasLeads();
   loadAprobaciones();
   loadVendedoresAdmin();
+  loadInteresados();
+}
+
+async function loadVentasStats() {
+  try {
+    const [leads, leadsEstado, ventas, registros] = await Promise.all([
+      fetchSB('/rest/v1/clase_viral_registros?select=id,categoria'),
+      fetchSB('/rest/v1/lead_estados?select=estado,vendedor,categoria'),
+      fetchSB('/rest/v1/ventas?select=monto,aprobado,tipo&aprobado=eq.true'),
+      fetchSB('/rest/v1/clase_viral_registros?select=id'),
+    ]);
+
+    const totalRegistros = (registros||[]).length;
+    document.getElementById('vs-registros').textContent = totalRegistros || '—';
+
+    const confirmados = (leadsEstado||[]).filter(r => r.estado === 'confirmado').length;
+    document.getElementById('vs-confirmados').textContent = confirmados || '—';
+
+    const seguimientos = (leadsEstado||[]).filter(r => r.estado === 'seguimiento').length;
+    document.getElementById('vs-seguimientos').textContent = seguimientos || '—';
+
+    const ventasAprobadas = (ventas||[]);
+    document.getElementById('vs-ventas').textContent = ventasAprobadas.length || '—';
+
+    const totalComisiones = ventasAprobadas.reduce((acc, v) => {
+      const rate = v.tipo === 'seguimiento_exitoso' ? 0.10 : 0.05;
+      return acc + (Number(v.monto||0) * rate);
+    }, 0);
+    document.getElementById('vs-comisiones').textContent = '$' + totalComisiones.toLocaleString('es-MX', {maximumFractionDigits:0});
+
+    // Top nicho
+    const catCount = {};
+    (leadsEstado||[]).forEach(r => { if (r.categoria) catCount[r.categoria] = (catCount[r.categoria]||0)+1; });
+    (leads||[]).forEach(r => { if (r.categoria) catCount[r.categoria] = (catCount[r.categoria]||0)+1; });
+    const topCat = Object.entries(catCount).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('vs-nicho').textContent = topCat ? topCat[0] : '—';
+  } catch(e) {
+    console.error('loadVentasStats:', e);
+  }
 }
 
 async function loadVentasLeads() {
@@ -1559,6 +2076,14 @@ function renderVentasLeads(data) {
   document.getElementById('ventasLeadsBody').innerHTML = rows.map((r, i) => `
     <tr>
       <td style="color:var(--muted)">${i+1}</td>
+      <td>
+        <button onclick="deleteVentasLead('${esc(r.registro_email)}')" title="Eliminar lead"
+          style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
+          border-radius:4px;background:transparent;border:1px solid transparent;
+          color:var(--muted);font-size:0.72rem;cursor:pointer;transition:all 0.15s;"
+          onmouseover="this.style.color='#ef4444';this.style.borderColor='rgba(239,68,68,0.3)'"
+          onmouseout="this.style.color='var(--muted)';this.style.borderColor='transparent'">🗑</button>
+      </td>
       <td class="bold">${esc(r.registro_email||'')}</td>
       <td style="font-size:0.8rem;color:var(--text)">${esc(r.registro_email||'')}</td>
       <td><span style="padding:2px 8px;border-radius:10px;font-size:0.72rem;font-weight:700;background:${ESTADO_COLOR[r.estado]||'#555'}22;color:${ESTADO_COLOR[r.estado]||'#aaa'}">${r.estado||'—'}</span></td>
@@ -1569,53 +2094,132 @@ function renderVentasLeads(data) {
     </tr>`).join('');
 }
 
-/* ──────────────────────────────────────
-   EVENTO SUB-TABS
-────────────────────────────────────── */
-let currentEventoSubTab = 'evento';
+async function deleteVentasLead(email) {
+  if (!email) return;
+  if (!confirm(`¿Eliminar el lead "${email}"?\nEsto borrará su registro y estado. No se puede deshacer.`)) return;
 
-function setEventoSubTab(sub) {
-  currentEventoSubTab = sub;
-  ['evento','transcript'].forEach(s => {
-    const btn = document.getElementById('st-' + s);
-    const panel = document.getElementById('ast-' + s);
-    if (btn) btn.classList.toggle('active', s === sub);
-    if (panel) panel.style.display = s === sub ? '' : 'none';
-  });
-  if (sub === 'evento')     { loadZoomStats(); loadCachedAnalysisEvento(); }
-  if (sub === 'transcript') { loadCachedAnalysis(); }
+  try {
+    // Delete from lead_estados and clase_viral_registros in parallel
+    await Promise.all([
+      fetch(SB_URL + `/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, {
+        method: 'DELETE',
+        headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+      }),
+      fetch(SB_URL + `/rest/v1/clase_viral_registros?email=eq.${encodeURIComponent(email)}`, {
+        method: 'DELETE',
+        headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+      })
+    ]);
+    // Remove from local cache too
+    const updated = getRegistrations().filter(r => r.email !== email);
+    localStorage.setItem('registrations', JSON.stringify(updated));
+    loadVentasLeads();
+    renderOverview();
+  } catch(e) {
+    alert('Error al eliminar: ' + e.message);
+  }
+}
+
+/* ──────────────────────────────────────
+   INTERESADOS — página de pago
+────────────────────────────────────── */
+let interesadosCache = [];
+
+async function loadInteresados() {
+  const tbody = document.getElementById('interesadosBody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+  try {
+    const rows = await fetchSB('/rest/v1/proximity_creators_interesados?select=*&order=created_at.desc');
+    interesadosCache = rows || [];
+    renderInteresados();
+    // Update overview cards
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const semana = new Date(Date.now() - 7 * 86400000);
+    const total = interesadosCache.length;
+    const hoyCount = interesadosCache.filter(r => new Date(r.created_at) >= hoy).length;
+    const semCount = interesadosCache.filter(r => new Date(r.created_at) >= semana).length;
+    const elTotal = document.getElementById('ov-int-total');
+    const elHoy   = document.getElementById('ov-int-hoy');
+    const elSem   = document.getElementById('ov-int-semana');
+    if (elTotal) elTotal.textContent = total;
+    if (elHoy)   elHoy.textContent   = hoyCount;
+    if (elSem)   elSem.textContent   = semCount;
+  } catch(e) {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="5"><div class="empty">Error cargando interesados.</div></td></tr>';
+  }
+}
+
+function renderInteresados() {
+  const tbody = document.getElementById('interesadosBody');
+  if (!tbody) return;
+  const search = (document.getElementById('intSearch')?.value || '').toLowerCase();
+  let rows = interesadosCache;
+  if (search) rows = rows.filter(r => (r.nombre+r.email+r.phone+'').toLowerCase().includes(search));
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><span class="empty-icon">📭</span>Sin resultados.</div></td></tr>';
+    return;
+  }
+  const fmt = d => d ? new Date(d).toLocaleDateString('es-MX', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
+  tbody.innerHTML = rows.map((r, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td class="bold">${esc(r.nombre||'—')}</td>
+      <td style="font-size:0.82rem;color:var(--text)">${esc(r.email||'—')}</td>
+      <td style="font-size:0.82rem;color:var(--muted)">${esc(r.phone||'—')}</td>
+      <td style="font-size:0.78rem;color:var(--muted)">${fmt(r.created_at)}</td>
+    </tr>`).join('');
+}
+
+/* ──────────────────────────────────────
+   EVENTO — single page load
+────────────────────────────────────── */
+function loadEventoTab() {
+  loadZoomStats();
+  loadCachedAnalysisEvento();
+  loadCachedAnalysis();
 }
 
 async function loadCachedAnalysisEvento() {
   try {
-    const rows = await fetchSB('/rest/v1/clase_analisis?select=*&order=updated_at.desc&limit=1');
+    const [analisisRows, ventasRows, asistenciasRows] = await Promise.all([
+      fetchSB('/rest/v1/clase_analisis?select=*&order=updated_at.desc&limit=1'),
+      fetchSB('/rest/v1/ventas?select=id&aprobado=eq.true'),
+      fetchSB('/rest/v1/asistencias?select=id'),
+    ]);
+
+    // % conversión = ventas aprobadas / asistentes
+    const totalVentas = (ventasRows||[]).length;
+    const totalAsistentes = (asistenciasRows||[]).length;
+    if (totalAsistentes > 0) {
+      const pctConv = Math.round((totalVentas / totalAsistentes) * 100);
+      document.getElementById('yt-conversion').textContent = pctConv + '%';
+      document.getElementById('yt-conversion').style.color = pctConv >= 10 ? '#22c55e' : pctConv >= 5 ? '#eab308' : '#ef4444';
+    }
+
+    const rows = analisisRows;
     if (!rows || !rows.length) return;
     const cached = rows[0];
-    // Update YouTube-style big numbers
+    // Big numbers
     const total = cached.total_participants || 0;
     document.getElementById('yt-asistentes').textContent = total || '—';
     const ret = cached.retention_data || [];
     const lastPt = ret.length ? ret[ret.length - 1] : null;
-    const halfPt = ret.find(r => r.pct <= 50);
     document.getElementById('yt-retencion').textContent = lastPt ? lastPt.pct + '%' : '—';
     document.getElementById('yt-retencion').style.color = lastPt ? (lastPt.pct >= 60 ? '#22c55e' : lastPt.pct >= 35 ? '#eab308' : '#ef4444') : '';
     document.getElementById('yt-tiempo').textContent = document.getElementById('zm-tiempo').textContent !== '—' ? document.getElementById('zm-tiempo').textContent : '—';
     const fecha = cached.start_time ? new Date(cached.start_time).toLocaleDateString('es-MX') : '';
     document.getElementById('yt-asistentes-sub').textContent = fecha || 'última clase';
-    // Render retention curve inside evento sub-tab
+    // Retention curve
     const container = document.getElementById('ast-evento-retention');
     renderTranscriptAnalysis({
       meetingId: cached.meeting_id, startTime: cached.start_time,
       totalParticipants: total, retention: ret,
       criticalMoments: cached.critical_moments || [],
       transcript: cached.transcript_segments || [],
-      transcriptWarning: null
+      transcriptWarning: null,
+      aiSummary: cached.ai_summary || null,
+      aiNextSteps: cached.ai_next_steps || null
     }, container);
-    // After render, hide the transcript section (it's in transcript sub-tab)
-    const transcriptDetails = container.querySelector('details');
-    if (transcriptDetails) transcriptDetails.style.display = 'none';
-    // Pre-fill transcript meeting ID
-    document.getElementById('transcriptMeetingId').value = cached.meeting_id;
   } catch(e) { /* silent */ }
 }
 
@@ -1639,6 +2243,100 @@ function scoreBadge(score) {
   if (score >= 35) return `🟡 <strong style="color:#eab308">${score}</strong>`;
   return `🔵 <span style="color:var(--muted)">${score}</span>`;
 }
+
+/* ─────────────────────────────────────
+   BEHAVIOR STORY TOOLTIP
+───────────────────────────────────── */
+function behaviorStory(b) {
+  const rows = [];
+  const scroll = b.scroll_depth || 0;
+  const time   = b.time_on_page || 0;
+  const ctas   = b.cta_clicks || 0;
+  const score  = scoreOf(b);
+
+  // ── Llegada y atención ──
+  if (time < 5) {
+    rows.push({ icon: '👀', text: 'Llegó y <strong>se fue en segundos</strong> — ni terminó de cargar la página.' });
+  } else if (time < 30) {
+    rows.push({ icon: '⚡', text: `Pasó <strong>${time}s</strong> en la página — vistazo rápido, sin comprometerse.` });
+  } else if (time < 120) {
+    const mins = Math.round(time / 60 * 10) / 10;
+    rows.push({ icon: '⏱', text: `Estuvo <strong>${mins} min</strong> leyendo la página — la vio con algo de atención.` });
+  } else {
+    const mins = Math.floor(time / 60);
+    const segs = time % 60;
+    rows.push({ icon: '🕐', text: `Leyó la página durante <strong>${mins}m ${segs}s</strong> — se tomó el tiempo.` });
+  }
+
+  // ── Scroll ──
+  if (scroll >= 90) {
+    rows.push({ icon: '📖', text: '<strong>Leyó todo</strong> — llegó hasta el final de la página.' });
+  } else if (scroll >= 60) {
+    rows.push({ icon: '📄', text: `Scrolleó hasta el <strong>${scroll}%</strong> — vio la mayor parte del contenido.` });
+  } else if (scroll >= 30) {
+    rows.push({ icon: '👇', text: `Llegó al <strong>${scroll}%</strong> de la página — vio la mitad o menos.` });
+  } else {
+    rows.push({ icon: '🔝', text: `Solo vio el <strong>top ${scroll}%</strong> — no exploró el contenido.` });
+  }
+
+  // ── Videos / CTAs ──
+  if (ctas >= 3) {
+    rows.push({ icon: '▶️', text: `Hizo clic <strong>${ctas} veces</strong> en botones o videos — alto nivel de interacción.` });
+  } else if (ctas >= 1) {
+    rows.push({ icon: '🖱️', text: `Clickeó <strong>${ctas} botón${ctas > 1 ? 'es' : ''}</strong> — mostró interés activo.` });
+  } else if (score >= 35) {
+    rows.push({ icon: '👁️', text: 'Leyó sin hacer clic — consumió el contenido pasivamente.' });
+  }
+
+  // ── Formulario ──
+  if (b.registered) {
+    rows.push({ icon: '✅', text: '<strong>Se registró</strong> — completó el formulario.' });
+  } else if (b.form_started) {
+    rows.push({ icon: '✍️', text: '<strong>Empezó a llenar el formulario</strong> pero no completó el registro — estuvo a punto.' });
+  } else if (score >= 50) {
+    rows.push({ icon: '💭', text: 'Tuvo interés pero <strong>nunca abrió el formulario</strong> — algo lo frenó.' });
+  } else {
+    rows.push({ icon: '🚶', text: '<strong>Se fue sin registrarse</strong> — no llegó al formulario.' });
+  }
+
+  // ── Score summary ──
+  let scoreColor, scoreBg, scoreLabel;
+  if (score >= 65) { scoreColor = '#22c55e'; scoreBg = 'rgba(34,197,94,0.12)'; scoreLabel = '🔥 Interés alto'; }
+  else if (score >= 35) { scoreColor = '#eab308'; scoreBg = 'rgba(234,179,8,0.12)'; scoreLabel = '🟡 Interés medio'; }
+  else { scoreColor = '#6a88b0'; scoreBg = 'rgba(106,136,176,0.1)'; scoreLabel = '🔵 Interés bajo'; }
+
+  return `
+    <div class="btt-title">Actividad en la landing</div>
+    ${rows.map(r => `<div class="btt-row"><span class="btt-icon">${r.icon}</span><span class="btt-text">${r.text}</span></div>`).join('')}
+    <div class="btt-score" style="background:${scoreBg};color:${scoreColor};border:1px solid ${scoreColor}33;">${scoreLabel} · Score ${score}/100</div>
+  `;
+}
+
+// Global tooltip controller
+const bhvTooltip = {
+  el: null,
+  show(html, e) {
+    if (!this.el) this.el = document.getElementById('bhv-tooltip');
+    this.el.innerHTML = html;
+    this.move(e);
+    this.el.classList.add('visible');
+  },
+  hide() {
+    if (!this.el) this.el = document.getElementById('bhv-tooltip');
+    this.el.classList.remove('visible');
+  },
+  move(e) {
+    if (!this.el) return;
+    const pad = 14, w = 280;
+    let x = e.clientX + pad;
+    let y = e.clientY + pad;
+    if (x + w > window.innerWidth - 10) x = e.clientX - w - pad;
+    if (y + this.el.offsetHeight > window.innerHeight - 10) y = e.clientY - this.el.offsetHeight - pad;
+    this.el.style.left = x + 'px';
+    this.el.style.top  = y + 'px';
+  }
+};
+document.addEventListener('mousemove', e => { if (bhvTooltip.el?.classList.contains('visible')) bhvTooltip.move(e); });
 
 function setAnalisisFilter(f) {
   analisisFilter = f;
@@ -1683,7 +2381,7 @@ function renderAnalisis() {
     return;
   }
 
-  document.getElementById('analisisBody').innerHTML = rows.map((b, i) => {
+  const tbodyRows = rows.map((b, i) => {
     const score = scoreOf(b);
     const fecha = b.created_at ? new Date(b.created_at).toLocaleDateString('es-MX') : '—';
     const emailCell = b.email
@@ -1695,7 +2393,7 @@ function renderAnalisis() {
     const formBadge = b.form_started
       ? '<span style="color:#eab308">Sí</span>'
       : '<span style="color:var(--muted)">No</span>';
-    return `<tr>
+    return `<tr style="cursor:default;" data-bhv-idx="${i}">
       <td style="color:var(--muted)">${i+1}</td>
       <td>${emailCell}</td>
       <td>${scoreBadge(score)}</td>
@@ -1714,13 +2412,23 @@ function renderAnalisis() {
       <td><span class="var-badge var-${b.variant||'?'}">${b.variant||'?'}</span></td>
       <td style="color:var(--muted);font-size:0.78rem">${fecha}</td>
     </tr>`;
-  }).join('');
+  });
+  document.getElementById('analisisBody').innerHTML = tbodyRows.join('');
+
+  // Attach hover tooltip to each row
+  const currentRows = rows; // capture for closure
+  document.getElementById('analisisBody').querySelectorAll('tr[data-bhv-idx]').forEach(tr => {
+    const idx = +tr.dataset.bhvIdx;
+    tr.addEventListener('mouseenter', e => bhvTooltip.show(behaviorStory(currentRows[idx]), e));
+    tr.addEventListener('mouseleave', () => bhvTooltip.hide());
+  });
 }
 
 /* ──────────────────────────────────────
    TRANSCRIPT ANALYSIS
 ────────────────────────────────────── */
 let retentionChart = null;
+let topicTimeline = [];
 
 async function loadCachedAnalysis() {
   // Load the most recent cached analysis from Supabase
@@ -1742,8 +2450,10 @@ async function loadCachedAnalysis() {
       retention: cached.retention_data || [],
       criticalMoments: cached.critical_moments || [],
       transcript: cached.transcript_segments || [],
-      transcriptWarning: (!cached.transcript_segments || !cached.transcript_segments.length)
-        ? 'Sin transcripción guardada para este análisis.' : null
+      transcriptWarning: null,
+      aiSummary: cached.ai_summary || null,
+      aiNextSteps: cached.ai_next_steps || null,
+      aiAnalysis: cached.ai_analysis || null
     }, container);
 
   } catch (e) {
@@ -1783,8 +2493,111 @@ async function analyzeTranscript() {
   }
 }
 
+async function uploadVTT(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const resultEl = document.getElementById('zoomSyncResult');
+  resultEl.style.display = 'block';
+  resultEl.style.cssText = 'display:block;font-size:0.82rem;padding:8px 12px;border-radius:6px;width:100%;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.3);color:#c084fc;';
+  resultEl.textContent = '⏳ Procesando transcripción…';
+
+  const meetingId = document.getElementById('zoomMeetingId').value.trim() || null;
+  const vttText = await file.text();
+
+  // Parse VTT client-side
+  const segments = [];
+  const lines = vttText.split('\n');
+  let i = 0;
+  while (i < lines.length) {
+    if (lines[i] && lines[i].includes('-->')) {
+      const [startStr] = lines[i].split('-->');
+      const t = startStr.trim().replace(',', '.');
+      const parts = t.split(':');
+      const startSec = parts.length === 3
+        ? parseInt(parts[0])*3600 + parseInt(parts[1])*60 + parseFloat(parts[2])
+        : parseInt(parts[0])*60 + parseFloat(parts[1]);
+      const minute = Math.floor(startSec / 60);
+      i++;
+      const textLines = [];
+      while (i < lines.length && lines[i].trim() !== '' && !lines[i].includes('-->')) {
+        const txt = lines[i].replace(/<[^>]+>/g, '').replace(/^[^:]+:\s*/, '').trim();
+        if (txt && !/^\d+$/.test(txt)) textLines.push(txt);
+        i++;
+      }
+      if (textLines.length) segments.push({ minute, text: textLines.join(' ') });
+    } else { i++; }
+  }
+
+  // Group by minute
+  const byMinute = {};
+  for (const s of segments) {
+    byMinute[s.minute] = (byMinute[s.minute] || '') + ' ' + s.text;
+  }
+  const transcriptSegments = Object.entries(byMinute)
+    .map(([m, t]) => ({ minute: parseInt(m), text: t.trim() }))
+    .sort((a, b) => a.minute - b.minute);
+
+  if (!transcriptSegments.length) {
+    resultEl.style.cssText = 'display:block;font-size:0.82rem;padding:8px 12px;border-radius:6px;width:100%;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;';
+    resultEl.textContent = '❌ No se encontraron segmentos en el archivo. ¿Es un .vtt válido?';
+    return;
+  }
+
+  // Save to Supabase if we have a meeting ID
+  if (meetingId) {
+    try {
+      await fetchSB('/rest/v1/clase_analisis?meeting_id=eq.' + encodeURIComponent(meetingId), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ transcript_segments: transcriptSegments, updated_at: new Date().toISOString() })
+      });
+    } catch(e) { console.error('Save transcript failed', e); }
+  }
+
+  // Re-render the retention section with the new transcript
+  const container = document.getElementById('ast-evento-retention');
+  const rows = await fetchSB('/rest/v1/clase_analisis?select=*&order=updated_at.desc&limit=1');
+  const cached = rows?.[0];
+
+  renderTranscriptAnalysis({
+    meetingId: meetingId || cached?.meeting_id,
+    startTime: cached?.start_time,
+    totalParticipants: cached?.total_participants || transcriptSegments.length,
+    retention: cached?.retention_data || [],
+    criticalMoments: cached?.critical_moments || [],
+    transcript: transcriptSegments,
+    transcriptWarning: null,
+    aiSummary: cached?.ai_summary || null,
+    aiNextSteps: cached?.ai_next_steps || null,
+    aiAnalysis: cached?.ai_analysis || null
+  }, container);
+
+  resultEl.style.cssText = 'display:block;font-size:0.82rem;padding:8px 12px;border-radius:6px;width:100%;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);color:#4ade80;';
+  resultEl.textContent = `✅ Transcripción cargada — ${transcriptSegments.length} minutos procesados`;
+  input.value = '';
+}
+
 function renderTranscriptAnalysis(data, container) {
-  const { retention, criticalMoments, transcript, totalParticipants, startTime, transcriptWarning } = data;
+  const { retention, criticalMoments, transcript, totalParticipants, startTime, transcriptWarning, aiSummary, aiNextSteps, meetingId, aiAnalysis } = data;
+
+  // Pre-load full analysis — priority: Supabase (pre-computed by webhook) > localStorage > fetch on demand
+  topicTimeline = [];
+  const cacheKey = `analysis_${meetingId}`;
+
+  // Determine the pre-computed analysis to use (before DOM is built, so we can set topicTimeline for the chart)
+  let preAnalysis = null;
+  if (aiAnalysis) {
+    preAnalysis = aiAnalysis;
+  } else {
+    try {
+      const lsCached = localStorage.getItem(cacheKey);
+      if (lsCached) preAnalysis = JSON.parse(lsCached);
+    } catch(e) {}
+  }
+  if (preAnalysis && Array.isArray(preAnalysis.topic_timeline)) {
+    topicTimeline = preAnalysis.topic_timeline;
+  }
 
   let html = '';
 
@@ -1818,10 +2631,24 @@ function renderTranscriptAnalysis(data, container) {
     </div>
   </div>`;
 
-  // Retention chart
+  // Retention chart + people count table
+  const keyMoments = retention.filter((r,i) => i === 0 || i === retention.length-1 || r.minute % 30 === 0 || criticalMoments.some(cm => cm.minute === r.minute));
   html += `<div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:16px;margin-bottom:20px;">
-    <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;color:var(--text);">Curva de retención por minuto</div>
+    <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;color:var(--text);">Personas en el evento por minuto</div>
     <canvas id="retentionCanvas" height="80"></canvas>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;">
+      ${keyMoments.map(r => {
+        const isCrit = criticalMoments.some(cm => cm.minute === r.minute);
+        const bg = isCrit ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.04)';
+        const border = isCrit ? 'rgba(239,68,68,0.35)' : 'rgba(255,255,255,0.08)';
+        const color = isCrit ? '#fca5a5' : 'var(--text)';
+        return `<div style="background:${bg};border:1px solid ${border};border-radius:6px;padding:6px 12px;text-align:center;min-width:80px;">
+          <div style="font-size:0.68rem;color:var(--muted);">min ${r.minute}</div>
+          <div style="font-size:1.1rem;font-weight:800;color:${color};">${r.count}</div>
+          <div style="font-size:0.68rem;color:var(--muted);">${r.pct}%${isCrit?' 🚨':''}</div>
+        </div>`;
+      }).join('')}
+    </div>
   </div>`;
 
   // Critical moments
@@ -1878,7 +2705,86 @@ function renderTranscriptAnalysis(data, container) {
     </details>`;
   }
 
+  // Mejora de contenido + Momentos clipeables
+  const hasAiData = !!aiSummary;
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:16px;" id="box-recomendaciones">
+      <div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;color:var(--text);">🎯 Recomendaciones para la próxima clase</div>
+      ${hasAiData
+        ? `<div style="font-size:0.8rem;color:var(--muted);">Analizando con IA…</div>`
+        : `<div style="font-size:0.8rem;color:var(--muted);line-height:1.7;">Disponible con cloud recording activo.<br><br>Detectaré qué mejorar basado en cuándo se fue la gente.</div>`
+      }
+    </div>
+    <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:16px;" id="box-clips">
+      <div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;color:var(--text);">✂️ Momentos clipeables</div>
+      ${hasAiData
+        ? `<div style="font-size:0.8rem;color:var(--muted);">Identificando momentos…</div>`
+        : `<div style="font-size:0.8rem;color:var(--muted);line-height:1.7;">Disponible con cloud recording activo.<br><br>Extraeré los mejores fragmentos para reels, stories y carruseles.</div>`
+      }
+    </div>
+  </div>`;
+
   container.innerHTML = html;
+
+  // Render analysis data into boxes (recomendaciones + clips + topic timeline)
+  function applyAnalysis(analysis) {
+    const PRIO_COLOR = { alta: '#ef4444', media: '#eab308', baja: '#22c55e' };
+    const FORMAT_ICON = { reel: '🎬', story: '📱', carrusel: '🖼️', hilo: '🧵' };
+
+    const boxRec = document.getElementById('box-recomendaciones');
+    if (boxRec && analysis.recomendaciones) {
+      boxRec.innerHTML = `<div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;color:var(--text);">🎯 Recomendaciones para la próxima clase</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          ${analysis.recomendaciones.map(r => `
+            <div style="background:rgba(0,0,0,0.3);border-left:3px solid ${PRIO_COLOR[r.prioridad]||'#6b7280'};border-radius:0 6px 6px 0;padding:10px 12px;">
+              <div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:3px;">${esc(r.titulo)}</div>
+              <div style="font-size:0.78rem;color:var(--muted);line-height:1.6;">${esc(r.descripcion)}</div>
+              <div style="font-size:0.7rem;color:${PRIO_COLOR[r.prioridad]||'#6b7280'};margin-top:4px;font-weight:600;text-transform:uppercase;">${r.prioridad}</div>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    const boxClips = document.getElementById('box-clips');
+    if (boxClips && analysis.momentos_clipeables) {
+      boxClips.innerHTML = `<div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;color:var(--text);">✂️ Momentos clipeables</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          ${analysis.momentos_clipeables.map(m => `
+            <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:10px 12px;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                <span>${FORMAT_ICON[m.formato]||'🎥'}</span>
+                <span style="font-size:0.82rem;font-weight:700;color:var(--text);">${esc(m.titulo)}</span>
+                <span style="font-size:0.7rem;color:var(--muted);background:rgba(255,255,255,0.06);padding:2px 7px;border-radius:4px;">${m.formato}</span>
+              </div>
+              <div style="font-size:0.78rem;color:var(--muted);line-height:1.5;margin-bottom:5px;">${esc(m.descripcion)}</div>
+              <div style="font-size:0.78rem;color:#ffd600;font-style:italic;">"${esc(m.hook)}"</div>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    if (Array.isArray(analysis.topic_timeline) && analysis.topic_timeline.length) {
+      topicTimeline = analysis.topic_timeline;
+    }
+  }
+
+  // Apply analysis: Supabase pre-computed > localStorage > fetch Claude (last resort)
+  if (preAnalysis) {
+    applyAnalysis(preAnalysis);
+    // Keep localStorage in sync
+    try { localStorage.setItem(cacheKey, JSON.stringify(preAnalysis)); } catch(e) {}
+  } else if (aiSummary) {
+    // No cache anywhere — call Claude once and save everywhere
+    fetch('/api/analyze-clase', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer proximity-dash-2026' },
+      body: JSON.stringify({ aiSummary, retentionData: retention, criticalMoments, totalParticipants })
+    })
+    .then(r => r.json())
+    .then(analysis => {
+      applyAnalysis(analysis);
+      try { localStorage.setItem(cacheKey, JSON.stringify(analysis)); } catch(e) {}
+    })
+    .catch(() => {});
+  }
 
   // Render Chart.js retention curve
   if (retention.length > 1) {
@@ -1892,22 +2798,37 @@ function renderTranscriptAnalysis(data, container) {
       type: 'line',
       data: {
         labels: retention.map(r => `${r.minute}min`),
-        datasets: [{
-          label: '% en clase',
-          data: retention.map(r => r.pct),
-          borderColor: '#c084fc',
-          backgroundColor: 'rgba(192,132,252,0.08)',
-          borderWidth: 2,
-          fill: true,
-          tension: 0.3,
-          pointBackgroundColor: retention.map(r =>
-            criticalMinutes.has(r.minute) ? '#ef4444' : '#c084fc'
-          ),
-          pointRadius: retention.map(r =>
-            criticalMinutes.has(r.minute) ? 7 : 3
-          ),
-          pointHoverRadius: 8
-        }]
+        datasets: [
+          {
+            label: 'Personas',
+            data: retention.map(r => r.count),
+            borderColor: '#c084fc',
+            backgroundColor: 'rgba(192,132,252,0.08)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.3,
+            yAxisID: 'yCount',
+            pointBackgroundColor: retention.map(r =>
+              criticalMinutes.has(r.minute) ? '#ef4444' : '#c084fc'
+            ),
+            pointRadius: retention.map(r =>
+              criticalMinutes.has(r.minute) ? 7 : 3
+            ),
+            pointHoverRadius: 8
+          },
+          {
+            label: '%',
+            data: retention.map(r => r.pct),
+            borderColor: 'rgba(192,132,252,0.3)',
+            borderWidth: 1,
+            borderDash: [4,4],
+            fill: false,
+            tension: 0.3,
+            yAxisID: 'yPct',
+            pointRadius: 0,
+            pointHoverRadius: 0
+          }
+        ]
       },
       options: {
         responsive: true,
@@ -1915,11 +2836,20 @@ function renderTranscriptAnalysis(data, container) {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: ctx => ` ${ctx.raw}% (${retention[ctx.dataIndex].count} personas)`,
+              label: ctx => ctx.dataset.yAxisID === 'yCount'
+                ? ` ${ctx.raw} personas (${retention[ctx.dataIndex].pct}%)`
+                : null,
               afterLabel: ctx => {
-                if (criticalMinutes.has(retention[ctx.dataIndex].minute)) return '⚠️ Momento crítico';
+                if (ctx.dataset.yAxisID !== 'yCount') return;
+                const min = retention[ctx.dataIndex].minute;
+                const lines = [];
+                const seg = topicTimeline.find(t => min >= t.minute_start && min <= t.minute_end);
+                if (seg) lines.push(`📌 ${seg.topic}`);
+                if (criticalMinutes.has(min)) lines.push('⚠️ Momento crítico');
+                return lines.length ? lines : undefined;
               }
-            }
+            },
+            filter: item => item.dataset.yAxisID === 'yCount'
           }
         },
         scales: {
@@ -1927,10 +2857,17 @@ function renderTranscriptAnalysis(data, container) {
             grid: { color: 'rgba(255,255,255,0.05)' },
             ticks: { color: '#666', font: { size: 11 } }
           },
-          y: {
-            min: 0, max: 100,
+          yCount: {
+            type: 'linear', position: 'left',
+            min: 0,
             grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: '#666', font: { size: 11 }, callback: v => v + '%' }
+            ticks: { color: '#c084fc', font: { size: 11 }, callback: v => v + ' p' }
+          },
+          yPct: {
+            type: 'linear', position: 'right',
+            min: 0, max: 100,
+            grid: { drawOnChartArea: false },
+            ticks: { color: '#555', font: { size: 10 }, callback: v => v + '%' }
           }
         }
       }
@@ -1984,7 +2921,10 @@ let ventasCache = []; // used by aprobarVenta to auto-add miembros
 
 async function loadMiembros() {
   document.getElementById('miembrosBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
-  const miembros = await fetchSB('/rest/v1/miembros?select=*&order=fecha_ingreso.desc');
+  const [miembros] = await Promise.all([
+    fetchSB('/rest/v1/miembros?select=*&order=fecha_ingreso.desc'),
+    loadAprobaciones()
+  ]);
   renderMiembros(miembros || []);
 }
 
@@ -2193,9 +3133,13 @@ async function loadVendedoresAdmin() {
             return `<span style="font-size:0.78rem;color:${color}">${label}</span>`;
           })()
         : '<span style="font-size:0.78rem;color:var(--muted)">Nunca</span>';
+      const vInitials = (v.apodo||v.nombre).split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+      const vAvatar = v.foto_url
+        ? `<img src="${esc(v.foto_url)}" alt="${esc(v.apodo||v.nombre)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(255,214,0,0.35);vertical-align:middle;margin-right:8px;">`
+        : `<span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,rgba(26,111,255,0.35),rgba(255,214,0,0.25));border:1.5px solid rgba(255,214,0,0.25);font-size:0.72rem;font-weight:800;vertical-align:middle;margin-right:8px;">${vInitials}</span>`;
       return `<tr>
         <td style="color:var(--muted)">${i+1}</td>
-        <td class="bold">${esc(v.nombre)}</td>
+        <td><div style="display:flex;align-items:center;">${vAvatar}<span class="bold">${esc(v.apodo||v.nombre)}</span>${v.apodo ? `<span style="font-size:0.72rem;color:var(--muted);margin-left:5px;">${esc(v.nombre)}</span>` : ''}</div></td>
         <td style="color:var(--muted);font-family:monospace;font-size:0.82rem">${esc(v.password)}</td>
         <td style="color:var(--text)">${myLeads} asignados</td>
         <td style="color:var(--text)">${myVentas.length} total</td>
@@ -2361,11 +3305,17 @@ function renderAssignTable() {
       <td class="bold">${esc(l.nombre)}</td>
       <td style="color:var(--text);font-size:0.82rem">${esc(l.email)}</td>
       <td style="color:var(--muted);font-size:0.8rem">${fecha}</td>
-      <td>
+      <td style="display:flex;align-items:center;gap:8px;">
         <select style="background:var(--card2);border:1px solid var(--border);color:var(--white);padding:5px 8px;border-radius:5px;font-size:0.8rem;cursor:pointer;"
           onchange="asignarLead('${esc(l.email)}', this.value)">
           ${vendOptions}
         </select>
+        <button onclick="deleteAssignLead('${esc(l.id)}','${esc(l.email)}','${esc(l.nombre)}')" title="Eliminar lead"
+          style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;flex-shrink:0;
+          border-radius:5px;background:transparent;border:1px solid transparent;
+          color:var(--muted);font-size:0.78rem;cursor:pointer;transition:all 0.15s;"
+          onmouseover="this.style.color='#ef4444';this.style.borderColor='rgba(239,68,68,0.3)'"
+          onmouseout="this.style.color='var(--muted)';this.style.borderColor='transparent'">🗑</button>
       </td>
     </tr>`;
   }).join('');
@@ -2389,6 +3339,27 @@ async function asignarLead(email, vendedor) {
   estadosAdmin[email] = { ...(estadosAdmin[email] || { registro_email: email }), asignado_a: vendedor || null };
 }
 
+async function deleteAssignLead(id, email, nombre) {
+  if (!confirm(`¿Eliminar a "${nombre}"?\nEsto borrará su registro y estado. No se puede deshacer.`)) return;
+  await Promise.all([
+    fetch(SB_URL + `/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+    }),
+    fetch(SB_URL + `/rest/v1/clase_viral_registros?id=eq.${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+    })
+  ]);
+  // Remove from local cache
+  allLeadsAdmin = allLeadsAdmin.filter(l => l.id !== id);
+  delete estadosAdmin[email];
+  const updated = getRegistrations().filter(r => r.email !== email);
+  localStorage.setItem('registrations', JSON.stringify(updated));
+  renderAssignTable();
+  renderOverview();
+}
+
 function fetchSB(path) {
   return fetch(SB_URL + path, { headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE } })
     .then(r => r.ok ? r.json() : []);
@@ -2400,45 +3371,62 @@ function fetchSB(path) {
 const COMMISSION_RATES = { compro_evento: 0.05, seguimiento_exitoso: 0.10 };
 
 async function loadAprobaciones() {
-  document.getElementById('aprobBody').innerHTML = '<tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+  const bodyEl = document.getElementById('aprobBody');
+  const bodyElMb = document.getElementById('aprobBodyMiembros');
+  if (bodyEl) bodyEl.innerHTML = '<tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+  if (bodyElMb) bodyElMb.innerHTML = '<tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
   try {
-    const res = await fetch(SB_URL + '/rest/v1/ventas?select=*&order=created_at.desc', {
-      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE }
-    });
-    const ventas = await res.json();
+    const [ventasRes, regRows] = await Promise.all([
+      fetch(SB_URL + '/rest/v1/ventas?select=*&order=created_at.desc', {
+        headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE }
+      }),
+      fetchSB('/rest/v1/clase_viral_registros?select=email,created_at')
+    ]);
+    const ventas = await ventasRes.json();
     ventasCache = ventas || [];
-    renderAprobaciones(ventas);
+    // Build map of email -> registration date for sorting
+    const regDateMap = {};
+    (regRows||[]).forEach(r => { if (r.email) regDateMap[r.email.toLowerCase()] = r.created_at; });
+    renderAprobaciones(ventas, regDateMap);
 
     const pending = ventas.filter(v => !v.aprobado && !v.rechazado).length;
     const badge = document.getElementById('aprobBadge');
-    badge.style.display = pending > 0 ? 'inline' : 'none';
-    badge.textContent = pending;
+    if (badge) { badge.style.display = pending > 0 ? 'inline' : 'none'; badge.textContent = pending; }
   } catch(e) {
-    document.getElementById('aprobBody').innerHTML = '<tr><td colspan="10"><div class="empty">Error al cargar.</div></td></tr>';
+    if (bodyEl) bodyEl.innerHTML = '<tr><td colspan="10"><div class="empty">Error al cargar.</div></td></tr>';
+    if (bodyElMb) bodyElMb.innerHTML = '<tr><td colspan="10"><div class="empty">Error al cargar.</div></td></tr>';
   }
 }
 
-function renderAprobaciones(ventas) {
-  if (!ventas.length) {
-    document.getElementById('aprobBody').innerHTML = '<tr><td colspan="10"><div class="empty"><span class="empty-icon">✅</span>No hay ventas registradas aún.</div></td></tr>';
-    return;
-  }
+function renderAprobaciones(ventas, regDateMap) {
+  regDateMap = regDateMap || {};
   const TIPO_LABEL = { compro_evento: 'Evento (5%)', seguimiento_exitoso: 'Seguimiento (10%)' };
-  document.getElementById('aprobBody').innerHTML = ventas.map((v, i) => {
+
+  // For miembros tab: only pending/unresolved, sorted by registration date asc (oldest first)
+  const pending = ventas
+    .filter(v => !v.aprobado && !v.rechazado)
+    .sort((a, b) => {
+      const da = regDateMap[(a.registro_email||'').toLowerCase()] || a.created_at || '';
+      const db = regDateMap[(b.registro_email||'').toLowerCase()] || b.created_at || '';
+      return da < db ? -1 : da > db ? 1 : 0;
+    });
+
+  const makeRow = (v, i, bodyId) => {
     const comision = Number(v.monto) * (COMMISSION_RATES[v.tipo] || 0);
-    const fecha = v.created_at ? new Date(v.created_at).toLocaleDateString('es-MX') : '—';
+    const regDate = regDateMap[(v.registro_email||'').toLowerCase()];
+    const fechaReg = regDate ? new Date(regDate).toLocaleDateString('es-MX') : '—';
     const comp = v.comprobante_url
       ? `<a href="${esc(v.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.82rem">Ver →</a>`
       : '<span style="color:var(--red);font-size:0.78rem">Sin comprobante</span>';
-    const badge = v.aprobado
+    const statusBadge = v.aprobado
       ? '<span style="color:var(--green);font-weight:700;font-size:0.82rem">✅ Aprobado</span>'
       : v.rechazado
         ? '<span style="color:var(--red);font-weight:700;font-size:0.82rem">❌ Rechazado</span>'
         : '<span style="color:var(--orange);font-size:0.82rem">⏳ Pendiente</span>';
     const actions = (!v.aprobado && !v.rechazado)
       ? `<div style="display:flex;gap:6px;align-items:center;">
-           <button class="btn btn-green btn-sm" onclick="aprobarVenta('${v.id}', true)">✓ Aprobar</button>
-           <button class="btn btn-red btn-sm" onclick="aprobarVenta('${v.id}', false)">✗ Rechazar</button>
+           <button class="btn btn-green btn-sm" onclick="aprobarVenta('${v.id}',true,'${bodyId}')">✓ Aprobar</button>
+           <button class="btn btn-red btn-sm" onclick="aprobarVenta('${v.id}',false,'${bodyId}')">✗ Rechazar</button>
            <button onclick="deleteVenta('${v.id}','${esc(v.nombre_lead||'')}')" title="Eliminar"
              style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
              border-radius:4px;background:transparent;border:1px solid transparent;
@@ -2460,11 +3448,29 @@ function renderAprobaciones(ventas) {
       <td style="font-size:0.8rem;color:var(--text)">${TIPO_LABEL[v.tipo] || v.tipo}</td>
       <td style="color:var(--gold);font-weight:600">$${comision.toLocaleString('es-MX', {maximumFractionDigits:2})}</td>
       <td>${comp}</td>
-      <td style="color:var(--muted);font-size:0.8rem">${fecha}</td>
-      <td>${badge}</td>
+      <td style="color:var(--muted);font-size:0.8rem">${fechaReg}</td>
+      <td>${statusBadge}</td>
       <td>${actions}</td>
     </tr>`;
-  }).join('');
+  };
+
+  const bodyEl = document.getElementById('aprobBody');
+  if (bodyEl) {
+    if (!ventas.length) {
+      bodyEl.innerHTML = '<tr><td colspan="10"><div class="empty"><span class="empty-icon">✅</span>No hay ventas registradas aún.</div></td></tr>';
+    } else {
+      bodyEl.innerHTML = ventas.map((v, i) => makeRow(v, i, 'aprobBody')).join('');
+    }
+  }
+
+  const bodyElMb = document.getElementById('aprobBodyMiembros');
+  if (bodyElMb) {
+    if (!pending.length) {
+      bodyElMb.innerHTML = '<tr><td colspan="10"><div class="empty"><span class="empty-icon">✅</span>No hay ventas pendientes de aprobación.</div></td></tr>';
+    } else {
+      bodyElMb.innerHTML = pending.map((v, i) => makeRow(v, i, 'aprobBodyMiembros')).join('');
+    }
+  }
 }
 
 async function aprobarVenta(id, aprobar) {
@@ -2600,17 +3606,246 @@ function resetAB() {
 }
 
 /* ──────────────────────────────────────
+   PAUTA / META ADS
+────────────────────────────────────── */
+let pautaPreset = 'today';
+let pautaBudgetTarget = null; // { id, name }
+
+// Preset buttons
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.pauta-preset');
+  if (!btn) return;
+  document.querySelectorAll('.pauta-preset').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  pautaPreset = btn.dataset.preset;
+  loadPautaTab();
+});
+
+async function metaFetch(params) {
+  const qs = new URLSearchParams({ ...params, date_preset: pautaPreset }).toString();
+  const res = await fetch(`/api/meta-ads?${qs}`, {
+    headers: { 'Authorization': `Bearer ${DASHBOARD_SECRET}` }
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Error Meta API');
+  return data;
+}
+
+async function metaPost(body) {
+  const res = await fetch('/api/meta-ads', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DASHBOARD_SECRET}` },
+    body: JSON.stringify({ ...body, date_preset: pautaPreset })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Error Meta API');
+  return data;
+}
+
+async function loadPautaTab() {
+  const loading = document.getElementById('pauta-loading');
+  const alertEl = document.getElementById('pauta-alert');
+  const tbody = document.getElementById('pauta-tbody');
+  loading.style.display = 'block';
+  alertEl.style.display = 'none';
+  document.getElementById('pauta-adsets-drawer').style.display = 'none';
+
+  try {
+    const { campaigns, date_preset } = await metaFetch({ action: 'campaigns' });
+
+    // Compute summary from campaigns
+    let totalSpend = 0, totalLeads = 0, totalImpressions = 0, totalClicks = 0;
+    let activeCampaigns = 0;
+    campaigns.forEach(c => {
+      totalSpend += parseFloat(c.spend || 0);
+      totalLeads += parseInt(c.leads || 0);
+      totalImpressions += parseInt(c.impressions || 0);
+      totalClicks += parseInt(c.clicks || 0);
+      if (c.status === 'ACTIVE') activeCampaigns++;
+    });
+    const avgCpl = totalLeads > 0 ? (totalSpend / totalLeads).toFixed(2) : null;
+    const avgCtr = totalImpressions > 0 ? (totalClicks / totalImpressions * 100).toFixed(2) : 0;
+    const avgCpm = totalImpressions > 0 ? (totalSpend / totalImpressions * 1000).toFixed(2) : 0;
+
+    const fmt$ = n => '$' + parseFloat(n).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtN = n => parseInt(n).toLocaleString('es-MX');
+
+    document.getElementById('p-spend').textContent = fmt$(totalSpend);
+    document.getElementById('p-spend-sub').textContent = date_preset.replace('last_','Últimos ').replace('d',' días').replace('today','Hoy').replace('_month',' mes');
+    document.getElementById('p-leads').textContent = fmtN(totalLeads);
+    document.getElementById('p-cpl').textContent = avgCpl ? fmt$(avgCpl) : '$—';
+    document.getElementById('p-impressions').textContent = fmtN(totalImpressions);
+    document.getElementById('p-ctr').textContent = avgCtr;
+    document.getElementById('p-cpm').textContent = fmt$(avgCpm);
+    document.getElementById('p-active-count').textContent = activeCampaigns;
+    document.getElementById('p-total-count').textContent = campaigns.length;
+
+    // Build table rows
+    tbody.innerHTML = campaigns.length === 0
+      ? '<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--muted);">Sin campañas para este período.</td></tr>'
+      : campaigns.map(c => {
+          const isActive = c.status === 'ACTIVE';
+          const statusCls = c.status === 'ACTIVE' ? 'active' : c.status === 'PAUSED' ? 'paused' : 'archived';
+          const statusLabel = c.status === 'ACTIVE' ? 'Activa' : c.status === 'PAUSED' ? 'Pausada' : c.status;
+          const budgetStr = c.daily_budget ? fmt$(c.daily_budget) + '/día' : (c.lifetime_budget ? fmt$(c.lifetime_budget) + ' total' : '—');
+          const cplStr = c.cpl ? fmt$(c.cpl) : (parseInt(c.leads) > 0 ? fmt$((parseFloat(c.spend)/parseInt(c.leads)).toFixed(2)) : '—');
+          return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:12px 16px;max-width:240px;">
+              <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${c.name}">${c.name}</div>
+              <div style="font-size:0.7rem;color:var(--muted);margin-top:2px;">${c.objective || ''}</div>
+            </td>
+            <td style="text-align:center;padding:12px;"><span class="p-status ${statusCls}">${statusLabel}</span></td>
+            <td style="text-align:right;padding:12px;font-family:monospace;">${budgetStr}</td>
+            <td style="text-align:right;padding:12px;font-weight:600;font-family:monospace;">${fmt$(c.spend)}</td>
+            <td style="text-align:right;padding:12px;font-family:monospace;">${fmtN(c.impressions)}</td>
+            <td style="text-align:right;padding:12px;font-family:monospace;">${fmtN(c.reach)}</td>
+            <td style="text-align:right;padding:12px;font-family:monospace;">${fmtN(c.clicks)}</td>
+            <td style="text-align:right;padding:12px;font-family:monospace;">${c.ctr}%</td>
+            <td style="text-align:right;padding:12px;font-weight:700;color:${parseInt(c.leads)>0?'var(--green)':'var(--muted)'};">${c.leads}</td>
+            <td style="text-align:right;padding:12px;font-family:monospace;">${cplStr}</td>
+            <td style="padding:12px;text-align:center;">
+              <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+                <button class="p-action-btn ${isActive?'pause-btn':'play-btn'}" onclick="pautaToggle('${c.id}','${isActive?'pause':'activate'}','${escHtml(c.name)}')">
+                  ${isActive ? '⏸ Pausar' : '▶ Activar'}
+                </button>
+                <button class="p-action-btn" onclick="loadPautaAdsets('${c.id}','${escHtml(c.name)}')">
+                  ↓ Conjuntos
+                </button>
+                ${c.daily_budget ? `<button class="p-action-btn" onclick="pautaOpenBudget('${c.id}','${escHtml(c.name)}','${c.daily_budget}')">✏️ Presup.</button>` : ''}
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+
+  } catch (err) {
+    if (err.message.includes('META_ACCESS_TOKEN') || err.message.includes('META_AD_ACCOUNT_ID')) {
+      alertEl.innerHTML = `<div class="alert alert-error" style="margin-bottom:0;">
+        <strong>Configura las credenciales de Meta:</strong><br>
+        Ve a <a href="https://vercel.com" target="_blank" style="color:var(--blue);">vercel.com</a> → tu proyecto → Settings → Environment Variables y agrega:<br>
+        <code style="display:block;margin:8px 0;background:rgba(0,0,0,.4);padding:8px;border-radius:6px;font-size:0.78rem;">META_ACCESS_TOKEN = tu_token_aqui<br>META_AD_ACCOUNT_ID = 123456789</code>
+        Luego redeploy y recarga.
+      </div>`;
+    } else {
+      alertEl.innerHTML = `<div class="alert alert-error" style="margin-bottom:0;">Error: ${err.message}</div>`;
+    }
+    alertEl.style.display = 'block';
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--muted);">Sin datos.</td></tr>';
+  } finally {
+    loading.style.display = 'none';
+  }
+}
+
+async function loadPautaAdsets(campaignId, campaignName) {
+  const drawer = document.getElementById('pauta-adsets-drawer');
+  const tbody = document.getElementById('pauta-adsets-tbody');
+  document.getElementById('pauta-adsets-campaign-name').textContent = campaignName;
+  drawer.style.display = 'block';
+  tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--muted);">Cargando conjuntos…</td></tr>';
+  drawer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  try {
+    const { adsets } = await metaFetch({ action: 'adsets', campaign_id: campaignId });
+    const fmt$ = n => '$' + parseFloat(n).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtN = n => parseInt(n).toLocaleString('es-MX');
+
+    tbody.innerHTML = adsets.length === 0
+      ? '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--muted);">Sin conjuntos.</td></tr>'
+      : adsets.map(s => {
+          const isActive = s.status === 'ACTIVE';
+          const cplStr = s.cpl ? fmt$(s.cpl) : (parseInt(s.leads)>0 ? fmt$((parseFloat(s.spend)/parseInt(s.leads)).toFixed(2)) : '—');
+          return `<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:11px 16px;font-weight:600;">${s.name}</td>
+            <td style="text-align:center;padding:11px;"><span class="p-status ${isActive?'active':'paused'}">${isActive?'Activo':'Pausado'}</span></td>
+            <td style="text-align:right;padding:11px;font-family:monospace;">${s.daily_budget ? fmt$(s.daily_budget)+'/día' : '—'}</td>
+            <td style="text-align:right;padding:11px;font-family:monospace;font-weight:600;">${fmt$(s.spend)}</td>
+            <td style="text-align:right;padding:11px;font-family:monospace;">${fmtN(s.impressions)}</td>
+            <td style="text-align:right;padding:11px;font-family:monospace;">${fmtN(s.clicks)}</td>
+            <td style="text-align:right;padding:11px;font-family:monospace;">${s.ctr}%</td>
+            <td style="text-align:right;padding:11px;font-weight:700;color:${parseInt(s.leads)>0?'var(--green)':'var(--muted)'};">${s.leads}</td>
+            <td style="text-align:right;padding:11px;font-family:monospace;">${cplStr}</td>
+            <td style="padding:11px;text-align:center;">
+              <div style="display:flex;gap:6px;justify-content:center;">
+                <button class="p-action-btn ${isActive?'pause-btn':'play-btn'}" onclick="pautaToggle('${s.id}','${isActive?'pause':'activate'}','${escHtml(s.name)}')">
+                  ${isActive ? '⏸' : '▶'}
+                </button>
+                ${s.daily_budget ? `<button class="p-action-btn" onclick="pautaOpenBudget('${s.id}','${escHtml(s.name)}','${s.daily_budget}')">✏️</button>` : ''}
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--red);">Error: ${err.message}</td></tr>`;
+  }
+}
+
+async function pautaToggle(objectId, action, name) {
+  if (!confirm(`¿${action === 'pause' ? 'Pausar' : 'Activar'} "${name}"?`)) return;
+  try {
+    await metaPost({ action, object_id: objectId });
+    showAlert('pauta-alert', `✅ "${name}" ${action === 'pause' ? 'pausada' : 'activada'} correctamente.`, 'success');
+    document.getElementById('pauta-alert').style.display = 'block';
+    setTimeout(() => loadPautaTab(), 1200);
+  } catch (err) {
+    showAlert('pauta-alert', `Error: ${err.message}`, 'error');
+    document.getElementById('pauta-alert').style.display = 'block';
+  }
+}
+
+function pautaOpenBudget(objectId, name, currentBudget) {
+  pautaBudgetTarget = { id: objectId, name };
+  document.getElementById('pauta-budget-name').textContent = name;
+  document.getElementById('pauta-budget-input').value = parseFloat(currentBudget).toFixed(2);
+  document.getElementById('pauta-budget-alert').style.display = 'none';
+  document.getElementById('pauta-budget-modal').classList.add('open');
+  document.getElementById('pauta-budget-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('pauta-budget-input').focus(), 50);
+}
+
+async function pautaSaveBudget() {
+  const budget = document.getElementById('pauta-budget-input').value.trim();
+  const alertEl = document.getElementById('pauta-budget-alert');
+  if (!budget || parseFloat(budget) < 1) {
+    alertEl.textContent = 'Ingresa un presupuesto mayor a $1';
+    alertEl.style.display = 'block';
+    return;
+  }
+  alertEl.style.display = 'none';
+  try {
+    await metaPost({ action: 'set_budget', object_id: pautaBudgetTarget.id, budget });
+    document.getElementById('pauta-budget-modal').style.display = 'none';
+    document.getElementById('pauta-budget-modal').classList.remove('open');
+    showAlert('pauta-alert', `✅ Presupuesto de "${pautaBudgetTarget.name}" actualizado a $${budget}/día`, 'success');
+    document.getElementById('pauta-alert').style.display = 'block';
+    setTimeout(() => loadPautaTab(), 1200);
+  } catch (err) {
+    alertEl.textContent = `Error: ${err.message}`;
+    alertEl.style.display = 'block';
+  }
+}
+
+function escHtml(s) {
+  return String(s).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+}
+
+/* ──────────────────────────────────────
    INIT
 ────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', async function() {
+  // Always start at top on load/refresh
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
+
   document.getElementById('nc-date').textContent = fmtFull(nextThursday7PM());
   // Load Supabase data and cache locally
   const sbRegs = await fetchFromSupabase();
   if (sbRegs.length > 0) {
     localStorage.setItem('registrations', JSON.stringify(sbRegs));
   }
-  renderOverview();
   renderConfig();
+
+  // Restore last active tab
+  const savedTab = localStorage.getItem('dash_active_tab') || 'overview';
+  activateTab(savedTab);
 });
 </script>
 

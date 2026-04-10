@@ -111,7 +111,46 @@
     .vendedor-chip {
       background: rgba(255,229,0,0.1); border: 1px solid rgba(255,229,0,0.3);
       color: var(--gold); padding: 5px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 8px;
     }
+    /* ── AVATAR ── */
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
+      border: 2px solid rgba(255,229,0,0.4); background: rgba(255,229,0,0.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 700; color: var(--gold); flex-shrink: 0;
+      overflow: hidden; cursor: pointer;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .avatar-lg {
+      width: 100px; height: 100px; border-radius: 50%; object-fit: cover;
+      border: 3px solid rgba(255,229,0,0.4); background: rgba(255,229,0,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; font-weight: 700; color: var(--gold);
+      overflow: hidden; position: relative; cursor: pointer;
+    }
+    .avatar-lg img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .avatar-lg .avatar-overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s; font-size: 1.4rem;
+    }
+    .avatar-lg:hover .avatar-overlay { opacity: 1; }
+    /* ── PROFILE CARD ── */
+    .profile-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 32px; max-width: 480px; margin: 0 auto;
+    }
+    .profile-field { margin-bottom: 20px; }
+    .profile-field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .profile-field input {
+      width: 100%; padding: 10px 14px; border-radius: 7px;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.04);
+      color: var(--white); font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none;
+      transition: border-color 0.15s;
+    }
+    .profile-field input:focus { border-color: rgba(255,229,0,0.5); }
+    .profile-hint { font-size: 0.75rem; color: var(--muted); margin-top: 5px; }
 
     /* ── LAYOUT ── */
     .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
@@ -186,6 +225,7 @@
       background: none; color: var(--muted); cursor: pointer; transition: all 0.15s;
     }
     .filter-btn.active { background: rgba(255,229,0,0.1); border-color: rgba(255,229,0,0.4); color: var(--gold); }
+    #fb-interesados.active { background: rgba(249,115,22,0.12); border-color: rgba(249,115,22,0.45); color: #f97316; }
     .search-input {
       padding: 8px 14px; border-radius: 5px; border: 1px solid var(--border);
       background: var(--card); color: var(--white); font-size: 0.85rem;
@@ -206,6 +246,14 @@
     tr:hover td { background: rgba(255,255,255,0.02); }
     .bold { font-weight: 600; color: var(--white); }
 
+    .reg-venta-btn {
+      display: inline-block; margin-left: 6px; cursor: pointer;
+      font-size: 1rem; vertical-align: middle;
+      filter: drop-shadow(0 0 4px rgba(255,214,0,0.5));
+      transition: transform 0.15s;
+    }
+    .reg-venta-btn:hover { transform: scale(1.3); }
+
     /* ── STATUS BADGES & SELECT ── */
     .estado-select {
       padding: 5px 10px; border-radius: 5px; font-size: 0.78rem; font-weight: 600;
@@ -218,6 +266,7 @@
     .estado-no_asistira         { color: #6b7280; border-color: rgba(107,114,128,0.4); background: rgba(107,114,128,0.08); }
     .estado-confirmado     { color: var(--blue);   border-color: rgba(4,80,224,0.4); background: rgba(4,80,224,0.08); }
     .estado-asistio        { color: var(--purple); border-color: rgba(168,85,247,0.4); background: rgba(168,85,247,0.08); }
+    .estado-interesado     { color: #f97316; border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.08); }
     .estado-compro_evento  { color: var(--green);  border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.08); }
     .estado-seguimiento    { color: var(--orange); border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.08); }
     .estado-seguimiento_exitoso { color: var(--gold); border-color: rgba(255,229,0,0.4); background: rgba(255,229,0,0.08); }
@@ -377,8 +426,11 @@
         <img src="logo-blanco.webp" alt="Proximity Brand" style="height:32px;width:auto;">
         <span style="color:var(--muted);font-size:0.82rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Sales</span>
       </div>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span class="vendedor-chip" id="vendedorLabel">—</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="vendedor-chip" id="vendedorLabel" onclick="switchTab('perfil')" style="cursor:pointer;" title="Mi Perfil">
+          <span class="avatar" id="headerAvatar"><span id="headerAvatarInitials">—</span></span>
+          <span id="headerAvatarName">—</span>
+        </span>
         <button class="btn btn-outline btn-sm" onclick="doLogout()">Salir</button>
       </div>
     </div>
@@ -390,6 +442,7 @@
       <div class="tabs">
         <button class="tab active" data-tab="leads">📋 Leads</button>
         <button class="tab" data-tab="ventas">💰 Mis Ventas</button>
+        <button class="tab" data-tab="perfil">👤 Mi Perfil</button>
       </div>
 
       <!-- ═══════════ LEADS ═══════════ -->
@@ -405,17 +458,98 @@
         <div class="toolbar">
           <div class="filter-btns">
             <button class="filter-btn" id="fb-todos" onclick="setFilter('todos')">Todos</button>
+            <button class="filter-btn" id="fb-interesados" onclick="setFilter('interesados')" style="color:#f97316;border-color:rgba(249,115,22,0.3);">🔥 Interesados</button>
             <button class="filter-btn active" id="fb-semana" onclick="setFilter('semana')">Esta semana</button>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <input type="text" class="search-input" id="leadSearch" placeholder="🔍 Buscar nombre o email…" oninput="renderLeads()">
+            <button class="btn btn-gold btn-sm" onclick="addLeadOpen()">+ Agregar lead</button>
             <button class="btn btn-outline btn-sm" onclick="loadData()">🔄 Actualizar</button>
+          </div>
+        </div>
+
+        <!-- Inline add-lead form -->
+        <div id="addLeadForm" style="display:none;margin-bottom:16px;">
+          <div class="card" style="padding:20px 24px;">
+            <div style="font-weight:700;font-size:0.9rem;margin-bottom:16px;">Agregar lead referido</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+              <div>
+                <label style="font-size:0.75rem;color:var(--muted);display:block;margin-bottom:5px;">Nombre *</label>
+                <input type="text" id="al-nombre" placeholder="Nombre completo" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--white);font-size:0.85rem;outline:none;">
+              </div>
+              <div>
+                <label style="font-size:0.75rem;color:var(--muted);display:block;margin-bottom:5px;">Email *</label>
+                <input type="email" id="al-email" placeholder="correo@ejemplo.com" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--white);font-size:0.85rem;outline:none;">
+              </div>
+              <div>
+                <label style="font-size:0.75rem;color:var(--muted);display:block;margin-bottom:5px;">Teléfono</label>
+                <input type="tel" id="al-phone" placeholder="55 1234 5678" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--white);font-size:0.85rem;outline:none;">
+              </div>
+              <div>
+                <label style="font-size:0.75rem;color:var(--muted);display:block;margin-bottom:5px;">Nota (opcional)</label>
+                <input type="text" id="al-nota" placeholder="De dónde viene, contexto…" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--white);font-size:0.85rem;outline:none;">
+              </div>
+            </div>
+            <div id="al-alert" style="font-size:0.78rem;color:var(--red);margin-bottom:10px;display:none;"></div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-outline btn-sm" onclick="addLeadClose()">Cancelar</button>
+              <button class="btn btn-gold btn-sm" onclick="addLeadSubmit()">Guardar lead</button>
+            </div>
           </div>
         </div>
 
         <div id="leadsContainer">
           <div class="card" style="padding:0;overflow:hidden;">
             <div class="empty"><span class="empty-icon">⏳</span>Cargando leads…</div>
+          </div>
+        </div>
+
+        <!-- ── INTERESADOS ── -->
+        <div style="margin-top:28px;">
+          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">🔥 Interesados · Abrieron página de pago</div>
+          <div class="card" style="padding:0;overflow:hidden;">
+            <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+              <span style="font-size:0.85rem;font-weight:700;">Llegaron a la página de pago pero no compraron</span>
+              <input type="text" class="search-input" id="vendIntSearch" placeholder="🔍 Buscar…" oninput="renderVendInteresados()" style="max-width:200px;">
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Fecha</th></tr></thead>
+                <tbody id="vendInteresadosBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── INLINE VENTA FORM ── -->
+        <div id="inlineVentaForm" style="display:none;margin-top:24px;">
+          <div style="background:linear-gradient(135deg,rgba(255,214,0,0.1),rgba(255,214,0,0.03));border:1px solid rgba(255,214,0,0.35);border-radius:14px;padding:24px;">
+            <div style="font-size:1rem;font-weight:700;color:var(--gold);margin-bottom:4px;">💰 Registrar Venta</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-bottom:20px;" id="ivf-lead-label">—</div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div>
+                <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:5px;">Monto de la venta</label>
+                <input id="ivf-monto" type="number" placeholder="Ej: 4500" style="width:100%;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:var(--white);font-size:0.9rem;outline:none;" oninput="ivfCalcComision()">
+              </div>
+              <div>
+                <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:5px;">Comisión estimada</label>
+                <div id="ivf-comision" style="padding:10px 12px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;color:var(--green);font-size:0.9rem;font-weight:600;">$0</div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:14px;">
+              <label style="font-size:0.72rem;color:var(--muted);display:block;margin-bottom:5px;">Comprobante de pago <span style="color:var(--red)">*</span></label>
+              <div id="ivf-upload-area" onclick="document.getElementById('ivf-file').click()" style="border:2px dashed rgba(255,255,255,0.15);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onmouseenter="this.style.borderColor='rgba(255,214,0,0.4)'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.15)'">
+                <input type="file" id="ivf-file" accept="image/*,.pdf" style="display:none" onchange="ivfOnFile(this)">
+                <span id="ivf-file-label" style="font-size:0.82rem;color:var(--muted)"><strong style="color:var(--gold)">Selecciona o arrastra</strong> el comprobante<br><span style="font-size:0.75rem">Imagen o PDF · Sin comprobante no cuenta</span></span>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px;">
+              <button onclick="ivfSubmit()" style="flex:1;padding:11px;background:linear-gradient(135deg,rgba(255,214,0,0.9),rgba(255,180,0,0.9));border:none;border-radius:8px;font-weight:700;font-size:0.9rem;cursor:pointer;color:#000;">Registrar Venta</button>
+              <button onclick="ivfClose()" style="padding:11px 18px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:var(--muted);cursor:pointer;font-size:0.9rem;">Cancelar</button>
+            </div>
           </div>
         </div>
 
@@ -491,6 +625,41 @@
 
       </div>
 
+      <!-- ═══════════ PERFIL ═══════════ -->
+      <div class="panel" id="tab-perfil">
+
+        <div style="max-width:480px;margin:0 auto;padding-top:8px;">
+
+          <div style="text-align:center;margin-bottom:32px;">
+            <div class="avatar-lg" id="avatarLg" onclick="document.getElementById('fotoInput').click()" title="Cambiar foto">
+              <span id="avatarLgInitials" style="font-size:2.2rem;font-weight:800;color:var(--gold);"></span>
+              <div class="avatar-overlay">📷</div>
+            </div>
+            <input type="file" id="fotoInput" accept="image/*" style="display:none" onchange="onFotoSelect(this)">
+            <div style="margin-top:12px;font-size:0.78rem;color:var(--muted);">Haz clic para cambiar tu foto</div>
+            <div id="fotoUploadStatus" style="margin-top:8px;font-size:0.8rem;display:none;"></div>
+          </div>
+
+          <div class="profile-field">
+            <label>Apodo / Como quieres que te llamen</label>
+            <input type="text" id="apodoInput" placeholder="Ej: Diegote, La Bestia, Fer…" maxlength="30">
+            <div class="profile-hint">Este nombre aparece en el chip del header. Máx. 30 caracteres.</div>
+          </div>
+
+          <div class="profile-field">
+            <label>Nombre oficial</label>
+            <input type="text" id="nombreOficialInput" readonly style="opacity:0.5;cursor:default;" title="No editable">
+            <div class="profile-hint">Tu nombre de vendedor registrado en el sistema.</div>
+          </div>
+
+          <div id="perfilAlert" style="margin-bottom:14px;"></div>
+
+          <button class="btn btn-gold" style="width:100%;" onclick="saveApodo()">Guardar cambios →</button>
+
+        </div>
+
+      </div>
+
     </div>
   </main>
 
@@ -556,6 +725,7 @@ const ESTADOS = {
   no_asistira:          { label: 'No asistirá',              color: '#6b7280' },
   confirmado:           { label: 'Confirmado',               color: '#0450E0' },
   asistio:              { label: 'Asistió',                  color: '#a855f7' },
+  interesado:           { label: '🔥 Interesado',            color: '#f97316' },
   compro_evento:        { label: 'Compró en evento',         color: '#22c55e' },
   seguimiento:          { label: 'Seguimiento',              color: '#f97316' },
   seguimiento_exitoso:  { label: 'Seguimiento exitoso',      color: '#FFE500' },
@@ -659,20 +829,35 @@ async function checkSession() {
   }
 }
 
-function startApp() {
+async function startApp() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
-  document.getElementById('vendedorLabel').textContent = currentVendedor;
   sessionStartTime = Date.now();
+  // Load profile then update header
+  await fetchVendedorPerfil();
+  updateHeaderAvatar();
   logActivity('session_start');
   loadData();
+  loadVendInteresados();
 }
 
 function endSession() {
   if (!currentVendedor || !sessionStartTime) return;
   const mins = Math.round((Date.now() - sessionStartTime) / 60000);
   logActivity('session_end', null, `${mins} minutos`);
+  sessionStartTime = null; // prevent double-logging
 }
+
+// Auto session_end on tab hide / close (works on mobile Safari too)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    endSession();
+  } else if (document.visibilityState === 'visible' && currentVendedor && !sessionStartTime) {
+    // Tab came back to foreground — start new session
+    sessionStartTime = Date.now();
+    logActivity('session_start');
+  }
+});
 
 /* ─────────────────────────────────────
    SUPABASE HELPERS
@@ -714,19 +899,65 @@ async function uploadComprobante(file, ventaId) {
 }
 
 /* ─────────────────────────────────────
+   INTERESADOS
+───────────────────────────────────── */
+let vendInteresadosCache = [];
+
+async function loadVendInteresados() {
+  const tbody = document.getElementById('vendInteresadosBody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+  try {
+    const rows = await sbGet('/rest/v1/proximity_creators_interesados?select=*&order=created_at.desc');
+    vendInteresadosCache = rows || [];
+    renderVendInteresados();
+  } catch(e) {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="5"><div class="empty">Error.</div></td></tr>';
+  }
+}
+
+function renderVendInteresados() {
+  const tbody = document.getElementById('vendInteresadosBody');
+  if (!tbody) return;
+  const search = (document.getElementById('vendIntSearch')?.value || '').toLowerCase();
+  let rows = vendInteresadosCache;
+  if (search) rows = rows.filter(r => (r.nombre+r.email+r.phone+'').toLowerCase().includes(search));
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><span class="empty-icon">📭</span>Sin resultados.</div></td></tr>';
+    return;
+  }
+  const fmt = d => d ? new Date(d).toLocaleDateString('es-MX', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
+  tbody.innerHTML = rows.map((r, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td style="font-weight:600">${esc(r.nombre||'—')}</td>
+      <td style="font-size:0.82rem">${esc(r.email||'—')}</td>
+      <td style="font-size:0.82rem;color:var(--muted)">${esc(r.phone||'—')}</td>
+      <td style="font-size:0.78rem;color:var(--muted)">${fmt(r.created_at)}</td>
+    </tr>`).join('');
+}
+
+/* ─────────────────────────────────────
    DATA LOADING
 ───────────────────────────────────── */
 async function loadData() {
   document.getElementById('leadsContainer').innerHTML = '<div class="card" style="padding:40px;text-align:center;color:var(--muted)"><span style="font-size:2rem;display:block;margin-bottom:10px">⏳</span>Cargando leads…</div>';
 
-  const [leads, estados, ventas] = await Promise.all([
+  const [leads, estados, ventas, contactActivity] = await Promise.all([
     sbGet('/rest/v1/clase_viral_registros?select=*&order=ts.desc'),
     sbGet('/rest/v1/lead_estados?select=*'),
     sbGet(`/rest/v1/ventas?select=*&vendedor=eq.${encodeURIComponent(currentVendedor)}&order=created_at.desc`),
+    sbGet(`/rest/v1/vendedor_actividad?select=lead_email,accion&vendedor=eq.${encodeURIComponent(currentVendedor)}&accion=in.(wa_click,phone_copy)&limit=2000`),
   ]);
 
   estadosMap = {};
   estados.forEach(e => { estadosMap[e.registro_email] = e; });
+
+  // Pre-populate contact sets from history so validation survives page refreshes
+  (contactActivity || []).forEach(a => {
+    if (!a.lead_email) return;
+    if (a.accion === 'wa_click') waClickedLeads.add(a.lead_email);
+    if (a.accion === 'phone_copy') copiedLeads.add(a.lead_email);
+  });
 
   // Only show leads assigned to me OR unassigned (no asignado_a), deduplicate by email
   const seenEmails = new Set();
@@ -762,6 +993,7 @@ function setFilter(f) {
   currentFilter = f;
   document.getElementById('fb-todos').classList.toggle('active', f === 'todos');
   document.getElementById('fb-semana').classList.toggle('active', f === 'semana');
+  document.getElementById('fb-interesados').classList.toggle('active', f === 'interesados');
   renderLeads();
 }
 
@@ -806,6 +1038,7 @@ function leadRow(l, i) {
           `<option value="${k}" ${k===estado?'selected':''}>${v.label}</option>`
         ).join('')}
       </select>
+      ${(estado === 'compro_evento' || estado === 'seguimiento_exitoso') ? `<span class="reg-venta-btn" data-email="${esc(l.email)}" data-nombre="${esc(l.nombre)}" data-tipo="${estado}" data-ts="${l.ts||''}" title="Registrar venta">💰</span>` : ''}
     </td>
     <td>
       <select class="contacto-select"
@@ -862,6 +1095,95 @@ function detectarCategoria(texto) {
 
 function renderLeads() {
   const search = (document.getElementById('leadSearch').value || '').toLowerCase();
+  const container = document.getElementById('leadsContainer');
+
+  // ── Interesados pipeline: fuente = vendInteresadosCache (página de pago) ──
+  if (currentFilter === 'interesados') {
+    // Build phone→lead index for cross-referencing
+    const phoneIndex = {};
+    const emailIndex = {};
+    allLeads.forEach(l => {
+      const p = (l.phone || '').replace(/^\+?52/, '').replace(/\D/g,'');
+      if (p) phoneIndex[p] = l;
+      if (l.email) emailIndex[l.email.toLowerCase()] = l;
+    });
+
+    // For each pago registration, find the matching lead in allLeads
+    const PIPELINE = [
+      { key: 'interesado',          label: '🔥 Interesados',          color: '#f97316', sub: 'Sin trabajar aún' },
+      { key: 'seguimiento',         label: '📞 En seguimiento',        color: '#f97316', sub: 'Vendedor los está trabajando' },
+      { key: 'seguimiento_exitoso', label: '✅ Seguimientos exitosos', color: '#FFE500', sub: 'Cerraron la venta' },
+    ];
+    const byEstado = { interesado: [], seguimiento: [], seguimiento_exitoso: [] };
+    const seenLeadEmails = new Set();
+
+    vendInteresadosCache.forEach(pago => {
+      const pagoPhone = (pago.phone || '').replace(/^\+?52/, '').replace(/\D/g,'');
+      // Find matching lead: by email first, then by phone
+      let lead = emailIndex[pago.email?.toLowerCase()] ||
+                 (pagoPhone ? phoneIndex[pagoPhone] : null);
+      if (!lead) return; // pago visitor not in clase_viral_registros → skip for pipeline
+      if (seenLeadEmails.has(lead.email)) return;
+      seenLeadEmails.add(lead.email);
+      const estado = (estadosMap[lead.email] || {}).estado || 'interesado';
+      const bucket = byEstado[estado] ? estado : 'interesado';
+      byEstado[bucket].push(lead);
+    });
+
+    // Also include leads already in seguimiento/seguimiento_exitoso via estado (even if not in pago table)
+    allLeads.forEach(l => {
+      const estado = (estadosMap[l.email] || {}).estado;
+      if ((estado === 'seguimiento' || estado === 'seguimiento_exitoso') && !seenLeadEmails.has(l.email)) {
+        seenLeadEmails.add(l.email);
+        byEstado[estado].push(l);
+      }
+    });
+
+    if (search) {
+      Object.keys(byEstado).forEach(k => {
+        byEstado[k] = byEstado[k].filter(l => (l.nombre + l.email + (l.phone||'')).toLowerCase().includes(search));
+      });
+    }
+
+    const sortFn = (a, b) => new Date((estadosMap[b.email]?.updated_at || b.ts)) - new Date((estadosMap[a.email]?.updated_at || a.ts));
+    Object.keys(byEstado).forEach(k => byEstado[k].sort(sortFn));
+
+    const totalInt = byEstado['interesado'].length;
+    const totalSeg = byEstado['seguimiento'].length;
+    const totalExt = byEstado['seguimiento_exitoso'].length;
+    const totalAll = totalInt + totalSeg + totalExt;
+
+    document.getElementById('st-total').textContent = totalAll;
+    document.getElementById('st-confirmados').textContent = totalSeg;
+    document.getElementById('st-compraron').textContent = totalExt;
+    document.getElementById('st-porconf').textContent = totalInt;
+
+    if (totalAll === 0) {
+      container.innerHTML = '<div class="card" style="padding:30px;text-align:center;color:var(--muted)"><span style="font-size:2rem;display:block;margin-bottom:8px">📭</span>Sin interesados aún.</div>';
+      return;
+    }
+
+    const thead = '<thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>';
+    container.innerHTML = PIPELINE.map(p => {
+      const rows = byEstado[p.key];
+      return `<div class="estado-section" style="margin-bottom:10px;">
+        <div class="section-hdr" onclick="toggleSection('pipe-${p.key}')">
+          <span style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0;display:inline-block;"></span>
+          <span class="section-title" style="color:${p.color}">${p.label}</span>
+          <span style="font-size:0.72rem;color:var(--muted);margin-left:4px;">${p.sub}</span>
+          <span class="section-badge" style="margin-left:auto;">${rows.length}</span>
+          <span class="section-chevron" id="chev-pipe-${p.key}">▼</span>
+        </div>
+        <div class="section-body" id="body-pipe-${p.key}">
+          ${rows.length
+            ? `<div class="table-wrap"><table>${thead}<tbody>${rows.map((l,i) => leadRow(l,i)).join('')}</tbody></table></div>`
+            : `<div style="padding:14px 20px;color:var(--muted);font-size:0.82rem;">Sin leads en esta sección.</div>`}
+        </div>
+      </div>`;
+    }).join('');
+    return;
+  }
+
   let leads = allLeads;
   if (currentFilter === 'semana') leads = leads.filter(l => isThisWeek(l.ts));
   if (search) leads = leads.filter(l => (l.nombre + l.email).toLowerCase().includes(search));
@@ -872,8 +1194,6 @@ function renderLeads() {
   document.getElementById('st-confirmados').textContent = estadosArr.filter(e => ['confirmado','asistio'].includes(e)).length;
   document.getElementById('st-compraron').textContent = estadosArr.filter(e => ['compro_evento','seguimiento_exitoso'].includes(e)).length;
   document.getElementById('st-porconf').textContent = estadosArr.filter(e => e === 'por_confirmar').length;
-
-  const container = document.getElementById('leadsContainer');
 
   if (currentFilter === 'todos') {
     // Grouped by estado
@@ -896,6 +1216,7 @@ function renderLeads() {
         por_confirmar: 'var(--muted)', pendiente_confirmar: '#eab308',
         numero_invalido: 'var(--red)', no_asistira: '#6b7280',
         confirmado: 'var(--blue)', asistio: 'var(--purple)',
+        interesado: '#f97316',
         compro_evento: 'var(--green)', seguimiento: 'var(--orange)',
         seguimiento_exitoso: 'var(--gold)'
       };
@@ -950,45 +1271,71 @@ async function onEstadoChange(select, email, nombre, leadTs) {
   const newEstado = select.value;
   const prevEstado = (estadosMap[email] || {}).estado || 'por_confirmar';
 
-  // Block "confirmado" unless WA was opened or phone was copied for this lead
-  if (newEstado === 'confirmado' && !waClickedLeads.has(email) && !copiedLeads.has(email)) {
-    select.value = prevEstado;
-    select.className = `estado-select estado-${prevEstado}`;
-    // Show inline warning
-    const tr = select.closest('tr');
-    const existing = tr ? tr.querySelector('.confirm-block-msg') : null;
-    if (!existing) {
-      const msg = document.createElement('div');
-      msg.className = 'confirm-block-msg';
-      msg.style.cssText = 'color:#fca5a5;font-size:0.75rem;margin-top:4px;';
-      msg.textContent = '⚠️ Abre WhatsApp o copia el número primero';
-      select.parentNode.appendChild(msg);
-      setTimeout(() => msg.remove(), 3000);
+  function blockEstado(sel, prev, msg) {
+    sel.value = prev;
+    sel.className = `estado-select estado-${prev}`;
+    const tr = sel.closest('tr');
+    if (tr && !tr.querySelector('.confirm-block-msg')) {
+      const el = document.createElement('div');
+      el.className = 'confirm-block-msg';
+      el.style.cssText = 'color:#fca5a5;font-size:0.75rem;margin-top:4px;';
+      el.textContent = msg;
+      sel.parentNode.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
     }
+  }
+
+  // Regla 1: confirmado / asistio → requiere haber copiado número o abierto WA en la app
+  if ((newEstado === 'confirmado' || newEstado === 'asistio') &&
+      !waClickedLeads.has(email) && !copiedLeads.has(email)) {
+    blockEstado(select, prevEstado, '⚠️ Abre WhatsApp o copia el número primero');
+    return;
+  }
+
+  // Regla 2: compro_evento (compra EN el evento) → debe haber confirmado/asistido antes
+  // seguimiento_exitoso (venta por follow-up) → sin restricción, 70% de ventas vienen de seguimiento
+  const CONFIRMED_PREV = new Set(['confirmado', 'asistio', 'compro_evento', 'seguimiento_exitoso']);
+  if (newEstado === 'compro_evento' && !CONFIRMED_PREV.has(prevEstado)) {
+    blockEstado(select, prevEstado, '⚠️ El lead debe estar confirmado o asistió antes de marcar compra en evento');
     return;
   }
 
   select.className = `estado-select estado-${newEstado}`;
 
-  const existing = estadosMap[email];
-  if (existing) {
-    await sbPatch(`/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, {
-      estado: newEstado, vendedor: currentVendedor, updated_at: new Date().toISOString()
-    });
-  } else {
-    await sbPost('/rest/v1/lead_estados', {
+  // Upsert on registro_email — always updates the correct row, never creates duplicates
+  await fetch(SB_URL + '/rest/v1/lead_estados?on_conflict=registro_email', {
+    method: 'POST',
+    headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({
       registro_email: email, vendedor: currentVendedor,
       estado: newEstado, updated_at: new Date().toISOString()
-    }, 'return=representation');
-  }
-  estadosMap[email] = { ...(estadosMap[email] || {}), estado: newEstado, vendedor: currentVendedor };
+    })
+  });
+  estadosMap[email] = { ...(estadosMap[email] || {}), registro_email: email, estado: newEstado, vendedor: currentVendedor };
 
   // Log activity
   logActivity('estado_change', email, `${prevEstado} → ${newEstado}`);
   if (newEstado === 'confirmado') logActivity('confirmacion', email);
 
+  // Inject/remove 💰 button next to the select based on sale state
+  const existingBtn = select.parentNode.querySelector('.reg-venta-btn');
   if (newEstado === 'compro_evento' || newEstado === 'seguimiento_exitoso') {
-    openVentaModal(email, nombre, newEstado, leadTs);
+    if (!existingBtn) {
+      const btn = document.createElement('span');
+      btn.className = 'reg-venta-btn';
+      btn.title = 'Registrar venta';
+      btn.textContent = '💰';
+      btn.dataset.email = email;
+      btn.dataset.nombre = nombre;
+      btn.dataset.tipo = newEstado;
+      btn.dataset.ts = leadTs || '';
+      select.parentNode.appendChild(btn);
+    } else {
+      existingBtn.dataset.tipo = newEstado;
+    }
+    ivfOpen(email, nombre, newEstado, leadTs);
+  } else if (existingBtn) {
+    existingBtn.remove();
   }
 }
 
@@ -1108,34 +1455,48 @@ function renderVentas() {
    VENTA MODAL
 ───────────────────────────────────── */
 function openVentaModal(email, nombre, tipo, leadTs) {
-  const penalized = isPenalized(tipo, leadTs);
-  const rate = getCommRate(tipo, leadTs);
-  pendingVenta = { email, nombre, tipo, leadTs, rate };
+  try {
+    const penalized = isPenalized(tipo, leadTs);
+    const rate = getCommRate(tipo, leadTs);
+    pendingVenta = { email, nombre, tipo, leadTs, rate };
 
-  document.getElementById('ventaModalLead').textContent = nombre + ' · ' + email;
-  document.getElementById('commRate').textContent = (rate * 100) + '%';
+    document.getElementById('ventaModalLead').textContent = (nombre || '') + ' · ' + (email || '');
+    document.getElementById('commRate').textContent = (rate * 100) + '%';
 
-  // Show penalty warning
-  let penWarn = document.getElementById('penaltyWarn');
-  if (!penWarn) {
-    penWarn = document.createElement('div');
-    penWarn.id = 'penaltyWarn';
-    penWarn.style.cssText = 'background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;font-size:0.8rem;color:#f87171;margin-bottom:14px;';
-    document.getElementById('commissionInfo').after(penWarn);
+    // Show penalty warning
+    let penWarn = document.getElementById('penaltyWarn');
+    if (!penWarn) {
+      penWarn = document.createElement('div');
+      penWarn.id = 'penaltyWarn';
+      penWarn.style.cssText = 'background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;font-size:0.8rem;color:#f87171;margin-bottom:14px;';
+      const ci = document.getElementById('commissionInfo');
+      if (ci) ci.after(penWarn);
+    }
+    if (penWarn) {
+      if (penalized) {
+        penWarn.style.display = 'block';
+        penWarn.innerHTML = '⚠️ <strong>Comisión reducida al 2%</strong> — Este lead tiene más de 2 semanas sin ser confirmado.';
+      } else {
+        penWarn.style.display = 'none';
+      }
+    }
+
+    const monto = document.getElementById('ventaMonto');
+    if (monto) monto.value = '';
+    const prev = document.getElementById('commPreview');
+    if (prev) prev.textContent = 'Comisión estimada: $0';
+    const upPrev = document.getElementById('uploadPreview');
+    if (upPrev) upPrev.style.display = 'none';
+    const compFile = document.getElementById('comprobanteFile');
+    if (compFile) compFile.value = '';
+    const upText = document.querySelector('.upload-text');
+    if (upText) upText.innerHTML = '<strong>Selecciona o arrastra</strong> el comprobante<br><span>Imagen o PDF · Sin comprobante no cuenta</span>';
+
+    document.getElementById('ventaModal').style.display = 'flex';
+  } catch(err) {
+    console.error('openVentaModal error:', err);
+    alert('Error al abrir el formulario de venta: ' + err.message);
   }
-  if (penalized) {
-    penWarn.style.display = 'block';
-    penWarn.innerHTML = '⚠️ <strong>Comisión reducida al 2%</strong> — Este lead tiene más de 2 semanas sin ser confirmado. Confirma tus leads la misma semana para mantener el 5%.';
-  } else {
-    penWarn.style.display = 'none';
-  }
-
-  document.getElementById('ventaMonto').value = '';
-  document.getElementById('commPreview').textContent = 'Comisión estimada: $0';
-  document.getElementById('uploadPreview').style.display = 'none';
-  document.getElementById('comprobanteFile').value = '';
-  document.querySelector('.upload-text').innerHTML = '<strong>Selecciona o arrastra</strong> el comprobante<br><span>Imagen o PDF · Sin comprobante no cuenta</span>';
-  document.getElementById('ventaModal').style.display = 'flex';
 }
 
 function closeVentaModal() {
@@ -1229,6 +1590,146 @@ document.querySelectorAll('.tab').forEach(tab => {
 function showTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+  if (name === 'perfil') loadPerfil();
+}
+
+function switchTab(name) { showTab(name); }
+
+/* ─────────────────────────────────────
+   MI PERFIL
+───────────────────────────────────── */
+let currentApodo = null;
+let currentFotoUrl = null;
+let pendingFotoFile = null;
+
+function getInitials(name) {
+  return (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 2);
+}
+
+function updateHeaderAvatar() {
+  const displayName = currentApodo || currentVendedor || '?';
+  const initials = getInitials(displayName);
+  document.getElementById('headerAvatarName').textContent = displayName;
+  const avatarEl = document.getElementById('headerAvatar');
+  if (currentFotoUrl) {
+    avatarEl.innerHTML = `<img src="${currentFotoUrl}" alt="${esc(displayName)}">`;
+  } else {
+    avatarEl.innerHTML = `<span id="headerAvatarInitials">${initials}</span>`;
+  }
+}
+
+async function loadPerfil() {
+  if (!currentVendedor) return;
+  // Fill readonly field
+  document.getElementById('nombreOficialInput').value = currentVendedor;
+  // Fill apodo
+  document.getElementById('apodoInput').value = currentApodo || '';
+  // Fill avatar
+  const lgEl = document.getElementById('avatarLg');
+  const lgInitials = document.getElementById('avatarLgInitials');
+  if (currentFotoUrl) {
+    lgEl.innerHTML = `<img src="${currentFotoUrl}" alt="foto"><div class="avatar-overlay">📷</div>`;
+    lgEl.onclick = () => document.getElementById('fotoInput').click();
+  } else {
+    if (lgInitials) lgInitials.textContent = getInitials(currentVendedor);
+  }
+}
+
+async function fetchVendedorPerfil() {
+  try {
+    const rows = await sbGet(`/rest/v1/vendedores?select=apodo,foto_url&nombre=eq.${encodeURIComponent(currentVendedor)}`);
+    if (rows && rows[0]) {
+      currentApodo = rows[0].apodo || null;
+      currentFotoUrl = rows[0].foto_url || null;
+    }
+  } catch(e) { /* silent — columns may not exist yet */ }
+}
+
+function onFotoSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  pendingFotoFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lgEl = document.getElementById('avatarLg');
+    lgEl.innerHTML = `<img src="${e.target.result}" alt="preview"><div class="avatar-overlay">📷</div>`;
+    lgEl.onclick = () => document.getElementById('fotoInput').click();
+    document.getElementById('fotoUploadStatus').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadFoto(file) {
+  const ext = file.name.split('.').pop().toLowerCase() || 'jpg';
+  const path = `perfiles/${currentVendedor.replace(/\s+/g, '_').toLowerCase()}.${ext}`;
+  const res = await fetch(`${SB_URL}/storage/v1/object/comprobantes/${path}`, {
+    method: 'POST',
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type },
+    body: file
+  });
+  if (!res.ok) {
+    // Try upsert (PUT) if already exists
+    const res2 = await fetch(`${SB_URL}/storage/v1/object/comprobantes/${path}`, {
+      method: 'PUT',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type,
+                 'x-upsert': 'true' },
+      body: file
+    });
+    if (!res2.ok) return null;
+  }
+  return `${SB_URL}/storage/v1/object/public/comprobantes/${path}?t=${Date.now()}`;
+}
+
+function showPerfilAlert(msg, type) {
+  const el = document.getElementById('perfilAlert');
+  const colors = { success: ['rgba(34,197,94,0.12)','rgba(34,197,94,0.3)','#22c55e'], error: ['rgba(239,68,68,0.1)','rgba(239,68,68,0.3)','#f87171'] };
+  const [bg, border, color] = colors[type] || colors.error;
+  el.style.cssText = `display:block;padding:10px 14px;border-radius:8px;font-size:0.82rem;background:${bg};border:1px solid ${border};color:${color};`;
+  el.textContent = msg;
+  setTimeout(() => { el.style.display = 'none'; }, 3500);
+}
+
+async function saveApodo() {
+  if (!currentVendedor) return;
+  const apodo = document.getElementById('apodoInput').value.trim();
+  const statusEl = document.getElementById('fotoUploadStatus');
+  const btn = document.querySelector('#tab-perfil .btn-gold');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+
+  try {
+    let fotoUrl = currentFotoUrl;
+
+    // Upload photo if pending
+    if (pendingFotoFile) {
+      statusEl.style.cssText = 'display:block;color:var(--muted);';
+      statusEl.textContent = 'Subiendo foto…';
+      fotoUrl = await uploadFoto(pendingFotoFile);
+      if (!fotoUrl) {
+        showPerfilAlert('Error al subir la foto. Intenta con otra imagen.', 'error');
+        btn.disabled = false; btn.textContent = 'Guardar cambios →';
+        return;
+      }
+      pendingFotoFile = null;
+      statusEl.style.display = 'none';
+    }
+
+    // Save apodo + foto_url to vendedores table
+    await fetch(SB_URL + `/rest/v1/vendedores?nombre=eq.${encodeURIComponent(currentVendedor)}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY,
+                 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ apodo: apodo || null, foto_url: fotoUrl || null })
+    });
+
+    currentApodo = apodo || null;
+    currentFotoUrl = fotoUrl || null;
+    updateHeaderAvatar();
+    showPerfilAlert('✅ Perfil actualizado correctamente.', 'success');
+  } catch(e) {
+    showPerfilAlert('Error al guardar. Intenta de nuevo.', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar cambios →';
+  }
 }
 
 /* ─────────────────────────────────────
@@ -1285,6 +1786,173 @@ function fmt(n) { return Number(n||0).toLocaleString('es-MX', { minimumFractionD
    INIT
 ───────────────────────────────────── */
 window.addEventListener('beforeunload', endSession);
+
+// ── INLINE VENTA FORM ──
+let ivfData = null;
+
+function ivfOpen(email, nombre, tipo, ts) {
+  ivfData = { email, nombre, tipo, ts, rate: getCommRate(tipo, ts) };
+  document.getElementById('ivf-lead-label').textContent = (nombre || '') + ' — ' + (tipo === 'seguimiento_exitoso' ? 'Seguimiento exitoso (10%)' : 'Compra en evento (5%)');
+  document.getElementById('ivf-monto').value = '';
+  document.getElementById('ivf-comision').textContent = '$0';
+  document.getElementById('ivf-file-label').innerHTML = '<strong style="color:var(--gold)">Selecciona o arrastra</strong> el comprobante<br><span style="font-size:0.75rem">Imagen o PDF · Sin comprobante no cuenta</span>';
+  document.getElementById('ivf-file').value = '';
+  const form = document.getElementById('inlineVentaForm');
+  form.style.display = 'block';
+  setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+function ivfClose() {
+  document.getElementById('inlineVentaForm').style.display = 'none';
+  ivfData = null;
+}
+
+function ivfCalcComision() {
+  const monto = parseFloat(document.getElementById('ivf-monto').value) || 0;
+  const rate = ivfData ? ivfData.rate : 0;
+  document.getElementById('ivf-comision').textContent = '$' + fmt(monto * rate);
+}
+
+function ivfOnFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('ivf-file-label').innerHTML = `<strong style="color:var(--green)">✓ ${esc(file.name)}</strong>`;
+}
+
+async function ivfSubmit() {
+  if (!ivfData) return;
+  const monto = parseFloat(document.getElementById('ivf-monto').value);
+  const file = document.getElementById('ivf-file').files[0];
+  if (!monto || monto <= 0) { alert('Ingresa un monto válido.'); return; }
+  if (!file) { alert('El comprobante es obligatorio.'); return; }
+
+  const btn = document.querySelector('#inlineVentaForm button');
+  btn.textContent = 'Registrando…';
+  btn.disabled = true;
+
+  try {
+    // 1. Insert venta record
+    const ventaRes = await sbPost('/rest/v1/ventas', {
+      vendedor: currentVendedor,
+      registro_email: ivfData.email,
+      nombre_lead: ivfData.nombre,
+      monto,
+      tipo: ivfData.tipo,
+      comision_porcentaje: ivfData.rate * 100,
+      aprobado: false,
+    }, 'return=representation');
+    const ventaJson = await ventaRes.json();
+    const ventaId = Array.isArray(ventaJson) ? ventaJson[0]?.id : ventaJson?.id;
+    if (!ventaId) throw new Error('No se pudo crear la venta');
+
+    // 2. Upload comprobante
+    const ext = file.name.split('.').pop().toLowerCase();
+    const path = `${currentVendedor.replace(/\s+/g,'_')}/${ventaId}.${ext}`;
+    const upRes = await fetch(`${SB_URL}/storage/v1/object/comprobantes/${path}`, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type, 'x-upsert': 'true' },
+      body: file
+    });
+    if (!upRes.ok) throw new Error('Error subiendo comprobante');
+    const compUrl = `${SB_URL}/storage/v1/object/public/comprobantes/${path}`;
+
+    // 3. Update venta with comprobante URL
+    await sbPatch(`/rest/v1/ventas?id=eq.${ventaId}`, { comprobante_url: compUrl });
+
+    ivfClose();
+    alert('✅ Venta registrada. Pendiente de aprobación.');
+    loadVentas();
+  } catch(e) {
+    alert('Error: ' + e.message);
+  } finally {
+    btn.textContent = 'Registrar Venta';
+    btn.disabled = false;
+  }
+}
+
+/* ─────────────────────────────────────
+   ADD LEAD (referido manual)
+───────────────────────────────────── */
+function addLeadOpen() {
+  document.getElementById('al-nombre').value = '';
+  document.getElementById('al-email').value = '';
+  document.getElementById('al-phone').value = '';
+  document.getElementById('al-nota').value = '';
+  document.getElementById('al-alert').style.display = 'none';
+  const form = document.getElementById('addLeadForm');
+  form.style.display = 'block';
+  setTimeout(() => { form.scrollIntoView({ behavior: 'smooth', block: 'start' }); document.getElementById('al-nombre').focus(); }, 50);
+}
+
+function addLeadClose() {
+  document.getElementById('addLeadForm').style.display = 'none';
+}
+
+async function addLeadSubmit() {
+  const nombre = document.getElementById('al-nombre').value.trim();
+  const email  = document.getElementById('al-email').value.trim().toLowerCase();
+  const phone  = document.getElementById('al-phone').value.trim();
+  const nota   = document.getElementById('al-nota').value.trim();
+  const alertEl = document.getElementById('al-alert');
+
+  if (!nombre || !email) {
+    alertEl.textContent = 'Nombre y email son obligatorios.';
+    alertEl.style.display = 'block';
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    alertEl.textContent = 'Email inválido.';
+    alertEl.style.display = 'block';
+    return;
+  }
+  alertEl.style.display = 'none';
+
+  const submitBtn = document.querySelector('#addLeadForm .btn-gold');
+  submitBtn.textContent = 'Guardando…';
+  submitBtn.disabled = true;
+
+  try {
+    // Insert into clase_viral_registros
+    const res = await sbPost('/rest/v1/clase_viral_registros', {
+      nombre, email,
+      phone: phone || null,
+      ts: new Date().toISOString()
+    }, 'return=minimal');
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      // Duplicate email
+      if (res.status === 409 || (err.code === '23505')) {
+        alertEl.textContent = '⚠️ Este email ya está registrado en la base de datos.';
+      } else {
+        alertEl.textContent = 'Error al guardar: ' + (err.message || res.status);
+      }
+      alertEl.style.display = 'block';
+      return;
+    }
+
+    // Log activity
+    logActivity('lead_referido', email, nombre);
+
+    addLeadClose();
+    await loadData();
+  } catch(e) {
+    alertEl.textContent = 'Error: ' + e.message;
+    alertEl.style.display = 'block';
+  } finally {
+    submitBtn.textContent = 'Guardar lead';
+    submitBtn.disabled = false;
+  }
+}
+
+// Delegated click for 💰 venta buttons
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.reg-venta-btn');
+  if (!btn) return;
+  const { email, nombre, tipo, ts } = btn.dataset;
+  if (email && tipo) ivfOpen(email, nombre || '', tipo, ts || '');
+});
+
 checkSession();
 </script>
 </body>

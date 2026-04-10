@@ -17,6 +17,15 @@
     },
     "api/meta-ads.js": {
       "maxDuration": 15
+    },
+    "api/zoom-webhook.js": {
+      "maxDuration": 30
+    },
+    "api/analyze-clase.js": {
+      "maxDuration": 30
+    },
+    "api/backfill-analysis.js": {
+      "maxDuration": 30
     }
   },
   "crons": [
