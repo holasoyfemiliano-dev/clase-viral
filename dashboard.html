@@ -2708,20 +2708,20 @@ function renderTranscriptAnalysis(data, container) {
   }
 
   // Mejora de contenido + Momentos clipeables
-  const hasAiData = !!aiSummary;
+  const canAnalyze = !!aiSummary || (transcript && transcript.length > 5);
   html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
     <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:16px;" id="box-recomendaciones">
       <div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;color:var(--text);">🎯 Recomendaciones para la próxima clase</div>
-      ${hasAiData
-        ? `<div style="font-size:0.8rem;color:var(--muted);">Analizando con IA…</div>`
-        : `<div style="font-size:0.8rem;color:var(--muted);line-height:1.7;">Disponible con cloud recording activo.<br><br>Detectaré qué mejorar basado en cuándo se fue la gente.</div>`
+      ${canAnalyze
+        ? `<div style="font-size:0.8rem;color:var(--muted);">⏳ Analizando con IA…</div>`
+        : `<div style="font-size:0.8rem;color:var(--muted);line-height:1.7;">Sube la transcripción .vtt para activar el análisis.</div>`
       }
     </div>
     <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:16px;" id="box-clips">
       <div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;color:var(--text);">✂️ Momentos clipeables</div>
-      ${hasAiData
-        ? `<div style="font-size:0.8rem;color:var(--muted);">Identificando momentos…</div>`
-        : `<div style="font-size:0.8rem;color:var(--muted);line-height:1.7;">Disponible con cloud recording activo.<br><br>Extraeré los mejores fragmentos para reels, stories y carruseles.</div>`
+      ${canAnalyze
+        ? `<div style="font-size:0.8rem;color:var(--muted);">⏳ Identificando momentos…</div>`
+        : `<div style="font-size:0.8rem;color:var(--muted);line-height:1.7;">Sube la transcripción .vtt para activar el análisis.</div>`
       }
     </div>
   </div>`;
@@ -2773,17 +2773,39 @@ function renderTranscriptAnalysis(data, container) {
     applyAnalysis(preAnalysis);
     // Keep localStorage in sync
     try { localStorage.setItem(cacheKey, JSON.stringify(preAnalysis)); } catch(e) {}
-  } else if (aiSummary) {
-    // No cache anywhere — call Claude once and save everywhere
+  } else if (aiSummary || (transcript && transcript.length > 5)) {
+    // No cache — call Claude with aiSummary or raw transcript segments
+    const boxRec = document.getElementById('box-recomendaciones');
+    const boxClips = document.getElementById('box-clips');
+    const loadingStyle = 'font-size:0.8rem;color:var(--muted);';
+    if (boxRec) boxRec.innerHTML += `<div style="${loadingStyle}">⏳ Analizando con IA…</div>`;
+    if (boxClips) boxClips.innerHTML += `<div style="${loadingStyle}">⏳ Identificando momentos…</div>`;
+
     fetch('/api/analyze-clase', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer proximity-dash-2026' },
-      body: JSON.stringify({ aiSummary, retentionData: retention, criticalMoments, totalParticipants })
+      body: JSON.stringify({
+        aiSummary: aiSummary || null,
+        transcriptSegments: (!aiSummary && transcript && transcript.length > 5) ? transcript : undefined,
+        retentionData: retention,
+        criticalMoments,
+        totalParticipants
+      })
     })
     .then(r => r.json())
     .then(analysis => {
-      applyAnalysis(analysis);
-      try { localStorage.setItem(cacheKey, JSON.stringify(analysis)); } catch(e) {}
+      if (analysis.recomendaciones || analysis.momentos_clipeables) {
+        applyAnalysis(analysis);
+        try { localStorage.setItem(cacheKey, JSON.stringify(analysis)); } catch(e) {}
+        // Save to Supabase if we have a meetingId
+        if (meetingId) {
+          fetchSB('/rest/v1/clase_analisis?meeting_id=eq.' + encodeURIComponent(meetingId), {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+            body: JSON.stringify({ ai_analysis: analysis, updated_at: new Date().toISOString() })
+          }).catch(() => {});
+        }
+      }
     })
     .catch(() => {});
   }

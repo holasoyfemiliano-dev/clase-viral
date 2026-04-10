@@ -7,8 +7,10 @@ module.exports = async function handler(req, res) {
   const secret = (process.env.DASHBOARD_SECRET || 'proximity-dash-2026').trim();
   if (authHeader !== `Bearer ${secret}`) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { aiSummary, retentionData, criticalMoments, totalParticipants } = req.body || {};
-  if (!aiSummary) return res.status(400).json({ error: 'aiSummary requerido' });
+  const { aiSummary, transcriptSegments, retentionData, criticalMoments, totalParticipants } = req.body || {};
+  if (!aiSummary && (!transcriptSegments || !transcriptSegments.length)) {
+    return res.status(400).json({ error: 'Se requiere aiSummary o transcriptSegments' });
+  }
 
   const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
   if (!ANTHROPIC_API_KEY) return res.status(500).json({ error: 'ANTHROPIC_API_KEY no configurado' });
@@ -18,16 +20,27 @@ module.exports = async function handler(req, res) {
     `- Minuto ${cm.minute}: ${cm.prevPct}% → ${cm.pct}% (−${cm.drop}% en 5 min)`
   ).join('\n');
 
+  // Build transcript context — use aiSummary if available, otherwise use raw transcript
+  let claseContext;
+  if (aiSummary) {
+    claseContext = `RESUMEN DE LA CLASE (generado por Zoom AI):\n${aiSummary.substring(0, 3000)}`;
+  } else {
+    // Build a readable transcript from segments (cap at ~4000 chars)
+    const transcriptText = (transcriptSegments || [])
+      .map(s => `[min ${s.minute}] ${s.text}`)
+      .join('\n')
+      .substring(0, 4000);
+    claseContext = `TRANSCRIPCIÓN DE LA CLASE (minuto a minuto):\n${transcriptText}`;
+  }
+
   const prompt = `Eres un estratega de contenido experto. Analiza esta clase en vivo y dame dos cosas:
 
 DATOS DE LA CLASE:
-- Total asistentes: ${totalParticipants}
-- Duración: ~140 minutos
+- Total asistentes: ${totalParticipants || 'desconocido'}
 - Caídas de audiencia más importantes:
 ${criticalCtx || 'Sin datos de caída'}
 
-RESUMEN DE LA CLASE (generado por Zoom AI):
-${aiSummary.substring(0, 3000)}
+${claseContext}
 
 ---
 
