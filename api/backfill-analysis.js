@@ -91,9 +91,17 @@ Responde SOLO el JSON, sin texto adicional.`;
   });
 
   const claudeData = await claudeRes.json();
+  if (claudeData.error) return res.status(500).json({ error: 'Anthropic API error', detail: claudeData.error });
   const text = claudeData.content?.[0]?.text || '';
   const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) return res.status(500).json({ error: 'Claude no devolvió JSON válido', raw: text });
+  if (!jsonMatch) return res.status(500).json({
+    error: 'Claude no devolvió JSON válido',
+    raw: text,
+    stop_reason: claudeData.stop_reason,
+    usage: claudeData.usage,
+    has_transcript: !!(transcript_segments?.length),
+    transcript_len: transcript_segments?.length || 0
+  });
 
   const analysis = JSON.parse(jsonMatch[0]);
 
