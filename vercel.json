@@ -22,7 +22,7 @@
       "maxDuration": 30
     },
     "api/analyze-clase.js": {
-      "maxDuration": 30
+      "maxDuration": 60
     },
     "api/backfill-analysis.js": {
       "maxDuration": 30

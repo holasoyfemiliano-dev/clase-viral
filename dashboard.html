@@ -2951,18 +2951,19 @@ function renderTranscriptAnalysis(data, container) {
     }
   }
 
-  // Apply analysis: Supabase pre-computed > localStorage > fetch Claude (last resort)
+  // Apply analysis: Supabase pre-computed > localStorage > fetch Claude only when uploading
   if (preAnalysis) {
     applyAnalysis(preAnalysis);
-    // Keep localStorage in sync
     try { localStorage.setItem(cacheKey, JSON.stringify(preAnalysis)); } catch(e) {}
-  } else if (aiSummary || (transcript && transcript.length > 5)) {
-    // No cache — call Claude with aiSummary or raw transcript segments
+    if (typeof onAnalysisDone === 'function') onAnalysisDone();
+  } else if (typeof onAnalysisDone === 'function') {
+    // Only call Claude when triggered by uploadVTT (onAnalysisDone is set), never on page load
     const boxRec = document.getElementById('box-recomendaciones');
     const boxClips = document.getElementById('box-clips');
-    const loadingStyle = 'font-size:0.8rem;color:var(--muted);';
-    if (boxRec) boxRec.innerHTML += `<div style="${loadingStyle}">⏳ Analizando con IA…</div>`;
-    if (boxClips) boxClips.innerHTML += `<div style="${loadingStyle}">⏳ Identificando momentos…</div>`;
+    if (boxRec) boxRec.innerHTML = `<div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;color:var(--text);">🎯 Recomendaciones para la próxima clase</div><div style="font-size:0.8rem;color:var(--muted);">⏳ Analizando con IA…</div>`;
+    if (boxClips) boxClips.innerHTML = `<div style="font-size:0.82rem;font-weight:700;margin-bottom:10px;color:var(--text);">✂️ Momentos clipeables</div><div style="font-size:0.8rem;color:var(--muted);">⏳ Identificando momentos…</div>`;
+
+    const callDone = () => { if (typeof onAnalysisDone === 'function') onAnalysisDone(); };
 
     fetch('/api/analyze-clase', {
       method: 'POST',
@@ -2980,7 +2981,6 @@ function renderTranscriptAnalysis(data, container) {
       if (analysis.recomendaciones || analysis.momentos_clipeables) {
         applyAnalysis(analysis);
         try { localStorage.setItem(cacheKey, JSON.stringify(analysis)); } catch(e) {}
-        // Save to Supabase if we have a meetingId
         if (meetingId) {
           fetchSB('/rest/v1/clase_analisis?meeting_id=eq.' + encodeURIComponent(meetingId), {
             method: 'PATCH',
@@ -2988,12 +2988,17 @@ function renderTranscriptAnalysis(data, container) {
             body: JSON.stringify({ ai_analysis: analysis, updated_at: new Date().toISOString() })
           }).catch(() => {});
         }
-        if (typeof onAnalysisDone === 'function') onAnalysisDone();
+      } else {
+        // Claude returned an error — show retry button
+        const errMsg = analysis.error || 'Error al analizar';
+        if (boxRec) boxRec.innerHTML += `<div style="font-size:0.75rem;color:#fca5a5;margin-top:6px;">⚠️ ${errMsg}</div>`;
       }
+      callDone();
     })
-    .catch(() => { if (typeof onAnalysisDone === 'function') onAnalysisDone(); });
-  } else if (typeof onAnalysisDone === 'function') {
-    onAnalysisDone();
+    .catch(e => {
+      if (boxRec) boxRec.innerHTML += `<div style="font-size:0.75rem;color:#fca5a5;margin-top:6px;">⚠️ Error de conexión. Sube el .vtt de nuevo para reintentar.</div>`;
+      callDone();
+    });
   }
 
   // Render Chart.js retention curve
