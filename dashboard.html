@@ -1305,23 +1305,35 @@ async function renderOverview() {
 
   // ── Business metrics from Supabase ──
   try {
-    const [ventas, estados, miembros, sbRegs, interesados] = await Promise.all([
+    const [ventas, estados, miembros, sbRegs, interesados, pagosActv] = await Promise.all([
       fetchSB('/rest/v1/ventas?select=monto,tipo,aprobado,comision_porcentaje,created_at&order=created_at.desc'),
       fetchSB('/rest/v1/lead_estados?select=estado,registro_email'),
       fetchSB('/rest/v1/miembros?select=id,monto_pagado,fecha_ingreso'),
       fetchSB('/rest/v1/clase_viral_registros?select=id,email,ts&order=ts.desc'),
       fetchSB('/rest/v1/proximity_creators_interesados?select=id,created_at'),
+      fetchSB('/rest/v1/vendedor_actividad?select=detalle,ts&accion=eq.pago_parcial'),
     ]);
 
     const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
     const ahora = new Date();
     const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
 
-    // Facturación = monto_pagado de miembros (fuente real de ingresos)
+    // Facturación = monto_pagado de miembros + apartados (pagos parciales en seguimiento)
     const mbList = miembros || [];
-    const facturacionTotal = mbList.reduce((s,m) => s + Number(m.monto_pagado||0), 0);
+    const mbTotal = mbList.reduce((s,m) => s + Number(m.monto_pagado||0), 0);
     const mbMes = mbList.filter(m => m.fecha_ingreso && new Date(m.fecha_ingreso) >= inicioMes);
-    const facturacionMes = mbMes.reduce((s,m) => s + Number(m.monto_pagado||0), 0);
+    const mbMesTotal = mbMes.reduce((s,m) => s + Number(m.monto_pagado||0), 0);
+
+    // Pagos parciales (apartados en seguimiento)
+    const paList = (pagosActv || []).map(a => {
+      try { const d = typeof a.detalle === 'string' ? JSON.parse(a.detalle) : a.detalle; return { monto: Number(d.monto||0), ts: a.ts }; }
+      catch(e) { return { monto: 0, ts: a.ts }; }
+    });
+    const paTotal = paList.reduce((s,p) => s + p.monto, 0);
+    const paMes   = paList.filter(p => p.ts && new Date(p.ts) >= inicioMes).reduce((s,p) => s + p.monto, 0);
+
+    const facturacionTotal = mbTotal + paTotal;
+    const facturacionMes   = mbMesTotal + paMes;
 
     // Comisiones = ventas aprobadas (proceso de vendedores)
     const aprobadas = (ventas||[]).filter(v => v.aprobado);
@@ -1335,7 +1347,7 @@ async function renderOverview() {
     const confirmados = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado)).length;
 
     document.getElementById('ov-facturacion-mes').textContent = '$' + facturacionMes.toLocaleString('es-MX', {maximumFractionDigits:0});
-    document.getElementById('ov-facturacion-mes-label').textContent = MESES[ahora.getMonth()] + ' ' + ahora.getFullYear() + ' · ' + mbMes.length + ' miembros';
+    document.getElementById('ov-facturacion-mes-label').textContent = MESES[ahora.getMonth()] + ' ' + ahora.getFullYear() + ' · ' + mbMes.length + ' miembros' + (paMes > 0 ? ' + $' + paMes.toLocaleString('es-MX',{maximumFractionDigits:0}) + ' apartados' : '');
     document.getElementById('ov-facturacion').textContent = '$' + facturacionTotal.toLocaleString('es-MX', {maximumFractionDigits:0});
     document.getElementById('ov-ventas').textContent = aprobadas.length;
     document.getElementById('ov-ventas-sub').textContent = `ventas de vendedores`;
