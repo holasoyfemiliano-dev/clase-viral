@@ -658,11 +658,12 @@
                     <th>Lead</th>
                     <th>Monto</th>
                     <th>Nota</th>
+                    <th>Comprobante</th>
                     <th>Fecha</th>
                   </tr>
                 </thead>
                 <tbody id="apartadosBody">
-                  <tr><td colspan="5"><div class="empty" style="padding:20px;"><span class="empty-icon">📞</span>Sin apartados registrados.</div></td></tr>
+                  <tr><td colspan="6"><div class="empty" style="padding:20px;"><span class="empty-icon">📞</span>Sin apartados registrados.</div></td></tr>
                 </tbody>
               </table>
             </div>
@@ -726,6 +727,14 @@
     <div class="field" style="margin-top:12px;">
       <label>Nota (opcional)</label>
       <input type="text" id="ppNota" placeholder="Ej: apartado inicial, transferencia" style="width:100%;padding:10px 12px;border-radius:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);color:#fff;font-size:0.9rem;outline:none;">
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label>Comprobante (opcional)</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;border:2px dashed rgba(255,255,255,0.15);border-radius:8px;padding:12px 14px;transition:border-color 0.2s;" onmouseenter="this.style.borderColor='rgba(255,214,0,0.4)'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.15)'">
+        <span style="font-size:1.2rem;">📎</span>
+        <span id="ppFileLabel" style="font-size:0.82rem;color:var(--muted);">Selecciona imagen o PDF</span>
+        <input type="file" id="ppFile" accept="image/*,.pdf" style="display:none" onchange="document.getElementById('ppFileLabel').textContent=this.files[0]?.name||'Selecciona imagen o PDF'">
+      </label>
     </div>
     <div style="display:flex;gap:10px;margin-top:20px;">
       <button class="btn btn-gold" style="flex:1;" onclick="savePrimerPago()">Guardar y mover a Seguimiento</button>
@@ -969,6 +978,20 @@ async function uploadComprobante(file, ventaId) {
   return null;
 }
 
+async function uploadApartado(file, email) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const safeName = (currentVendedor || 'v').replace(/\s+/g, '_');
+  const safeEmail = email.replace(/[^a-zA-Z0-9]/g, '_');
+  const path = `apartados/${safeName}/${safeEmail}_${Date.now()}.${ext}`;
+  const res = await fetch(`${SB_URL}/storage/v1/object/comprobantes/${path}`, {
+    method: 'POST',
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type },
+    body: file
+  });
+  if (res.ok) return `${SB_URL}/storage/v1/object/public/comprobantes/${path}`;
+  return null;
+}
+
 /* ─────────────────────────────────────
    INTERESADOS
 ───────────────────────────────────── */
@@ -1054,7 +1077,7 @@ async function loadData() {
     try {
       const d = typeof a.detalle === 'string' ? JSON.parse(a.detalle) : a.detalle;
       if (!pagosParciales[a.lead_email]) pagosParciales[a.lead_email] = [];
-      pagosParciales[a.lead_email].push({ monto: d.monto, nota: d.nota || '', ts: a.ts });
+      pagosParciales[a.lead_email].push({ monto: d.monto, nota: d.nota || '', comprobante_url: d.comprobante_url || null, ts: a.ts });
     } catch(e) { /* skip malformed */ }
   });
 
@@ -1118,6 +1141,7 @@ function pagosRow(l) {
         <span class="pago-monto">${fmt$(p.monto)}</span>
         <span class="pago-nota">${esc(p.nota||'—')}</span>
         <span class="pago-fecha">${p.ts ? new Date(p.ts).toLocaleDateString('es-MX') : ''}</span>
+        ${p.comprobante_url ? `<a href="${esc(p.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.75rem;margin-left:4px;">Ver comprobante →</a>` : '<span style="color:var(--red);font-size:0.75rem;margin-left:4px;">Sin comprobante</span>'}
       </div>`).join('')
     : '<div style="font-size:0.78rem;color:var(--muted);">Sin pagos registrados aún.</div>';
 
@@ -1130,9 +1154,13 @@ function pagosRow(l) {
           <button class="btn-add-pago" onclick="toggleAddPago('${emailId}')">+ Añadir pago</button>
           ${pagos.length ? `<button class="btn-liquidar" onclick="liquidarSeguimiento('${emailSafe}','${esc(l.nombre)}',${total})">✅ Liquidó — registrar venta</button>` : ''}
         </div>
-        <div class="add-pago-form" id="add-pago-${emailId}">
+        <div class="add-pago-form" id="add-pago-${emailId}" style="flex-wrap:wrap;">
           <input class="pago-input" type="number" placeholder="Monto ($)" id="pago-monto-${emailId}" style="width:120px;">
-          <input class="pago-input" type="text"   placeholder="Nota (ej: apartado inicial)" id="pago-nota-${emailId}" style="width:220px;">
+          <input class="pago-input" type="text"   placeholder="Nota (ej: apartado inicial)" id="pago-nota-${emailId}" style="width:200px;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.78rem;color:var(--muted);border:1px solid var(--border);border-radius:5px;padding:5px 10px;background:rgba(0,0,0,0.3);">
+            📎 <span id="pago-file-label-${emailId}">Comprobante</span>
+            <input type="file" id="pago-file-${emailId}" accept="image/*,.pdf" style="display:none" onchange="document.getElementById('pago-file-label-${emailId}').textContent=this.files[0]?.name||'Comprobante'">
+          </label>
           <button class="btn-add-pago" onclick="savePagoParcial('${emailSafe}','${emailId}')">Guardar</button>
           <button class="btn-add-pago" style="color:var(--muted);border-color:var(--border);" onclick="toggleAddPago('${emailId}')">Cancelar</button>
         </div>
@@ -1156,6 +1184,8 @@ function openPrimerPagoModal(email, nombre) {
   document.getElementById('primerPagoNombre').textContent = nombre || email;
   document.getElementById('ppMonto').value = '';
   document.getElementById('ppNota').value = '';
+  document.getElementById('ppFile').value = '';
+  document.getElementById('ppFileLabel').textContent = 'Selecciona imagen o PDF';
   document.getElementById('primerPagoModal').style.display = 'flex';
   setTimeout(() => document.getElementById('ppMonto').focus(), 50);
 }
@@ -1171,11 +1201,18 @@ async function savePrimerPago() {
   const monto = parseFloat(document.getElementById('ppMonto').value);
   if (!monto || monto <= 0) { alert('Ingresa un monto válido.'); return; }
   const nota = document.getElementById('ppNota').value.trim() || '';
+  const file = document.getElementById('ppFile').files?.[0] || null;
 
-  await logActivity('pago_parcial', email, JSON.stringify({ monto, nota }));
+  // Upload comprobante if provided
+  let comprobante_url = null;
+  if (file) {
+    comprobante_url = await uploadApartado(file, email);
+  }
+
+  await logActivity('pago_parcial', email, JSON.stringify({ monto, nota, comprobante_url }));
 
   if (!pagosParciales[email]) pagosParciales[email] = [];
-  pagosParciales[email].push({ monto, nota, ts: new Date().toISOString() });
+  pagosParciales[email].push({ monto, nota, comprobante_url, ts: new Date().toISOString() });
 
   // Move to seguimiento
   const estadoActual = (estadosMap[email] || {}).estado;
@@ -1194,15 +1231,23 @@ async function savePrimerPago() {
 async function savePagoParcial(email, emailId) {
   const montoEl = document.getElementById('pago-monto-' + emailId);
   const notaEl  = document.getElementById('pago-nota-'  + emailId);
+  const fileEl  = document.getElementById('pago-file-'  + emailId);
   const monto = parseFloat(montoEl?.value);
   if (!monto || monto <= 0) { alert('Ingresa un monto válido.'); return; }
   const nota = notaEl?.value?.trim() || '';
+  const file = fileEl?.files?.[0] || null;
 
-  await logActivity('pago_parcial', email, JSON.stringify({ monto, nota }));
+  // Upload comprobante if provided
+  let comprobante_url = null;
+  if (file) {
+    comprobante_url = await uploadApartado(file, email);
+  }
+
+  await logActivity('pago_parcial', email, JSON.stringify({ monto, nota, comprobante_url }));
 
   // Update local cache
   if (!pagosParciales[email]) pagosParciales[email] = [];
-  pagosParciales[email].push({ monto, nota, ts: new Date().toISOString() });
+  pagosParciales[email].push({ monto, nota, comprobante_url, ts: new Date().toISOString() });
 
   // Si es el primer pago y el lead no está en seguimiento todavía → moverlo automáticamente
   const estadoActual = (estadosMap[email] || {}).estado;
@@ -1710,9 +1755,10 @@ function renderVentas() {
         <td class="bold">${esc(p.nombre)}</td>
         <td style="color:#60a5fa;font-weight:600">$${fmt(p.monto)}</td>
         <td style="color:var(--text);font-size:0.82rem">${esc(p.nota || '—')}</td>
+        <td>${p.comprobante_url ? `<a href="${esc(p.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.78rem">Ver →</a>` : '<span style="color:var(--red);font-size:0.78rem">Sin subir</span>'}</td>
         <td style="color:var(--muted);font-size:0.8rem">${p.ts ? new Date(p.ts).toLocaleDateString('es-MX') : '—'}</td>
       </tr>`).join('')
-    : '<tr><td colspan="5"><div class="empty" style="padding:20px;"><span class="empty-icon">📞</span>Sin apartados registrados.</div></td></tr>';
+    : '<tr><td colspan="6"><div class="empty" style="padding:20px;"><span class="empty-icon">📞</span>Sin apartados registrados.</div></td></tr>';
 
   if (!misVentas.length) {
     document.getElementById('ventasBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">💸</span>Aún no tienes ventas registradas.</div></td></tr>';
