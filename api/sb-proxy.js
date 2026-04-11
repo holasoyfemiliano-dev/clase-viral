@@ -52,11 +52,11 @@ module.exports = async function handler(req, res) {
 
   // ── Auth ──────────────────────────────────────────────────────────────────
   // DASH_UI_SECRET must match DASH_PASS in dashboard.html
-  const secret = process.env.DASH_UI_SECRET;
+  const secret = (process.env.DASH_UI_SECRET || '').trim();
   if (!secret) {
     return res.status(500).json({ error: 'DASH_UI_SECRET not configured' });
   }
-  const authHeader = req.headers['authorization'] || '';
+  const authHeader = (req.headers['authorization'] || '').trim();
   if (authHeader !== 'Bearer ' + secret) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
