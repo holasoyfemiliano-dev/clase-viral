@@ -462,43 +462,73 @@
         </div>
       </div>
 
-      <!-- ── TRÁFICO & ASISTENCIA ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">Tráfico & Asistencia</div>
-      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:8px;">
+      <!-- ── TRÁFICO ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">Tráfico</div>
+      <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:8px;">
         <div class="stat-card blue">
           <div class="s-label">Visitas Landing</div>
           <div class="s-value" id="ov-views">0</div>
           <div class="s-sub">Sesiones rastreadas</div>
         </div>
         <div class="stat-card" style="border-color:rgba(168,85,247,0.3);">
-          <div class="s-label">Registrados</div>
+          <div class="s-label">Registrados Total</div>
           <div class="s-value" id="ov-total" style="color:#a855f7;">0</div>
-          <div class="s-sub">Para el próximo jueves</div>
+          <div class="s-sub">Todos los eventos</div>
         </div>
-        <div class="stat-card">
-          <div class="s-label">Confirmación</div>
+        <div class="stat-card blue">
+          <div class="s-label">Conversión Landing</div>
+          <div class="s-value" id="ov-cvr" style="color:var(--blue);">—%</div>
+          <div class="s-sub">Visitas → registro</div>
+        </div>
+      </div>
+
+      <!-- ── PRÓXIMO EVENTO ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">Próximo Evento <span id="ov-prox-fecha" style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.68rem;color:rgba(255,255,255,0.3);"></span></div>
+      <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:8px;">
+        <div class="stat-card" style="border-color:rgba(168,85,247,0.4);background:rgba(168,85,247,0.04);">
+          <div class="s-label" style="color:#a855f7;">Registros</div>
+          <div class="s-value" id="ov-prox-regs" style="color:#a855f7;font-size:2rem;">0</div>
+          <div class="s-sub" id="ov-prox-regs-sub">desde el último jueves</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(59,130,246,0.4);">
+          <div class="s-label">Confirmados</div>
           <div class="s-value" id="ov-tasa-conf" style="color:var(--blue);font-size:1.5rem;">—</div>
           <div class="s-sub" id="ov-tasa-conf-sub">confirmados / registrados</div>
         </div>
-        <div class="stat-card" style="border-color:rgba(34,197,94,0.25);">
-          <div class="s-label">Asistencia real</div>
-          <div class="s-value" id="ov-tasa-asist" style="color:var(--green);font-size:1.5rem;">—</div>
-          <div class="s-sub" id="ov-tasa-asist-sub">asistentes / registrados</div>
+        <div class="stat-card" style="border-color:rgba(34,197,94,0.3);">
+          <div class="s-label">% Asistencia Esperado</div>
+          <div class="s-value" id="ov-prox-asist-pct" style="color:var(--green);font-size:1.5rem;">—</div>
+          <div class="s-sub" id="ov-prox-asist-sub">basado en histórico</div>
           <div id="ov-pred-asist" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(34,197,94,0.15);">
-            <div style="font-size:0.68rem;font-weight:700;color:rgba(34,197,94,0.6);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">★ predicción próxima clase</div>
+            <div style="font-size:0.68rem;font-weight:700;color:rgba(34,197,94,0.6);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">★ estimado</div>
             <div style="font-size:1.1rem;font-weight:800;color:#4ade80;" id="ov-pred-asist-val">—</div>
-            <div style="font-size:0.72rem;color:var(--muted);" id="ov-pred-asist-sub">asistentes estimados</div>
+            <div style="font-size:0.72rem;color:var(--muted);" id="ov-pred-asist-sub">personas esperadas</div>
           </div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(255,214,0,0.3);">
+          <div class="s-label">Ventas Esperadas</div>
+          <div class="s-value" id="ov-prox-ventas" style="color:var(--gold);font-size:1.5rem;">—</div>
+          <div class="s-sub" id="ov-prox-ventas-sub">basado en histórico</div>
+          <div id="ov-pred-conv" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,214,0,0.15);">
+            <div style="font-size:0.68rem;font-weight:700;color:rgba(255,214,0,0.6);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">★ estimado</div>
+            <div style="font-size:1.1rem;font-weight:800;color:var(--gold);" id="ov-pred-conv-val">—</div>
+            <div style="font-size:0.72rem;color:var(--muted);" id="ov-pred-conv-sub">ventas estimadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── EVENTO ANTERIOR (Asistencia real del último evento) ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">Evento Anterior</div>
+      <div class="stats-row" style="grid-template-columns:repeat(2,1fr);margin-bottom:8px;">
+        <div class="stat-card" style="border-color:rgba(34,197,94,0.25);">
+          <div class="s-label">Asistencia Real</div>
+          <div class="s-value" id="ov-tasa-asist" style="color:var(--green);font-size:1.5rem;">—</div>
+          <div class="s-sub" id="ov-tasa-asist-sub">asistentes según Zoom</div>
         </div>
         <div class="stat-card" style="border-color:rgba(255,214,0,0.25);">
           <div class="s-label">Conversión</div>
           <div class="s-value" id="ov-tasa-conv" style="color:var(--gold);font-size:1.5rem;">—</div>
-          <div class="s-sub" id="ov-tasa-conv-sub">ventas / asistentes · este corte</div>
-          <div id="ov-pred-conv" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,214,0,0.15);">
-            <div style="font-size:0.68rem;font-weight:700;color:rgba(255,214,0,0.6);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">★ predicción próxima clase</div>
-            <div style="font-size:1.1rem;font-weight:800;color:var(--gold);" id="ov-pred-conv-val">—</div>
-            <div style="font-size:0.72rem;color:var(--muted);" id="ov-pred-conv-sub">ventas estimadas</div>
-          </div>
+          <div class="s-sub" id="ov-tasa-conv-sub">ventas / asistentes</div>
         </div>
       </div>
 
@@ -1279,7 +1309,7 @@ async function renderOverview() {
       fetchSB('/rest/v1/ventas?select=monto,tipo,aprobado,comision_porcentaje,created_at&order=created_at.desc'),
       fetchSB('/rest/v1/lead_estados?select=estado,registro_email'),
       fetchSB('/rest/v1/miembros?select=id,monto_pagado,fecha_ingreso'),
-      fetchSB('/rest/v1/clase_viral_registros?select=id'),
+      fetchSB('/rest/v1/clase_viral_registros?select=id,email,ts&order=ts.desc'),
       fetchSB('/rest/v1/proximity_creators_interesados?select=id,created_at'),
     ]);
 
@@ -1301,78 +1331,108 @@ async function renderOverview() {
       return s + Number(v.monto) * r;
     }, 0);
 
-    // Próximo evento: todos los registros + confirmados por vendedores
     const totalRegistrados = (sbRegs||[]).length;
     const confirmados = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado)).length;
-    const esperados = Math.round(totalRegistrados * 0.25);
 
     document.getElementById('ov-facturacion-mes').textContent = '$' + facturacionMes.toLocaleString('es-MX', {maximumFractionDigits:0});
     document.getElementById('ov-facturacion-mes-label').textContent = MESES[ahora.getMonth()] + ' ' + ahora.getFullYear() + ' · ' + mbMes.length + ' miembros';
     document.getElementById('ov-facturacion').textContent = '$' + facturacionTotal.toLocaleString('es-MX', {maximumFractionDigits:0});
     document.getElementById('ov-ventas').textContent = aprobadas.length;
     document.getElementById('ov-ventas-sub').textContent = `ventas de vendedores`;
-    // ov-total already set above
     document.getElementById('ov-miembros').textContent = mbList.length;
     document.getElementById('ov-comisiones').textContent = '$' + comisionesMes.toLocaleString('es-MX', {maximumFractionDigits:0});
     document.getElementById('ov-comisiones-sub').textContent = MESES[ahora.getMonth()] + ' · ' + aprobMes.length + ' ventas';
 
-    // ── Tráfico & Asistencia ──
-    // ── Corte semanal: desde el último jueves a las 7 PM ──
+    // ── Corte de evento: desde el último jueves a las 10 PM (hora MX) ──
     function lastThursdayCut() {
-      const d = new Date();
-      const day = d.getDay(); // 0=Sun … 4=Thu
-      const daysBack = day >= 4 ? day - 4 : day + 3; // days since last Thursday
-      const cut = new Date(d);
-      cut.setDate(d.getDate() - daysBack);
-      cut.setHours(19, 0, 0, 0); // 7 PM
-      // If today is Thursday but before 7 PM, go back one more week
-      if (daysBack === 0 && d < cut) cut.setDate(cut.getDate() - 7);
-      return cut;
+      const MX_OFFSET = -6 * 3600000;
+      const nowUtc = Date.now();
+      const nowMx = new Date(nowUtc + new Date().getTimezoneOffset() * 60000 + MX_OFFSET);
+      const day = nowMx.getDay(); // 0=Dom … 4=Jue
+      const daysBack = day >= 4 ? day - 4 : day + 3;
+      const cut = new Date(nowMx);
+      cut.setDate(nowMx.getDate() - daysBack);
+      cut.setHours(22, 0, 0, 0); // 10 PM hora MX
+      // Si hoy es jueves pero antes de las 10pm, retroceder una semana más
+      if (daysBack === 0 && nowMx < cut) cut.setDate(cut.getDate() - 7);
+      // Convertir de vuelta a UTC para comparar con timestamps de DB
+      return new Date(cut.getTime() - new Date().getTimezoneOffset() * 60000 - MX_OFFSET);
     }
     const corteFecha = lastThursdayCut();
 
-    // Asistencia y conversión requieren datos de Zoom
+    // ── Próximo Evento: registros DESDE el último jueves 10pm ──
+    const regsProximo = (sbRegs||[]).filter(r => r.ts && new Date(r.ts) >= corteFecha);
+    const emailsProximo = new Set(regsProximo.map(r => r.email).filter(Boolean));
+    const confirmadosProximo = (estados||[]).filter(e =>
+      ['confirmado'].includes(e.estado) && emailsProximo.has(e.registro_email)
+    ).length;
+
+    // Fecha del próximo jueves para mostrar en el label
+    const proxJueves = (() => {
+      const d = new Date(corteFecha);
+      d.setDate(d.getDate() + 7);
+      return d.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'short' });
+    })();
+    const proxFechaEl = document.getElementById('ov-prox-fecha');
+    if (proxFechaEl) proxFechaEl.textContent = '· ' + proxJueves;
+
+    document.getElementById('ov-total').textContent = totalRegistrados;
+    document.getElementById('ov-cvr') && (document.getElementById('ov-cvr').textContent = (totalRegistrados > 0 && sbTotalViews > 0 ? Math.round(totalRegistrados / sbTotalViews * 100) : 0) + '%');
+    document.getElementById('ov-prox-regs').textContent = regsProximo.length;
+    document.getElementById('ov-prox-regs-sub').textContent = 'desde el ' + corteFecha.toLocaleDateString('es-MX', {day:'numeric',month:'short'}) + ' (último jue 10pm)';
+    document.getElementById('ov-tasa-conf').textContent = confirmadosProximo + ' / ' + regsProximo.length;
+    document.getElementById('ov-tasa-conf-sub').textContent = confirmadosProximo + ' confirmados de ' + regsProximo.length + ' registrados';
+
+    // ── Evento Anterior: asistencia real de Zoom ──
     let asistentes = 0;
     try {
       const asist = await fetchSB('/rest/v1/asistencias?select=email');
       asistentes = (asist||[]).length;
     } catch(e) {}
 
-    // Ventas aprobadas en este corte (desde el último jueves)
-    const ventasCorte = aprobadas.filter(v => v.created_at && new Date(v.created_at) >= corteFecha).length;
+    // Ventas del ciclo anterior (antes del corte)
+    const ventasAnterior = aprobadas.filter(v => v.created_at && new Date(v.created_at) < corteFecha).length;
+    // Registros del ciclo anterior
+    const regsAnterior = totalRegistrados - regsProximo.length;
 
-    // Show exact numbers "X / Y"
-    document.getElementById('ov-tasa-conf').textContent = confirmados + ' / ' + totalRegistrados;
-    document.getElementById('ov-tasa-conf-sub').textContent = 'confirmados de ' + totalRegistrados + ' registrados';
-    // Asistencia real = asistentes / registrados (no confirmados — confirmado no implica asistencia)
-    document.getElementById('ov-tasa-asist').textContent = asistentes > 0 ? asistentes + ' / ' + totalRegistrados : '—';
-    document.getElementById('ov-tasa-asist-sub').textContent = asistentes > 0 ? asistentes + ' asistentes de ' + totalRegistrados + ' registrados' : 'sin datos de Zoom aún';
-    document.getElementById('ov-tasa-conv').textContent = asistentes > 0 ? ventasCorte + ' / ' + asistentes : '—';
-    document.getElementById('ov-tasa-conv-sub').textContent = asistentes > 0 ? ventasCorte + ' ventas de ' + asistentes + ' asistentes · desde ' + corteFecha.toLocaleDateString('es-MX') : 'ventas este corte / asistentes';
+    document.getElementById('ov-tasa-asist').textContent = asistentes > 0 ? asistentes + ' / ' + regsAnterior : '—';
+    document.getElementById('ov-tasa-asist-sub').textContent = asistentes > 0 ? asistentes + ' asistentes de ' + regsAnterior + ' registrados (evento anterior)' : 'sin datos de Zoom aún';
+    document.getElementById('ov-tasa-conv').textContent = asistentes > 0 ? ventasAnterior + ' / ' + asistentes : '—';
+    document.getElementById('ov-tasa-conv-sub').textContent = asistentes > 0 ? ventasAnterior + ' ventas de ' + asistentes + ' asistentes' : 'ventas / asistentes';
 
     // ── Predicciones (solo cuando hay suficiente data histórica) ──
     // Tasa histórica asistencia = asistentes_histórico / registrados_histórico
-    // Tasa histórica conversión = ventas_aprobadas_histórico / asistentes_histórico
-    const MIN_DATA = 5; // mínimo de asistentes para confiar en las tasas
-    if (asistentes >= MIN_DATA && totalRegistrados >= MIN_DATA) {
-      const histAsistRate = asistentes / totalRegistrados; // e.g. 0.30
-      const histConvRate  = aprobadas.length > 0 ? aprobadas.length / asistentes : 0; // e.g. 0.07
+    // ── Predicciones para Próximo Evento (basado en tasa histórica del evento anterior) ──
+    const MIN_DATA = 3;
+    if (asistentes >= MIN_DATA && regsAnterior >= MIN_DATA) {
+      const histAsistRate = asistentes / regsAnterior;
+      const histConvRate  = ventasAnterior > 0 ? ventasAnterior / asistentes : 0;
 
-      const predAsist = Math.round(confirmados * histAsistRate);
+      const predAsist  = Math.round(regsProximo.length * histAsistRate);
       const predVentas = Math.round(predAsist * histConvRate);
+      const pctAsist   = Math.round(histAsistRate * 100);
+      const pctConv    = Math.round(histConvRate * 100);
 
-      const pctAsist = Math.round(histAsistRate * 100);
-      const pctConv  = Math.round(histConvRate * 100);
+      document.getElementById('ov-prox-asist-pct').textContent = pctAsist + '%';
+      document.getElementById('ov-prox-asist-sub').textContent = regsProximo.length + ' registros × ' + pctAsist + '% histórico';
+      document.getElementById('ov-prox-ventas').textContent = '~' + predVentas;
+      document.getElementById('ov-prox-ventas-sub').textContent = predAsist + ' asistentes est. × ' + pctConv + '% cierre';
 
       const predAsistEl = document.getElementById('ov-pred-asist');
-      predAsistEl.style.display = 'block';
+      if (predAsistEl) { predAsistEl.style.display = 'block'; }
       document.getElementById('ov-pred-asist-val').textContent = '~' + predAsist + ' personas';
-      document.getElementById('ov-pred-asist-sub').textContent = confirmados + ' confirmados × ' + pctAsist + '% tasa histórica';
+      document.getElementById('ov-pred-asist-sub').textContent = regsProximo.length + ' registros × ' + pctAsist + '% tasa histórica';
 
       const predConvEl = document.getElementById('ov-pred-conv');
-      predConvEl.style.display = 'block';
+      if (predConvEl) { predConvEl.style.display = 'block'; }
       document.getElementById('ov-pred-conv-val').textContent = '~' + predVentas + ' ventas';
       document.getElementById('ov-pred-conv-sub').textContent = predAsist + ' est. asistentes × ' + pctConv + '% tasa histórica';
+    } else {
+      // Sin datos históricos suficientes — mostrar solo conteo
+      document.getElementById('ov-prox-asist-pct').textContent = '—';
+      document.getElementById('ov-prox-asist-sub').textContent = 'se calculará con más eventos';
+      document.getElementById('ov-prox-ventas').textContent = '—';
+      document.getElementById('ov-prox-ventas-sub').textContent = 'se calculará con más eventos';
     }
 
     // ── Embudo de ventas: Interesados + Seguimientos ──
@@ -1431,11 +1491,11 @@ async function renderOverview() {
 
     // ── Recomendaciones ──
     const recs = [];
-    const tasaConf = totalRegistrados > 0 ? Math.round(confirmados / totalRegistrados * 100) : 0;
-    const tasaAsist = totalRegistrados > 0 ? Math.round(asistentes / totalRegistrados * 100) : 0;
-    if (totalCVR < 30 && totalViews >= 20) recs.push({ color:'#f97316', icon:'📊', text:`Conversión de landing baja — solo ${totalCon} registros de ${sbTotalViews} visitas. Prueba optimizar el título o formulario.` });
-    if (tasaConf < 30 && totalRegistrados >= 10) recs.push({ color:'#3b82f6', icon:'📞', text:`Solo ${confirmados} de ${totalRegistrados} registrados confirmaron. Empuja a los vendedores a contactar más leads.` });
-    if (tasaAsist < 40 && asistentes > 0) recs.push({ color:'#ef4444', icon:'🎥', text:`Asistencia baja — ${asistentes} de ${confirmados} confirmados asistieron. Refuerza los recordatorios.` });
+    const tasaConf = regsProximo.length > 0 ? Math.round(confirmadosProximo / regsProximo.length * 100) : 0;
+    const tasaAsist = regsAnterior > 0 ? Math.round(asistentes / regsAnterior * 100) : 0;
+    if (sbTotalViews >= 20 && regsProximo.length / sbTotalViews < 0.3) recs.push({ color:'#f97316', icon:'📊', text:`Conversión de landing baja — solo ${regsProximo.length} registros nuevos. Prueba optimizar el título o formulario.` });
+    if (tasaConf < 30 && regsProximo.length >= 5) recs.push({ color:'#3b82f6', icon:'📞', text:`Solo ${confirmadosProximo} de ${regsProximo.length} registrados confirmaron. Empuja a los vendedores a contactar más leads.` });
+    if (tasaAsist < 40 && asistentes > 0) recs.push({ color:'#ef4444', icon:'🎥', text:`Asistencia baja — ${asistentes} de ${regsAnterior} registrados asistieron. Refuerza los recordatorios.` });
     if (aprobMes.length === 0) recs.push({ color:'#a855f7', icon:'💰', text:`Sin ventas aprobadas este mes. Revisa si hay ventas pendientes de aprobación.` });
     if (mbMes.length > 0 && facturacionMes > 0) recs.push({ color:'#22c55e', icon:'✅', text:`${mbMes.length} nuevo${mbMes.length>1?'s':''} miembro${mbMes.length>1?'s':''} este mes — $${facturacionMes.toLocaleString('es-MX',{maximumFractionDigits:0})} en facturación.` });
     if (!recs.length) recs.push({ color:'var(--muted)', icon:'📋', text:'Todo parece en orden. Sigue monitoreando para ver nuevas recomendaciones.' });
