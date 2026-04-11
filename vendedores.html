@@ -1110,35 +1110,43 @@ function renderLeads() {
       if (l.email) emailIndex[l.email.toLowerCase()] = l;
     });
 
+    // Emails con venta aprobada (para "Miembros Nuevos")
+    const ventasAprobadas = new Set((misVentas || []).filter(v => v.aprobado && v.registro_email).map(v => v.registro_email.toLowerCase()));
+
     // For each pago registration, find the matching lead in allLeads
     const PIPELINE = [
-      { key: 'interesado',          label: '🔥 Interesados',          color: '#f97316', sub: 'Sin trabajar aún' },
-      { key: 'seguimiento',         label: '📞 En seguimiento',        color: '#f97316', sub: 'Vendedor los está trabajando' },
-      { key: 'seguimiento_exitoso', label: '✅ Seguimientos exitosos', color: '#FFE500', sub: 'Cerraron la venta' },
+      { key: 'interesado',    label: '🔥 Interesados',       color: '#f97316', sub: 'Sin trabajar aún' },
+      { key: 'seguimiento',   label: '📞 En seguimiento',     color: '#60a5fa', sub: 'Vendedor los está trabajando' },
+      { key: 'para_aprobacion', label: '💰 Para Aprobación', color: '#FFE500', sub: 'Compraron · pendiente de aprobar' },
+      { key: 'miembros_nuevos', label: '✅ Miembros Nuevos',  color: '#22c55e', sub: 'Venta aprobada' },
     ];
-    const byEstado = { interesado: [], seguimiento: [], seguimiento_exitoso: [] };
+    const byEstado = { interesado: [], seguimiento: [], para_aprobacion: [], miembros_nuevos: [] };
     const seenLeadEmails = new Set();
 
     vendInteresadosCache.forEach(pago => {
       const pagoPhone = (pago.phone || '').replace(/^\+?52/, '').replace(/\D/g,'');
-      // Find matching lead: by email first, then by phone
-      let lead = emailIndex[pago.email?.toLowerCase()] ||
-                 (pagoPhone ? phoneIndex[pagoPhone] : null);
-      if (!lead) return; // pago visitor not in clase_viral_registros → skip for pipeline
+      let lead = emailIndex[pago.email?.toLowerCase()] || (pagoPhone ? phoneIndex[pagoPhone] : null);
+      if (!lead) return;
       if (seenLeadEmails.has(lead.email)) return;
       seenLeadEmails.add(lead.email);
       const estado = (estadosMap[lead.email] || {}).estado || 'interesado';
-      const bucket = byEstado[estado] ? estado : 'interesado';
+      let bucket;
+      if (ventasAprobadas.has(lead.email.toLowerCase())) bucket = 'miembros_nuevos';
+      else if (estado === 'compro_evento' || estado === 'seguimiento_exitoso') bucket = 'para_aprobacion';
+      else if (byEstado[estado] !== undefined) bucket = estado;
+      else bucket = 'interesado';
       byEstado[bucket].push(lead);
     });
 
-    // Also include leads already in seguimiento/seguimiento_exitoso via estado (even if not in pago table)
+    // Include leads in seguimiento/compro/seguimiento_exitoso even if not in pago table
     allLeads.forEach(l => {
+      if (seenLeadEmails.has(l.email)) return;
       const estado = (estadosMap[l.email] || {}).estado;
-      if ((estado === 'seguimiento' || estado === 'seguimiento_exitoso') && !seenLeadEmails.has(l.email)) {
-        seenLeadEmails.add(l.email);
-        byEstado[estado].push(l);
-      }
+      let bucket = null;
+      if (ventasAprobadas.has(l.email.toLowerCase())) bucket = 'miembros_nuevos';
+      else if (estado === 'compro_evento' || estado === 'seguimiento_exitoso') bucket = 'para_aprobacion';
+      else if (estado === 'seguimiento') bucket = 'seguimiento';
+      if (bucket) { seenLeadEmails.add(l.email); byEstado[bucket].push(l); }
     });
 
     if (search) {
@@ -1150,15 +1158,16 @@ function renderLeads() {
     const sortFn = (a, b) => new Date((estadosMap[b.email]?.updated_at || b.ts)) - new Date((estadosMap[a.email]?.updated_at || a.ts));
     Object.keys(byEstado).forEach(k => byEstado[k].sort(sortFn));
 
-    const totalInt = byEstado['interesado'].length;
-    const totalSeg = byEstado['seguimiento'].length;
-    const totalExt = byEstado['seguimiento_exitoso'].length;
-    const totalAll = totalInt + totalSeg + totalExt;
+    const totalInt    = byEstado['interesado'].length;
+    const totalSeg    = byEstado['seguimiento'].length;
+    const totalApro   = byEstado['para_aprobacion'].length;
+    const totalMiemb  = byEstado['miembros_nuevos'].length;
+    const totalAll    = totalInt + totalSeg + totalApro + totalMiemb;
 
     document.getElementById('st-total').textContent = totalAll;
-    document.getElementById('st-confirmados').textContent = totalSeg;
-    document.getElementById('st-compraron').textContent = totalExt;
     document.getElementById('st-porconf').textContent = totalInt;
+    document.getElementById('st-confirmados').textContent = totalSeg;
+    document.getElementById('st-compraron').textContent = totalApro + totalMiemb;
 
     if (totalAll === 0) {
       container.innerHTML = '<div class="card" style="padding:30px;text-align:center;color:var(--muted)"><span style="font-size:2rem;display:block;margin-bottom:8px">📭</span>Sin interesados aún.</div>';
