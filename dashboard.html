@@ -773,6 +773,21 @@
         </div>
       </div>
 
+      <!-- ── Apartados pendientes de aprobación ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#60a5fa;margin-bottom:12px;margin-top:28px;">📞 Apartados pendientes de aprobación</div>
+      <div id="apartadosPendAlert"></div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:0.85rem;font-weight:700;">Pagos parciales con comprobante · pendientes de verificar</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Lead</th><th>Vendedor</th><th>Monto</th><th>Nota</th><th>Comprobante</th><th>Fecha</th><th>Acción</th></tr></thead>
+            <tbody id="apartadosPendBody"><tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- ── Aprobaciones de ventas ── -->
       <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;margin-top:28px;">Aprobaciones de ventas</div>
       <div id="aprobAlert"></div>
@@ -1324,18 +1339,24 @@ async function renderOverview() {
     const mbMes = mbList.filter(m => m.fecha_ingreso && new Date(m.fecha_ingreso) >= inicioMes);
     const mbMesTotal = mbMes.reduce((s,m) => s + Number(m.monto_pagado||0), 0);
 
-    // Pagos parciales — solo contar leads que SIGUEN en seguimiento (no revertidos)
+    // Pagos parciales — solo contar: leads en seguimiento + aprobado === true
     const enSeguimiento = new Set(
       (estados || []).filter(e => e.estado === 'seguimiento').map(e => (e.registro_email||'').toLowerCase())
     );
-    const paList = (pagosActv || [])
-      .filter(a => a.lead_email && enSeguimiento.has(a.lead_email.toLowerCase()))
-      .map(a => {
-        try { const d = typeof a.detalle === 'string' ? JSON.parse(a.detalle) : a.detalle; return { monto: Number(d.monto||0), ts: a.ts }; }
-        catch(e) { return { monto: 0, ts: a.ts }; }
-      });
-    const paTotal = paList.reduce((s,p) => s + p.monto, 0);
-    const paMes   = paList.filter(p => p.ts && new Date(p.ts) >= inicioMes).reduce((s,p) => s + p.monto, 0);
+    const paList = (pagosActv || []).map(a => {
+      try {
+        const d = typeof a.detalle === 'string' ? JSON.parse(a.detalle) : a.detalle;
+        return { id: a.id, lead_email: a.lead_email, monto: Number(d.monto||0), nota: d.nota||'', comprobante_url: d.comprobante_url||null, aprobado: d.aprobado === true, detalle: d, ts: a.ts, vendedor: a.vendedor };
+      } catch(e) { return null; }
+    }).filter(Boolean);
+
+    // Para facturación: solo aprobados de leads aún en seguimiento
+    const paAprobados = paList.filter(p => p.aprobado && p.lead_email && enSeguimiento.has(p.lead_email.toLowerCase()));
+    const paTotal = paAprobados.reduce((s,p) => s + p.monto, 0);
+    const paMes   = paAprobados.filter(p => p.ts && new Date(p.ts) >= inicioMes).reduce((s,p) => s + p.monto, 0);
+
+    // Pendientes de aprobación (tienen comprobante pero aún no aprobados)
+    const paPendientes = paList.filter(p => !p.aprobado && p.comprobante_url);
 
     const facturacionTotal = mbTotal + paTotal;
     const facturacionMes   = mbMesTotal + paMes;
@@ -1351,8 +1372,41 @@ async function renderOverview() {
     const totalRegistrados = (sbRegs||[]).length;
     const confirmados = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado)).length;
 
+    // Render pending apartados table
+    const regNombres = {};
+    (sbRegs||[]).forEach(r => { if(r.email) regNombres[r.email.toLowerCase()] = r; });
+    const fmtMXN = n => '$' + Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:0});
+    const fmtDate = d => d ? new Date(d).toLocaleDateString('es-MX') : '—';
+    const pendBody = document.getElementById('apartadosPendBody');
+    if (pendBody) {
+      if (!paPendientes.length) {
+        pendBody.innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">✅</span>Sin apartados pendientes de aprobación.</div></td></tr>';
+      } else {
+        pendBody.innerHTML = paPendientes.map((p, i) => {
+          const reg = regNombres[(p.lead_email||'').toLowerCase()] || {};
+          const nombre = reg.nombre || p.lead_email || '—';
+          return `<tr>
+            <td style="color:var(--muted)">${i+1}</td>
+            <td class="bold">${esc(nombre)}</td>
+            <td style="font-size:0.82rem;color:var(--text)">${esc(p.vendedor||'—')}</td>
+            <td style="color:#60a5fa;font-weight:700">${fmtMXN(p.monto)}</td>
+            <td style="font-size:0.78rem;color:var(--muted)">${esc(p.nota||'—')}</td>
+            <td><a href="${esc(p.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.82rem;">Ver →</a></td>
+            <td style="font-size:0.78rem;color:var(--muted)">${fmtDate(p.ts)}</td>
+            <td>
+              <button onclick="aprobarPago('${esc(p.id)}',${JSON.stringify(p.detalle).replace(/'/g,"&#39;")})"
+                style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.35);border-radius:5px;color:#22c55e;font-size:0.78rem;padding:4px 12px;cursor:pointer;font-weight:600;"
+                onmouseover="this.style.background='rgba(34,197,94,0.22)'" onmouseout="this.style.background='rgba(34,197,94,0.12)'">
+                ✓ Aprobar
+              </button>
+            </td>
+          </tr>`;
+        }).join('');
+      }
+    }
+
     document.getElementById('ov-facturacion-mes').textContent = '$' + facturacionMes.toLocaleString('es-MX', {maximumFractionDigits:0});
-    document.getElementById('ov-facturacion-mes-label').textContent = MESES[ahora.getMonth()] + ' ' + ahora.getFullYear() + ' · ' + mbMes.length + ' miembros' + (paMes > 0 ? ' + $' + paMes.toLocaleString('es-MX',{maximumFractionDigits:0}) + ' apartados' : '');
+    document.getElementById('ov-facturacion-mes-label').textContent = MESES[ahora.getMonth()] + ' ' + ahora.getFullYear() + ' · ' + mbMes.length + ' miembros' + (paMes > 0 ? ' + $' + paMes.toLocaleString('es-MX',{maximumFractionDigits:0}) + ' apartados aprobados' : '');
     document.getElementById('ov-facturacion').textContent = '$' + facturacionTotal.toLocaleString('es-MX', {maximumFractionDigits:0});
     document.getElementById('ov-ventas').textContent = aprobadas.length;
     document.getElementById('ov-ventas-sub').textContent = `ventas de vendedores`;
@@ -2230,6 +2284,19 @@ function renderVentasLeads(data) {
   } else {
     document.getElementById('ventasLeadsBody').innerHTML = rows.map((r,i) => rowHtml(r,i)).join('');
   }
+}
+
+async function aprobarPago(id, detalleActual) {
+  if (!confirm('¿Confirmar que el pago cayó a la cuenta? Esto lo sumará a la facturación.')) return;
+  const nuevoDetalle = { ...(typeof detalleActual === 'string' ? JSON.parse(detalleActual) : detalleActual), aprobado: true };
+  const res = await fetchSB(`/rest/v1/vendedor_actividad?id=eq.${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    rawResponse: true,
+    headers: { 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ detalle: nuevoDetalle })
+  });
+  // Reload overview to reflect the approved payment
+  renderOverview();
 }
 
 async function deleteVentasLead(email) {
