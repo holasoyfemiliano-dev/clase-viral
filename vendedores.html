@@ -617,6 +617,11 @@
             <div class="vs-value white" id="vs-count">0</div>
             <div class="vs-sub">registradas</div>
           </div>
+          <div class="vs-item">
+            <div class="vs-label">Apartados</div>
+            <div class="vs-value" style="color:#60a5fa" id="vs-apartados">$0</div>
+            <div class="vs-sub">cobrados en seguimiento</div>
+          </div>
         </div>
 
         <div class="card" style="padding:0;overflow:hidden;">
@@ -638,6 +643,29 @@
                 <tr><td colspan="8"><div class="empty"><span class="empty-icon">💸</span>Aún no tienes ventas registradas.</div></td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Apartados / Pagos parciales -->
+        <div id="apartadosSection" style="margin-top:20px;">
+          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#60a5fa;margin-bottom:10px;padding:0 2px;">📞 Apartados en seguimiento</div>
+          <div class="card" style="padding:0;overflow:hidden;">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Lead</th>
+                    <th>Monto</th>
+                    <th>Nota</th>
+                    <th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody id="apartadosBody">
+                  <tr><td colspan="5"><div class="empty" style="padding:20px;"><span class="empty-icon">📞</span>Sin apartados registrados.</div></td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -1666,6 +1694,25 @@ function renderVentas() {
   document.getElementById('vs-comision').textContent = '$' + fmt(totalComision);
   document.getElementById('vs-pendiente').textContent = '$' + fmt(totalPendiente);
   document.getElementById('vs-count').textContent    = misVentas.length;
+
+  // ── Apartados (pagos parciales) ──
+  const allPagos = [];
+  Object.entries(pagosParciales).forEach(([email, pagos]) => {
+    const lead = allLeads.find(l => l.email === email);
+    pagos.forEach(p => allPagos.push({ email, nombre: lead?.nombre || email, monto: p.monto, nota: p.nota, ts: p.ts }));
+  });
+  allPagos.sort((a, b) => new Date(b.ts) - new Date(a.ts));
+  const totalApartados = allPagos.reduce((s, p) => s + Number(p.monto || 0), 0);
+  document.getElementById('vs-apartados').textContent = '$' + fmt(totalApartados);
+  document.getElementById('apartadosBody').innerHTML = allPagos.length
+    ? allPagos.map((p, i) => `<tr>
+        <td style="color:var(--muted)">${i+1}</td>
+        <td class="bold">${esc(p.nombre)}</td>
+        <td style="color:#60a5fa;font-weight:600">$${fmt(p.monto)}</td>
+        <td style="color:var(--text);font-size:0.82rem">${esc(p.nota || '—')}</td>
+        <td style="color:var(--muted);font-size:0.8rem">${p.ts ? new Date(p.ts).toLocaleDateString('es-MX') : '—'}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="5"><div class="empty" style="padding:20px;"><span class="empty-icon">📞</span>Sin apartados registrados.</div></td></tr>';
 
   if (!misVentas.length) {
     document.getElementById('ventasBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">💸</span>Aún no tienes ventas registradas.</div></td></tr>';
