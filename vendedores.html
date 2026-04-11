@@ -779,6 +779,7 @@ let currentVendedor = null;
 let allLeads = [];
 let estadosMap = {};  // email → estado object
 let misVentas = [];
+let ventasAprobadasGlobal = [];
 let currentFilter = 'semana';
 let pendingVenta = null; // { email, nombre, tipo }
 
@@ -960,12 +961,13 @@ function renderVendInteresados() {
 async function loadData() {
   document.getElementById('leadsContainer').innerHTML = '<div class="card" style="padding:40px;text-align:center;color:var(--muted)"><span style="font-size:2rem;display:block;margin-bottom:10px">⏳</span>Cargando leads…</div>';
 
-  const [leads, estados, ventas, contactActivity, pagosData] = await Promise.all([
+  const [leads, estados, ventas, contactActivity, pagosData, ventasAprobadasAll] = await Promise.all([
     sbGet('/rest/v1/clase_viral_registros?select=*&order=ts.desc'),
     sbGet('/rest/v1/lead_estados?select=*'),
     sbGet(`/rest/v1/ventas?select=*&vendedor=eq.${encodeURIComponent(currentVendedor)}&order=created_at.desc`),
     sbGet(`/rest/v1/vendedor_actividad?select=lead_email,accion&vendedor=eq.${encodeURIComponent(currentVendedor)}&accion=in.(wa_click,phone_copy)&limit=2000`),
     sbGet(`/rest/v1/vendedor_actividad?select=lead_email,detalle,ts&vendedor=eq.${encodeURIComponent(currentVendedor)}&accion=eq.pago_parcial&order=ts.asc`),
+    sbGet('/rest/v1/ventas?select=registro_email&aprobado=eq.true'),
   ]);
 
   estadosMap = {};
@@ -990,6 +992,7 @@ async function loadData() {
     });
 
   misVentas = ventas;
+  ventasAprobadasGlobal = ventasAprobadasAll;
 
   // Build pagos parciales map
   pagosParciales = {};
@@ -1221,8 +1224,8 @@ function renderLeads() {
       if (l.email) emailIndex[l.email.toLowerCase()] = l;
     });
 
-    // Emails con venta aprobada (para "Miembros Nuevos")
-    const ventasAprobadas = new Set((misVentas || []).filter(v => v.aprobado && v.registro_email).map(v => v.registro_email.toLowerCase()));
+    // Emails con venta aprobada — de TODAS las ventas (no solo las del vendedor actual)
+    const ventasAprobadas = new Set((ventasAprobadasGlobal || []).filter(v => v.registro_email).map(v => v.registro_email.toLowerCase()));
 
     // For each pago registration, find the matching lead in allLeads
     const PIPELINE = [
