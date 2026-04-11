@@ -1157,8 +1157,8 @@ function pagosRow(l) {
         <div class="add-pago-form" id="add-pago-${emailId}" style="flex-wrap:wrap;">
           <input class="pago-input" type="number" placeholder="Monto ($)" id="pago-monto-${emailId}" style="width:120px;">
           <input class="pago-input" type="text"   placeholder="Nota (ej: apartado inicial)" id="pago-nota-${emailId}" style="width:200px;">
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.78rem;color:var(--muted);border:1px solid var(--border);border-radius:5px;padding:5px 10px;background:rgba(0,0,0,0.3);">
-            📎 <span id="pago-file-label-${emailId}">Comprobante</span>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.78rem;color:var(--muted);border:1px solid rgba(239,68,68,0.4);border-radius:5px;padding:5px 10px;background:rgba(0,0,0,0.3);">
+            📎 <span id="pago-file-label-${emailId}">Comprobante <span style="color:var(--red)">*</span></span>
             <input type="file" id="pago-file-${emailId}" accept="image/*,.pdf" style="display:none" onchange="document.getElementById('pago-file-label-${emailId}').textContent=this.files[0]?.name||'Comprobante'">
           </label>
           <button class="btn-add-pago" onclick="savePagoParcial('${emailSafe}','${emailId}')">Guardar</button>
@@ -1202,12 +1202,11 @@ async function savePrimerPago() {
   if (!monto || monto <= 0) { alert('Ingresa un monto válido.'); return; }
   const nota = document.getElementById('ppNota').value.trim() || '';
   const file = document.getElementById('ppFile').files?.[0] || null;
+  if (!file) { alert('El comprobante es obligatorio para registrar el pago.'); return; }
 
-  // Upload comprobante if provided
-  let comprobante_url = null;
-  if (file) {
-    comprobante_url = await uploadApartado(file, email);
-  }
+  // Upload comprobante
+  const comprobante_url = await uploadApartado(file, email);
+  if (!comprobante_url) { alert('Error al subir el comprobante. Intenta de nuevo.'); return; }
 
   await logActivity('pago_parcial', email, JSON.stringify({ monto, nota, comprobante_url }));
 
@@ -1236,12 +1235,11 @@ async function savePagoParcial(email, emailId) {
   if (!monto || monto <= 0) { alert('Ingresa un monto válido.'); return; }
   const nota = notaEl?.value?.trim() || '';
   const file = fileEl?.files?.[0] || null;
+  if (!file) { alert('El comprobante es obligatorio para registrar el pago.'); return; }
 
-  // Upload comprobante if provided
-  let comprobante_url = null;
-  if (file) {
-    comprobante_url = await uploadApartado(file, email);
-  }
+  // Upload comprobante
+  const comprobante_url = await uploadApartado(file, email);
+  if (!comprobante_url) { alert('Error al subir el comprobante. Intenta de nuevo.'); return; }
 
   await logActivity('pago_parcial', email, JSON.stringify({ monto, nota, comprobante_url }));
 
@@ -1450,6 +1448,7 @@ function renderLeads() {
           <span style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0;display:inline-block;"></span>
           <span class="section-title" style="color:${p.color}">${p.label}</span>
           <span style="font-size:0.72rem;color:var(--muted);margin-left:4px;">${p.sub}</span>
+          ${p.key === 'seguimiento' ? (() => { const tot = rows.reduce((s,l) => s + (pagosParciales[l.email]||[]).reduce((a,pp)=>a+Number(pp.monto||0),0), 0); return tot > 0 ? `<span style="font-size:0.78rem;color:#60a5fa;font-weight:600;margin-left:8px;">$${tot.toLocaleString('es-MX',{maximumFractionDigits:0})} cobrado</span>` : ''; })() : ''}
           <span class="section-badge" style="margin-left:auto;">${rows.length}</span>
           <span class="section-chevron" id="chev-pipe-${p.key}">▼</span>
         </div>
@@ -1485,6 +1484,7 @@ function renderLeads() {
         <span style="width:8px;height:8px;border-radius:50%;background:#60a5fa;flex-shrink:0;display:inline-block;"></span>
         <span class="section-title" style="color:#60a5fa">📞 En Seguimiento</span>
         <span style="font-size:0.72rem;color:var(--muted);margin-left:4px;">Dieron apartado · pendiente liquidar</span>
+        ${(() => { const tot = segLeads.reduce((s,l) => s + (pagosParciales[l.email]||[]).reduce((a,p)=>a+Number(p.monto||0),0), 0); return tot > 0 ? `<span style="font-size:0.78rem;color:#60a5fa;font-weight:600;margin-left:8px;">$${tot.toLocaleString('es-MX',{maximumFractionDigits:0})} cobrado</span>` : ''; })()}
         <span class="section-badge" style="margin-left:auto;">${segLeads.length}</span>
         <span class="section-chevron" id="chev-seg-view">▼</span>
       </div>
