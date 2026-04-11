@@ -1478,20 +1478,49 @@ function renderLeads() {
       return;
     }
 
+    // Separar leads con y sin pagos
+    const sinPagos  = segLeads.filter(l => !(pagosParciales[l.email]||[]).length);
+    const conPagos  = segLeads.filter(l =>  (pagosParciales[l.email]||[]).length > 0);
+
     const thead = '<thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>';
-    container.innerHTML = `<div class="estado-section" style="margin-bottom:10px;">
+
+    let html = '';
+
+    // ── Sección de alerta: sin pago registrado ──
+    if (sinPagos.length) {
+      html += `<div class="estado-section" style="margin-bottom:10px;border-color:rgba(239,68,68,0.3);">
+        <div class="section-hdr" onclick="toggleSection('seg-sinpago')" style="background:rgba(239,68,68,0.07);">
+          <span style="width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;display:inline-block;"></span>
+          <span class="section-title" style="color:#ef4444">⚠️ Sin pago registrado</span>
+          <span style="font-size:0.72rem;color:var(--muted);margin-left:6px;">Están en seguimiento pero no tienen ningún pago · registra el comprobante o revierte el estado</span>
+          <span class="section-badge" style="margin-left:auto;background:rgba(239,68,68,0.2);color:#ef4444;">${sinPagos.length}</span>
+          <span class="section-chevron" id="chev-seg-sinpago">▼</span>
+        </div>
+        <div class="section-body" id="body-seg-sinpago">
+          <div class="table-wrap"><table>${thead}<tbody>${sinPagos.map((l,i) => leadRow(l,i) + pagosRow(l)).join('')}</tbody></table></div>
+        </div>
+      </div>`;
+    }
+
+    // ── Sección principal: con pagos ──
+    const totCobrado = conPagos.reduce((s,l) => s + (pagosParciales[l.email]||[]).reduce((a,p)=>a+Number(p.monto||0),0), 0);
+    html += `<div class="estado-section" style="margin-bottom:10px;">
       <div class="section-hdr" onclick="toggleSection('seg-view')">
         <span style="width:8px;height:8px;border-radius:50%;background:#60a5fa;flex-shrink:0;display:inline-block;"></span>
         <span class="section-title" style="color:#60a5fa">📞 En Seguimiento</span>
         <span style="font-size:0.72rem;color:var(--muted);margin-left:4px;">Dieron apartado · pendiente liquidar</span>
-        ${(() => { const tot = segLeads.reduce((s,l) => s + (pagosParciales[l.email]||[]).reduce((a,p)=>a+Number(p.monto||0),0), 0); return tot > 0 ? `<span style="font-size:0.78rem;color:#60a5fa;font-weight:600;margin-left:8px;">$${tot.toLocaleString('es-MX',{maximumFractionDigits:0})} cobrado</span>` : ''; })()}
-        <span class="section-badge" style="margin-left:auto;">${segLeads.length}</span>
+        ${totCobrado > 0 ? `<span style="font-size:0.78rem;color:#60a5fa;font-weight:600;margin-left:8px;">$${totCobrado.toLocaleString('es-MX',{maximumFractionDigits:0})} cobrado</span>` : ''}
+        <span class="section-badge" style="margin-left:auto;">${conPagos.length}</span>
         <span class="section-chevron" id="chev-seg-view">▼</span>
       </div>
       <div class="section-body" id="body-seg-view">
-        <div class="table-wrap"><table>${thead}<tbody>${segLeads.map((l,i) => leadRow(l,i) + pagosRow(l)).join('')}</tbody></table></div>
+        ${conPagos.length
+          ? `<div class="table-wrap"><table>${thead}<tbody>${conPagos.map((l,i) => leadRow(l,i) + pagosRow(l)).join('')}</tbody></table></div>`
+          : `<div style="padding:14px 20px;color:var(--muted);font-size:0.82rem;">Sin leads con pagos registrados aún.</div>`}
       </div>
     </div>`;
+
+    container.innerHTML = html;
     return;
   }
 
