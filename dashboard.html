@@ -749,7 +749,7 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>#</th><th></th><th>Nombre</th><th>Email</th><th>Estado</th><th>Vendedor</th><th>Categoría</th><th>Notas</th><th>Actualizado</th></tr></thead>
+            <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Estado</th><th>Vendedor</th><th>Actualizado</th><th>Acción</th></tr></thead>
             <tbody id="ventasLeadsBody"><tr><td colspan="9"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
           </table>
         </div>
@@ -2148,10 +2148,17 @@ async function loadVentasStats() {
   }
 }
 
+let ventasLeadsNombres = {}; // email → {nombre, phone}
+
 async function loadVentasLeads() {
   document.getElementById('ventasLeadsBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
   try {
-    const rows = await fetchSB('/rest/v1/lead_estados?select=*&order=updated_at.desc');
+    const [rows, regs] = await Promise.all([
+      fetchSB('/rest/v1/lead_estados?select=*&order=updated_at.desc'),
+      fetchSB('/rest/v1/clase_viral_registros?select=email,nombre,phone&order=ts.desc'),
+    ]);
+    ventasLeadsNombres = {};
+    (regs || []).forEach(r => { if (r.email) ventasLeadsNombres[r.email.toLowerCase()] = { nombre: r.nombre || r.email, phone: r.phone || '' }; });
     renderVentasLeads(rows || []);
   } catch(e) {
     document.getElementById('ventasLeadsBody').innerHTML = '<tr><td colspan="8"><div class="empty">Error cargando.</div></td></tr>';
@@ -2165,7 +2172,10 @@ function renderVentasLeads(data) {
   const search = (document.getElementById('ventasSearch')?.value || '').toLowerCase();
   let rows = ventasLeadsCache;
   if (filterEstado) rows = rows.filter(r => r.estado === filterEstado);
-  if (search) rows = rows.filter(r => (r.registro_email+r.vendedor+r.notas+r.notas_vendedor+'').toLowerCase().includes(search));
+  if (search) rows = rows.filter(r => {
+    const info = ventasLeadsNombres[(r.registro_email||'').toLowerCase()] || {};
+    return (r.registro_email+r.vendedor+(info.nombre||'')+(info.phone||'')+'').toLowerCase().includes(search);
+  });
 
   if (!rows.length) {
     document.getElementById('ventasLeadsBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">📭</span>Sin resultados.</div></td></tr>';
@@ -2173,25 +2183,53 @@ function renderVentasLeads(data) {
   }
   const ESTADO_COLOR = { confirmado:'#3b82f6', asistio:'#22c55e', seguimiento:'#f97316', interesado:'#a855f7', 'no-confirmado':'#ef4444' };
   const fmt = d => d ? new Date(d).toLocaleDateString('es-MX') : '—';
-  document.getElementById('ventasLeadsBody').innerHTML = rows.map((r, i) => `
-    <tr>
+  const rowHtml = (r, i) => {
+    const info = ventasLeadsNombres[(r.registro_email||'').toLowerCase()] || {};
+    const nombre = info.nombre || r.registro_email || '—';
+    const phone = info.phone || '';
+    const color = ESTADO_COLOR[r.estado] || '#aaa';
+    return `<tr>
       <td style="color:var(--muted)">${i+1}</td>
+      <td class="bold">${esc(nombre)}</td>
+      <td style="font-size:0.8rem;color:var(--text)">${esc(r.registro_email||'')}</td>
+      <td style="font-size:0.8rem;color:var(--text)">${esc(phone)}</td>
+      <td><span style="padding:2px 8px;border-radius:10px;font-size:0.72rem;font-weight:700;background:${color}22;color:${color}">${r.estado||'—'}</span></td>
+      <td style="font-size:0.82rem;color:var(--text)">${esc(r.asignado_a||r.vendedor||'—')}</td>
+      <td style="font-size:0.78rem;color:var(--muted)">${fmt(r.updated_at)}</td>
       <td>
         <button onclick="deleteVentasLead('${esc(r.registro_email)}')" title="Eliminar lead"
-          style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
-          border-radius:4px;background:transparent;border:1px solid transparent;
-          color:var(--muted);font-size:0.72rem;cursor:pointer;transition:all 0.15s;"
-          onmouseover="this.style.color='#ef4444';this.style.borderColor='rgba(239,68,68,0.3)'"
-          onmouseout="this.style.color='var(--muted)';this.style.borderColor='transparent'">🗑</button>
+          style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:4px;
+          color:#ef4444;font-size:0.75rem;padding:3px 8px;cursor:pointer;"
+          onmouseover="this.style.background='rgba(239,68,68,0.18)'"
+          onmouseout="this.style.background='rgba(239,68,68,0.08)'">🗑 Eliminar</button>
       </td>
-      <td class="bold">${esc(r.registro_email||'')}</td>
-      <td style="font-size:0.8rem;color:var(--text)">${esc(r.registro_email||'')}</td>
-      <td><span style="padding:2px 8px;border-radius:10px;font-size:0.72rem;font-weight:700;background:${ESTADO_COLOR[r.estado]||'#555'}22;color:${ESTADO_COLOR[r.estado]||'#aaa'}">${r.estado||'—'}</span></td>
-      <td style="font-size:0.82rem;color:var(--text)">${esc(r.asignado_a||r.vendedor||'—')}</td>
-      <td style="font-size:0.78rem;color:var(--muted)">${esc(r.categoria||'—')}</td>
-      <td style="font-size:0.78rem;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc((r.notas||'')+(r.notas_vendedor||''))}">${esc((r.notas||r.notas_vendedor||'—').substring(0,60))}</td>
-      <td style="font-size:0.78rem;color:var(--muted)">${fmt(r.updated_at)}</td>
-    </tr>`).join('');
+    </tr>`;
+  };
+
+  // If no filter selected, show pipeline grouped by estado
+  if (!filterEstado) {
+    const GROUPS = [
+      { key: 'interesado',    label: '🔥 Interesados',    color: '#f97316' },
+      { key: 'seguimiento',   label: '📞 En Seguimiento', color: '#60a5fa' },
+      { key: 'confirmado',    label: '✅ Confirmados',     color: '#3b82f6' },
+      { key: 'asistio',       label: '🎯 Asistieron',     color: '#22c55e' },
+    ];
+    const thead = '<thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Estado</th><th>Vendedor</th><th>Actualizado</th><th>Acción</th></tr></thead>';
+    const grouped = {};
+    rows.forEach(r => { const k = r.estado||'otro'; (grouped[k]=grouped[k]||[]).push(r); });
+    const sections = GROUPS.map(g => {
+      const grp = grouped[g.key] || [];
+      if (!grp.length) return '';
+      return `<tr><td colspan="8" style="padding:0;border:none;">
+        <div style="padding:8px 14px 4px;background:${g.color}10;border-top:1px solid ${g.color}30;font-size:0.73rem;font-weight:700;color:${g.color};letter-spacing:0.06em;">
+          ${g.label} <span style="font-weight:400;color:var(--muted);margin-left:6px;">${grp.length} lead${grp.length>1?'s':''}</span>
+        </div>
+      </td></tr>` + grp.map((r,i) => rowHtml(r,i)).join('');
+    }).join('');
+    document.getElementById('ventasLeadsBody').innerHTML = `<tr style="display:none"><td></td></tr>${sections}`;
+  } else {
+    document.getElementById('ventasLeadsBody').innerHTML = rows.map((r,i) => rowHtml(r,i)).join('');
+  }
 }
 
 async function deleteVentasLead(email) {
