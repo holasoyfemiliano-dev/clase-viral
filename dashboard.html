@@ -1537,7 +1537,7 @@ async function renderOverview() {
           const displayName = v.apodo || v.nombre;
           const initials = displayName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
           const avatarHtml = v.foto_url
-            ? `<img src="${esc(v.foto_url)}" alt="${esc(displayName)}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,214,0,0.4);flex-shrink:0;">`
+            ? `<img src="${esc(v.foto_url)}" alt="${esc(displayName)}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,214,0,0.4);flex-shrink:0;" onerror="vendAvFallback(this,'${initials}')">`
             : `<div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgba(26,111,255,0.4),rgba(255,214,0,0.3));border:2px solid rgba(255,214,0,0.3);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;flex-shrink:0;">${initials}</div>`;
           const cActual = confActual[v.nombre] || 0;
           const cHoy    = confHoy[v.nombre]    || 0;
@@ -1918,6 +1918,12 @@ function filterRegistros() {
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function vendAvFallback(el, initials) {
+  const d = document.createElement('div');
+  d.style.cssText = 'width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgba(26,111,255,0.4),rgba(255,214,0,0.3));border:2px solid rgba(255,214,0,0.3);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;flex-shrink:0;';
+  d.textContent = initials;
+  el.parentNode && el.parentNode.replaceChild(d, el);
+}
 
 /* ──────────────────────────────────────
    ZOOM SYNC
