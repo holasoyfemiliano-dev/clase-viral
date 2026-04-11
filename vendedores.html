@@ -1042,7 +1042,7 @@ async function loadData() {
     sbGet('/rest/v1/lead_estados?select=*'),
     sbGet(`/rest/v1/ventas?select=*&vendedor=eq.${encodeURIComponent(currentVendedor)}&order=created_at.desc`),
     sbGet(`/rest/v1/vendedor_actividad?select=lead_email,accion&vendedor=eq.${encodeURIComponent(currentVendedor)}&accion=in.(wa_click,phone_copy)&limit=2000`),
-    sbGet(`/rest/v1/vendedor_actividad?select=id,lead_email,detalle,ts&vendedor=eq.${encodeURIComponent(currentVendedor)}&accion=eq.pago_parcial&order=ts.asc`),
+    sbGet(`/rest/v1/vendedor_actividad?select=id,lead_email,detalle,ts,vendedor&accion=eq.pago_parcial&order=ts.asc`),
     sbGet('/rest/v1/ventas?select=registro_email&aprobado=eq.true'),
   ]);
 
@@ -1077,7 +1077,7 @@ async function loadData() {
     try {
       const d = typeof a.detalle === 'string' ? JSON.parse(a.detalle) : a.detalle;
       if (!pagosParciales[a.lead_email]) pagosParciales[a.lead_email] = [];
-      pagosParciales[a.lead_email].push({ id: a.id, monto: d.monto, nota: d.nota || '', comprobante_url: d.comprobante_url || null, ts: a.ts });
+      pagosParciales[a.lead_email].push({ id: a.id, monto: d.monto, nota: d.nota || '', comprobante_url: d.comprobante_url || null, ts: a.ts, vendedor: a.vendedor || '' });
     } catch(e) { /* skip malformed */ }
   });
 
@@ -1142,7 +1142,8 @@ function pagosRow(l) {
         <span class="pago-nota">${esc(p.nota||'—')}</span>
         <span class="pago-fecha">${p.ts ? new Date(p.ts).toLocaleDateString('es-MX') : ''}</span>
         ${p.comprobante_url ? `<a href="${esc(p.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.75rem;margin-left:4px;">Ver →</a>` : '<span style="color:var(--red);font-size:0.75rem;margin-left:4px;">Sin comprobante</span>'}
-        ${p.id ? `<button onclick="deletePagoParcial(${p.id},'${emailSafe}')" title="Eliminar pago" style="margin-left:6px;background:none;border:none;cursor:pointer;color:#ef4444;font-size:0.8rem;padding:0 2px;opacity:0.7;" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0.7">🗑</button>` : ''}
+        ${p.vendedor ? `<span style="color:var(--muted);font-size:0.72rem;margin-left:6px;">${esc(p.vendedor)}</span>` : ''}
+        ${p.id ? `<button onclick="deletePagoParcial('${p.id}','${emailSafe}')" title="Eliminar pago" style="margin-left:6px;background:none;border:none;cursor:pointer;color:#ef4444;font-size:0.8rem;padding:0 2px;opacity:0.7;" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0.7">🗑</button>` : ''}
       </div>`).join('')
     : '<div style="font-size:0.78rem;color:var(--muted);">Sin pagos registrados aún.</div>';
 
@@ -1267,7 +1268,7 @@ async function savePagoParcial(email, emailId) {
 async function deletePagoParcial(id, email) {
   if (!confirm('¿Eliminar este pago? Esta acción no se puede deshacer.')) return;
 
-  await fetchSB(`/rest/v1/vendedor_actividad?id=eq.${id}`, { method: 'DELETE' });
+  await fetchSB(`/rest/v1/vendedor_actividad?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE' });
 
   // Remove from local cache
   if (pagosParciales[email]) {
