@@ -3577,13 +3577,23 @@ async function deleteAssignLead(id, email, nombre) {
   renderOverview();
 }
 
-function fetchSB(path, opts = {}) {
+function fetchSB(path, optsOrMethod = {}, legacyBody = null) {
+  // Support legacy 3-arg form: fetchSB(path, 'POST', bodyObject)
+  const opts = typeof optsOrMethod === 'string'
+    ? { method: optsOrMethod, body: JSON.stringify(legacyBody) }
+    : optsOrMethod;
+
   const { rawResponse, headers: extraHeaders, ...rest } = opts;
-  const promise = fetch(SB_URL + path, {
+
+  // Route through sb-proxy — splits path into base path + query params
+  const [basePath, qs] = path.split('?');
+  const proxyUrl = '/api/sb-proxy?_path=' + encodeURIComponent(basePath) + (qs ? '&' + qs : '');
+
+  const promise = fetch(proxyUrl, {
     ...rest,
     headers: {
-      'apikey': SB_SERVICE,
-      'Authorization': 'Bearer ' + SB_SERVICE,
+      'Authorization': 'Bearer ' + DASH_PASS,
+      'Content-Type': 'application/json',
       ...(extraHeaders || {})
     }
   });
