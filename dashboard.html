@@ -689,6 +689,21 @@
         <div class="stat-card"><div class="s-label">Top Nicho</div><div class="s-value" id="vs-nicho" style="font-size:1rem;color:var(--text)">—</div><div class="s-sub">Categoría líder</div></div>
       </div>
 
+      <!-- ── Apartados pendientes de aprobación ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#60a5fa;margin-bottom:12px;margin-top:4px;">📞 Apartados pendientes de aprobación</div>
+      <div id="apartadosPendAlert"></div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:0.85rem;font-weight:700;">Pagos parciales con comprobante · pendientes de verificar</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Lead</th><th>Vendedor</th><th>Monto</th><th>Nota</th><th>Comprobante</th><th>Fecha</th><th>Acción</th></tr></thead>
+            <tbody id="apartadosPendBody"><tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- ── Equipo de Vendedores ── -->
       <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Equipo de Vendedores</div>
       <div id="vendAlert"></div>
@@ -769,21 +784,6 @@
           <table>
             <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Fecha</th></tr></thead>
             <tbody id="interesadosBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ── Apartados pendientes de aprobación ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#60a5fa;margin-bottom:12px;margin-top:28px;">📞 Apartados pendientes de aprobación</div>
-      <div id="apartadosPendAlert"></div>
-      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
-        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:0.85rem;font-weight:700;">Pagos parciales con comprobante · pendientes de verificar</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>Lead</th><th>Vendedor</th><th>Monto</th><th>Nota</th><th>Comprobante</th><th>Fecha</th><th>Acción</th></tr></thead>
-            <tbody id="apartadosPendBody"><tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
           </table>
         </div>
       </div>
