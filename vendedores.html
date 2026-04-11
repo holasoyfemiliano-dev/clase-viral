@@ -1271,10 +1271,9 @@ async function savePagoParcial(email, emailId) {
 async function deletePagoParcial(id, email) {
   if (!confirm('¿Eliminar este pago? Esta acción no se puede deshacer.')) return;
 
-  await fetchSB(`/rest/v1/vendedor_actividad?id=eq.${encodeURIComponent(id)}`, {
+  await fetch(`${SB_URL}/rest/v1/vendedor_actividad?id=eq.${encodeURIComponent(id)}`, {
     method: 'DELETE',
-    rawResponse: true,
-    headers: { 'Prefer': 'return=minimal' }
+    headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' }
   });
 
   // Remove from local cache
