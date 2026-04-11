@@ -1184,15 +1184,15 @@ function saveToStorage(cfg) {
 ────────────────────────────────────── */
 /* ──────────────────────────────────────
    SUPABASE CONFIG
+   El service_role key vive en el servidor (Vercel env vars).
+   El browser solo usa DASH_PASS para autenticarse contra /api/sb-proxy.
 ────────────────────────────────────── */
-const SB_URL      = 'https://xpsvkhoeedinuvwrumvu.supabase.co';
-const SB_SERVICE  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3ZraG9lZWRpbnV2d3J1bXZ1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDkzNDUzNiwiZXhwIjoyMDkwNTEwNTM2fQ.w9ij07UJ50lGwu8FcqM81tPmrU2Z7Uft7HnoAEUcBzI';
+// SB_URL kept as reference but all calls go through /api/sb-proxy
+const SB_URL = 'https://xpsvkhoeedinuvwrumvu.supabase.co';
 
 async function fetchFromSupabase() {
   try {
-    const res = await fetch(SB_URL + '/rest/v1/clase_viral_registros?select=*&order=ts.desc', {
-      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE }
-    });
+    const res = await fetchSB('/rest/v1/clase_viral_registros?select=*&order=ts.desc', { rawResponse: true });
     const data = await res.json();
     return data.map(r => ({
       id: r.id, name: r.nombre, email: r.email,
@@ -1900,9 +1900,8 @@ function renderRegistros(filter = '') {
 
 async function deleteRegistro(id, nombre) {
   if (!confirm(`¿Eliminar a "${nombre}"? Esta acción no se puede deshacer.`)) return;
-  const res = await fetch(SB_URL + `/rest/v1/clase_viral_registros?id=eq.${encodeURIComponent(id)}`, {
-    method: 'DELETE',
-    headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+  const res = await fetchSB(`/rest/v1/clase_viral_registros?id=eq.${encodeURIComponent(id)}`, {
+    rawResponse: true, method: 'DELETE', headers: { 'Prefer': 'return=minimal' }
   });
   if (res.ok) {
     const updated = getRegistrations().filter(r => String(r.id) !== String(id));
@@ -2119,13 +2118,11 @@ async function deleteVentasLead(email) {
   try {
     // Delete from lead_estados and clase_viral_registros in parallel
     await Promise.all([
-      fetch(SB_URL + `/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, {
-        method: 'DELETE',
-        headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+      fetchSB(`/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, {
+        rawResponse: true, method: 'DELETE', headers: { 'Prefer': 'return=minimal' }
       }),
-      fetch(SB_URL + `/rest/v1/clase_viral_registros?email=eq.${encodeURIComponent(email)}`, {
-        method: 'DELETE',
-        headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+      fetchSB(`/rest/v1/clase_viral_registros?email=eq.${encodeURIComponent(email)}`, {
+        rawResponse: true, method: 'DELETE', headers: { 'Prefer': 'return=minimal' }
       })
     ]);
     // Remove from local cache too
@@ -3247,9 +3244,9 @@ async function saveMiembroEdit() {
     fecha_ingreso: inicio ? new Date(inicio).toISOString() : null,
     fecha_fin:     fin    ? new Date(fin).toISOString()    : null,
   };
-  const res = await fetch(SB_URL + `/rest/v1/miembros?id=eq.${id}`, {
-    method: 'PATCH',
-    headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+  const res = await fetchSB(`/rest/v1/miembros?id=eq.${id}`, {
+    rawResponse: true, method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
     body: JSON.stringify(body)
   });
   document.getElementById('editMiembroModal').style.display = 'none';
@@ -3279,9 +3276,9 @@ async function addMiembro() {
   const fechaFin = fin ? new Date(fin).toISOString()
     : new Date(new Date(fechaIngreso).setFullYear(new Date(fechaIngreso).getFullYear()+1)).toISOString();
 
-  const res = await fetch(SB_URL + '/rest/v1/miembros', {
-    method: 'POST',
-    headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+  const res = await fetchSB('/rest/v1/miembros', {
+    rawResponse: true, method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
     body: JSON.stringify({ nombre, email, phone, notas, monto_pagado: monto, tipo_acceso: 'manual', fecha_ingreso: fechaIngreso, fecha_fin: fechaFin })
   });
   if (res.ok) {
@@ -3321,9 +3318,8 @@ async function loadVendedoresAdmin() {
   // Auto-deactivate vendors with 7+ days no activity
   for (const v of vendedoresList) {
     if (v.activo && v.last_active && new Date(v.last_active) < new Date(sevenDaysAgo)) {
-      await fetch(SB_URL + `/rest/v1/vendedores?id=eq.${v.id}`, {
-        method: 'PATCH',
-        headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json' },
+      await fetchSB(`/rest/v1/vendedores?id=eq.${v.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ activo: false })
       });
       v.activo = false;
@@ -3392,9 +3388,9 @@ async function crearVendedor() {
   const pass = document.getElementById('newVendPass').value.trim();
   if (!nombre || !pass) { showAlert('vendAlert', 'Ingresa nombre y contraseña.', 'error'); return; }
 
-  const res = await fetch(SB_URL + '/rest/v1/vendedores', {
-    method: 'POST',
-    headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+  const res = await fetchSB('/rest/v1/vendedores', {
+    rawResponse: true, method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
     body: JSON.stringify({ nombre, password: pass, activo: true })
   });
   if (res.ok) {
@@ -3411,9 +3407,8 @@ async function crearVendedor() {
 async function cambiarPass(id, nombre) {
   const newPass = prompt(`Nueva contraseña para ${nombre}:`);
   if (!newPass) return;
-  await fetch(SB_URL + `/rest/v1/vendedores?id=eq.${id}`, {
-    method: 'PATCH',
-    headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json' },
+  await fetchSB(`/rest/v1/vendedores?id=eq.${id}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password: newPass })
   });
   showAlert('vendAlert', `✅ Contraseña de ${nombre} actualizada a: ${newPass}`, 'success');
@@ -3421,9 +3416,8 @@ async function cambiarPass(id, nombre) {
 }
 
 async function toggleVendedor(id, activo) {
-  await fetch(SB_URL + `/rest/v1/vendedores?id=eq.${id}`, {
-    method: 'PATCH',
-    headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json' },
+  await fetchSB(`/rest/v1/vendedores?id=eq.${id}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ activo })
   });
   loadVendedoresAdmin();
@@ -3431,9 +3425,8 @@ async function toggleVendedor(id, activo) {
 
 async function deleteVendedor(id, nombre) {
   if (!confirm(`¿Eliminar al vendedor "${nombre}"? Esta acción no se puede deshacer.`)) return;
-  await fetch(SB_URL + `/rest/v1/vendedores?id=eq.${id}`, {
-    method: 'DELETE',
-    headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+  await fetchSB(`/rest/v1/vendedores?id=eq.${id}`, {
+    method: 'DELETE', headers: { 'Prefer': 'return=minimal' }
   });
   showAlert('vendAlert', `✅ Vendedor "${nombre}" eliminado.`, 'success');
   loadVendedoresAdmin();
@@ -3552,15 +3545,13 @@ function renderAssignTable() {
 async function asignarLead(email, vendedor) {
   const existing = estadosAdmin[email];
   if (existing) {
-    await fetch(SB_URL + `/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, {
-      method: 'PATCH',
-      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json' },
+    await fetchSB(`/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ asignado_a: vendedor || null })
     });
   } else {
-    await fetch(SB_URL + '/rest/v1/lead_estados', {
-      method: 'POST',
-      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    await fetchSB('/rest/v1/lead_estados', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
       body: JSON.stringify({ registro_email: email, vendedor: '', estado: 'por_confirmar', asignado_a: vendedor || null })
     });
   }
@@ -3570,13 +3561,11 @@ async function asignarLead(email, vendedor) {
 async function deleteAssignLead(id, email, nombre) {
   if (!confirm(`¿Eliminar a "${nombre}"?\nEsto borrará su registro y estado. No se puede deshacer.`)) return;
   await Promise.all([
-    fetch(SB_URL + `/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, {
-      method: 'DELETE',
-      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+    fetchSB(`/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}`, {
+      method: 'DELETE', headers: { 'Prefer': 'return=minimal' }
     }),
-    fetch(SB_URL + `/rest/v1/clase_viral_registros?id=eq.${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+    fetchSB(`/rest/v1/clase_viral_registros?id=eq.${encodeURIComponent(id)}`, {
+      method: 'DELETE', headers: { 'Prefer': 'return=minimal' }
     })
   ]);
   // Remove from local cache
@@ -3589,15 +3578,16 @@ async function deleteAssignLead(id, email, nombre) {
 }
 
 function fetchSB(path, opts = {}) {
-  const { headers: extraHeaders, ...rest } = opts;
-  return fetch(SB_URL + path, {
+  const { rawResponse, headers: extraHeaders, ...rest } = opts;
+  const promise = fetch(SB_URL + path, {
     ...rest,
     headers: {
       'apikey': SB_SERVICE,
       'Authorization': 'Bearer ' + SB_SERVICE,
       ...(extraHeaders || {})
     }
-  }).then(r => r.ok ? r.json() : []);
+  });
+  return rawResponse ? promise : promise.then(r => r.ok ? r.json().catch(() => []) : []);
 }
 
 /* ──────────────────────────────────────
@@ -3612,9 +3602,7 @@ async function loadAprobaciones() {
   if (bodyElMb) bodyElMb.innerHTML = '<tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
   try {
     const [ventasRes, regRows] = await Promise.all([
-      fetch(SB_URL + '/rest/v1/ventas?select=*&order=created_at.desc', {
-        headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE }
-      }),
+      fetchSB('/rest/v1/ventas?select=*&order=created_at.desc', { rawResponse: true }),
       fetchSB('/rest/v1/clase_viral_registros?select=email,created_at')
     ]);
     const ventas = await ventasRes.json();
@@ -3711,9 +3699,8 @@ function renderAprobaciones(ventas, regDateMap) {
 async function aprobarVenta(id, aprobar) {
   if (!confirm(`¿${aprobar ? 'Aprobar' : 'Rechazar'} esta venta?`)) return;
   try {
-    await fetch(SB_URL + `/rest/v1/ventas?id=eq.${id}`, {
-      method: 'PATCH',
-      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    await fetchSB(`/rest/v1/ventas?id=eq.${id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
       body: JSON.stringify({ aprobado: aprobar, rechazado: !aprobar })
     });
 
@@ -3721,9 +3708,8 @@ async function aprobarVenta(id, aprobar) {
     if (aprobar) {
       const venta = (ventasCache || []).find(v => v.id === id);
       if (venta && ['compro_evento','seguimiento_exitoso'].includes(venta.tipo)) {
-        await fetch(SB_URL + '/rest/v1/miembros', {
-          method: 'POST',
-          headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        await fetchSB('/rest/v1/miembros', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
           body: JSON.stringify({
             nombre: venta.nombre_lead || venta.registro_email,
             email: venta.registro_email,
@@ -3750,14 +3736,12 @@ async function deleteVenta(id, nombre) {
     // If venta was approved, also remove the auto-created member entry
     const venta = (ventasCache || []).find(v => v.id === id);
     if (venta && venta.aprobado && venta.registro_email) {
-      await fetch(SB_URL + `/rest/v1/miembros?email=eq.${encodeURIComponent(venta.registro_email)}&vendedor=eq.${encodeURIComponent(venta.vendedor||'')}`, {
-        method: 'DELETE',
-        headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+      await fetchSB(`/rest/v1/miembros?email=eq.${encodeURIComponent(venta.registro_email)}&vendedor=eq.${encodeURIComponent(venta.vendedor||'')}`, {
+        method: 'DELETE', headers: { 'Prefer': 'return=minimal' }
       });
     }
-    await fetch(SB_URL + `/rest/v1/ventas?id=eq.${id}`, {
-      method: 'DELETE',
-      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+    await fetchSB(`/rest/v1/ventas?id=eq.${id}`, {
+      method: 'DELETE', headers: { 'Prefer': 'return=minimal' }
     });
     loadAprobaciones();
     renderOverview();
@@ -3769,9 +3753,8 @@ async function deleteVenta(id, nombre) {
 async function deleteMiembro(id, nombre) {
   if (!confirm(`¿Eliminar a "${nombre || id}" de Miembros? Esta acción no se puede deshacer.`)) return;
   try {
-    await fetch(SB_URL + `/rest/v1/miembros?id=eq.${id}`, {
-      method: 'DELETE',
-      headers: { 'apikey': SB_SERVICE, 'Authorization': 'Bearer ' + SB_SERVICE, 'Prefer': 'return=minimal' }
+    await fetchSB(`/rest/v1/miembros?id=eq.${id}`, {
+      method: 'DELETE', headers: { 'Prefer': 'return=minimal' }
     });
     loadMiembros();
     renderOverview();
