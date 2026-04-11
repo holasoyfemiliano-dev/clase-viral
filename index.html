@@ -756,6 +756,40 @@
     }
 
     /* ══════════════════════════════════════════
+       CONVERSION BOOSTS
+    ══════════════════════════════════════════ */
+    .social-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,229,0,0.08); border: 1px solid rgba(255,229,0,0.22);
+      border-radius: 100px; padding: 5px 14px 5px 6px;
+      font-size: 0.78rem; font-weight: 600; color: var(--gold);
+      margin-bottom: 18px; letter-spacing: 0.02em;
+    }
+    .sp-avatars { display: flex; }
+    .sp-av {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(255,229,0,0.2); border: 2px solid var(--black);
+      font-size: 0.6rem; line-height: 18px; text-align: center;
+      margin-right: -5px; flex-shrink: 0;
+    }
+
+    .scarcity-badge {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      background: rgba(255,100,80,0.1); border: 1px solid rgba(255,100,80,0.22);
+      border-radius: 6px; padding: 7px 12px;
+      font-size: 0.77rem; font-weight: 600; color: #ff7a6a;
+      margin-bottom: 14px;
+    }
+
+    @keyframes ctaPulseLoop {
+      0%, 100% { box-shadow: 0 4px 20px rgba(255,229,0,0.35), 0 0 0 0 rgba(255,229,0,0.45); }
+      55% { box-shadow: 0 4px 20px rgba(255,229,0,0.35), 0 0 0 10px rgba(255,229,0,0); }
+    }
+    .hero-form-box .btn-gold {
+      animation: ctaPulseLoop 2.4s ease-in-out infinite;
+    }
+
+    /* ══════════════════════════════════════════
        TESTIMONIOS
     ══════════════════════════════════════════ */
     #testimonios {
@@ -849,12 +883,19 @@
           ESTE JUEVES · 7:00 PM HORA CDMX
         </div>
 
+        <div class="social-pill" id="socialPill">
+          <span class="sp-avatars">
+            <span class="sp-av">👤</span><span class="sp-av">👤</span><span class="sp-av">👤</span>
+          </span>
+          <span id="socialCount">847+</span> personas ya tomaron esta clase
+        </div>
+
         <h1 class="hero-title" id="heroTitle">Cargando…</h1>
 
         <p class="hero-sub">
-          En 2 horas vas a salir con claridad estratégica total sobre qué crear,
-          por qué y para qué — y un sistema real para posicionarte como referente
-          y convertir tu contenido en negocio.
+          En 2 horas aprenderás a crear contenido que te posicione como referente,
+          le gane al algoritmo y convierta tu audiencia en clientes reales.
+          Gratis. En vivo. Este jueves.
         </p>
 
         <p class="countdown-label">La clase comienza en:</p>
@@ -869,7 +910,10 @@
 
       <!-- RIGHT — FORM -->
       <div class="hero-form-box">
-        <h3 class="form-box-title">REGISTRO GRATUITO</h3>
+        <h3 class="form-box-title">RESERVA TU LUGAR GRATIS</h3>
+        <div class="scarcity-badge" id="scarcityBadge" style="display:none;">
+          🔥 <span id="weeklyRegs">0</span> personas se registraron esta semana
+        </div>
         <p class="form-box-sub" id="formDateText">Jueves · 7PM Hora México · 100% Online</p>
 
         <form id="regForm">
@@ -1502,6 +1546,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Countdown
   tick(); setInterval(tick, 1000);
+
+  // ── Live registration counts ──
+  (async function() {
+    try {
+      // Total count
+      const rTotal = await fetch(SB_URL + '/rest/v1/clase_viral_registros?select=id', {
+        headers: { apikey: SB_ANON, Authorization: 'Bearer ' + SB_ANON, Prefer: 'count=exact', Range: '0-0' }
+      });
+      const rangeHdr = rTotal.headers.get('content-range');
+      const total = parseInt((rangeHdr || '').split('/')[1] || '0');
+      if (total > 0) {
+        const base = (config.socialProofBase || 847);
+        const display = Math.max(total, base);
+        document.getElementById('socialCount').textContent = display.toLocaleString() + '+';
+      }
+
+      // Weekly count (last 7 days)
+      const weekAgo = new Date(Date.now() - 7 * 24 * 3600000).toISOString();
+      const rWeek = await fetch(SB_URL + '/rest/v1/clase_viral_registros?select=id&ts=gte.' + encodeURIComponent(weekAgo), {
+        headers: { apikey: SB_ANON, Authorization: 'Bearer ' + SB_ANON, Prefer: 'count=exact', Range: '0-0' }
+      });
+      const weekHdr = rWeek.headers.get('content-range');
+      const weekly = parseInt((weekHdr || '').split('/')[1] || '0');
+      if (weekly >= 5) {
+        document.getElementById('weeklyRegs').textContent = weekly;
+        document.getElementById('scarcityBadge').style.display = 'flex';
+      }
+    } catch(e) { /* silent — static fallbacks shown */ }
+  })();
 
   // ── Mover referentes DESPUÉS del instructor ──
   const instructor = document.getElementById('instructor');
