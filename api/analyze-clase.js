@@ -1,4 +1,4 @@
-// Analyze clase data with Claude AI → content recommendations + clippable moments
+// Analyze clase data with Gemini AI → content recommendations + clippable moments
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -12,8 +12,8 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Se requiere aiSummary o transcriptSegments' });
   }
 
-  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-  if (!ANTHROPIC_API_KEY) return res.status(500).json({ error: 'ANTHROPIC_API_KEY no configurado' });
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  if (!GEMINI_API_KEY) return res.status(500).json({ error: 'GEMINI_API_KEY no configurado' });
 
   // Build context about when people left
   const criticalCtx = (criticalMoments || []).map(cm =>
@@ -76,26 +76,24 @@ Para topic_timeline: divide la clase en 8-10 segmentos de tiempo y describe brev
 Responde SOLO el JSON, sin texto adicional.`;
 
   try {
-    const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1500,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 1500 }
+        })
+      }
+    );
 
-    const claudeData = await claudeRes.json();
-    const text = claudeData.content?.[0]?.text || '';
+    const geminiData = await geminiRes.json();
+    const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     // Parse JSON from response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return res.status(500).json({ error: 'Claude no devolvió JSON válido', raw: text });
+    if (!jsonMatch) return res.status(500).json({ error: 'Gemini no devolvió JSON válido', raw: text });
 
     const analysis = JSON.parse(jsonMatch[0]);
     return res.status(200).json(analysis);

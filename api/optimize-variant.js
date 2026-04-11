@@ -14,10 +14,10 @@ module.exports = async function handler(req, res) {
   if (authHeader !== `Bearer ${secret}`) return res.status(401).json({ error: 'Unauthorized' });
 
   const { variant, currentTitle, winnerTitle, winnerCVR, loserCVR, visits } = req.body;
-  const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-  if (!ANTHROPIC_KEY) {
-    return res.status(500).json({ error: 'ANTHROPIC_API_KEY no configurado en Vercel.' });
+  if (!GEMINI_API_KEY) {
+    return res.status(500).json({ error: 'GEMINI_API_KEY no configurado en Vercel.' });
   }
 
   const prompt = `Eres un experto en copywriting para landing pages en español latinoamericano.
@@ -42,26 +42,24 @@ Reglas:
 Responde ÚNICAMENTE con el nuevo título, sin comillas, sin explicación.`;
 
   try {
-    const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 100,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
+    const aiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 100 }
+        })
+      }
+    );
 
     const aiData = await aiRes.json();
-    if (!aiRes.ok || !aiData.content?.[0]?.text) {
+    if (!aiRes.ok || !aiData.candidates?.[0]?.content?.parts?.[0]?.text) {
       return res.status(500).json({ error: 'Error de IA', detail: aiData });
     }
 
-    const newTitle = aiData.content[0].text.trim().replace(/^["']|["']$/g, '');
+    const newTitle = aiData.candidates[0].content.parts[0].text.trim().replace(/^["']|["']$/g, '');
 
     return res.status(200).json({
       variant,

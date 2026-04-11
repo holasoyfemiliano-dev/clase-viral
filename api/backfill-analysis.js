@@ -6,8 +6,8 @@ module.exports = async function handler(req, res) {
 
   const SB_URL     = process.env.SB_URL;
   const SB_SERVICE = process.env.SB_SERVICE;
-  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-  if (!SB_URL || !SB_SERVICE || !ANTHROPIC_API_KEY) return res.status(500).json({ error: 'Missing env vars' });
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  if (!SB_URL || !SB_SERVICE || !GEMINI_API_KEY) return res.status(500).json({ error: 'Missing env vars' });
 
   const sbHeaders = {
     'apikey': SB_SERVICE,
@@ -76,29 +76,25 @@ Para momentos clipeables: 4-5 momentos más poderosos.
 Para topic_timeline: 8-10 segmentos de ~15-20 min cada uno.
 Responde SOLO el JSON, sin texto adicional.`;
 
-  const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1500,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
+  const geminiRes = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: 1500 }
+      })
+    }
+  );
 
-  const claudeData = await claudeRes.json();
-  if (claudeData.error) return res.status(500).json({ error: 'Anthropic API error', detail: claudeData.error });
-  const text = claudeData.content?.[0]?.text || '';
+  const geminiData = await geminiRes.json();
+  if (geminiData.error) return res.status(500).json({ error: 'Gemini API error', detail: geminiData.error });
+  const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) return res.status(500).json({
-    error: 'Claude no devolvió JSON válido',
+    error: 'Gemini no devolvió JSON válido',
     raw: text,
-    stop_reason: claudeData.stop_reason,
-    usage: claudeData.usage,
     has_transcript: !!(transcript_segments?.length),
     transcript_len: transcript_segments?.length || 0
   });
