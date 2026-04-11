@@ -1107,6 +1107,18 @@ async function savePagoParcial(email, emailId) {
   if (!pagosParciales[email]) pagosParciales[email] = [];
   pagosParciales[email].push({ monto, nota, ts: new Date().toISOString() });
 
+  // Si es el primer pago y el lead no está en seguimiento todavía → moverlo automáticamente
+  const estadoActual = (estadosMap[email] || {}).estado;
+  if (pagosParciales[email].length === 1 && estadoActual !== 'seguimiento') {
+    await fetch(SB_URL + '/rest/v1/lead_estados?on_conflict=registro_email', {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ registro_email: email, vendedor: currentVendedor, estado: 'seguimiento', updated_at: new Date().toISOString() })
+    });
+    estadosMap[email] = { ...(estadosMap[email] || {}), registro_email: email, estado: 'seguimiento', vendedor: currentVendedor };
+    logActivity('estado_change', email, `${estadoActual} → seguimiento`);
+  }
+
   // Re-render
   renderLeads();
 }
@@ -1301,7 +1313,7 @@ function renderLeads() {
         </div>
         <div class="section-body" id="body-pipe-${p.key}">
           ${rows.length
-            ? `<div class="table-wrap"><table>${thead}<tbody>${rows.map((l,i) => leadRow(l,i) + (p.key === 'seguimiento' ? pagosRow(l) : '')).join('')}</tbody></table></div>`
+            ? `<div class="table-wrap"><table>${thead}<tbody>${rows.map((l,i) => leadRow(l,i) + (p.key === 'seguimiento' || p.key === 'interesado' ? pagosRow(l) : '')).join('')}</tbody></table></div>`
             : `<div style="padding:14px 20px;color:var(--muted);font-size:0.82rem;">Sin leads en esta sección.</div>`}
         </div>
       </div>`;
