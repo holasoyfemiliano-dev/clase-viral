@@ -1417,7 +1417,13 @@ async function onEstadoChange(select, email, nombre, leadTs) {
     return;
   }
 
-  // Regla 2: compro_evento (compra EN el evento) → debe haber confirmado/asistido antes
+  // Regla 2: seguimiento = apartado/depósito dado → requiere al menos un pago registrado
+  if (newEstado === 'seguimiento' && !(pagosParciales[email] && pagosParciales[email].length > 0)) {
+    blockEstado(select, prevEstado, '⚠️ Registra al menos un pago antes de poner en seguimiento');
+    return;
+  }
+
+  // Regla 3: compro_evento (compra EN el evento) → debe haber confirmado/asistido antes
   // seguimiento_exitoso (venta por follow-up) → sin restricción, 70% de ventas vienen de seguimiento
   const CONFIRMED_PREV = new Set(['confirmado', 'asistio', 'compro_evento', 'seguimiento_exitoso']);
   if (newEstado === 'compro_evento' && !CONFIRMED_PREV.has(prevEstado)) {
