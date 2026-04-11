@@ -1311,7 +1311,7 @@ async function renderOverview() {
       fetchSB('/rest/v1/miembros?select=id,monto_pagado,fecha_ingreso'),
       fetchSB('/rest/v1/clase_viral_registros?select=id,email,ts&order=ts.desc'),
       fetchSB('/rest/v1/proximity_creators_interesados?select=id,created_at'),
-      fetchSB('/rest/v1/vendedor_actividad?select=detalle,ts&accion=eq.pago_parcial'),
+      fetchSB('/rest/v1/vendedor_actividad?select=lead_email,detalle,ts&accion=eq.pago_parcial'),
     ]);
 
     const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -1324,11 +1324,16 @@ async function renderOverview() {
     const mbMes = mbList.filter(m => m.fecha_ingreso && new Date(m.fecha_ingreso) >= inicioMes);
     const mbMesTotal = mbMes.reduce((s,m) => s + Number(m.monto_pagado||0), 0);
 
-    // Pagos parciales (apartados en seguimiento)
-    const paList = (pagosActv || []).map(a => {
-      try { const d = typeof a.detalle === 'string' ? JSON.parse(a.detalle) : a.detalle; return { monto: Number(d.monto||0), ts: a.ts }; }
-      catch(e) { return { monto: 0, ts: a.ts }; }
-    });
+    // Pagos parciales — solo contar leads que SIGUEN en seguimiento (no revertidos)
+    const enSeguimiento = new Set(
+      (estados || []).filter(e => e.estado === 'seguimiento').map(e => (e.registro_email||'').toLowerCase())
+    );
+    const paList = (pagosActv || [])
+      .filter(a => a.lead_email && enSeguimiento.has(a.lead_email.toLowerCase()))
+      .map(a => {
+        try { const d = typeof a.detalle === 'string' ? JSON.parse(a.detalle) : a.detalle; return { monto: Number(d.monto||0), ts: a.ts }; }
+        catch(e) { return { monto: 0, ts: a.ts }; }
+      });
     const paTotal = paList.reduce((s,p) => s + p.monto, 0);
     const paMes   = paList.filter(p => p.ts && new Date(p.ts) >= inicioMes).reduce((s,p) => s + p.monto, 0);
 
