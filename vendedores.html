@@ -226,6 +226,7 @@
     }
     .filter-btn.active { background: rgba(255,229,0,0.1); border-color: rgba(255,229,0,0.4); color: var(--gold); }
     #fb-interesados.active { background: rgba(249,115,22,0.12); border-color: rgba(249,115,22,0.45); color: #f97316; }
+    #fb-seguimiento.active { background: rgba(96,165,250,0.12); border-color: rgba(96,165,250,0.45); color: #60a5fa; }
     .search-input {
       padding: 8px 14px; border-radius: 5px; border: 1px solid var(--border);
       background: var(--card); color: var(--white); font-size: 0.85rem;
@@ -475,6 +476,7 @@
           <div class="filter-btns">
             <button class="filter-btn" id="fb-todos" onclick="setFilter('todos')">Todos</button>
             <button class="filter-btn" id="fb-interesados" onclick="setFilter('interesados')" style="color:#f97316;border-color:rgba(249,115,22,0.3);">🔥 Interesados</button>
+            <button class="filter-btn" id="fb-seguimiento" onclick="setFilter('seguimiento')" style="color:#60a5fa;border-color:rgba(96,165,250,0.3);">📞 Seguimiento</button>
             <button class="filter-btn active" id="fb-semana" onclick="setFilter('semana')">Esta semana</button>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -679,6 +681,29 @@
     </div>
   </main>
 
+</div>
+
+<!-- ═══════════════════════════════════
+     MODAL PRIMER PAGO (pasar a seguimiento)
+═══════════════════════════════════ -->
+<div id="primerPagoModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closePrimerPagoModal()">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-title">📞 Registrar primer pago</div>
+    <div class="modal-lead" id="primerPagoNombre" style="margin-bottom:16px;">—</div>
+    <p style="color:var(--text);font-size:0.85rem;margin-bottom:18px;">Para mover este lead a <strong style="color:#60a5fa">Seguimiento</strong> necesitas registrar el apartado o depósito que dio.</p>
+    <div class="field">
+      <label>Monto ($)</label>
+      <input type="number" id="ppMonto" placeholder="Ej: 500" min="1" step="1" style="width:100%;padding:10px 12px;border-radius:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);color:#fff;font-size:0.9rem;outline:none;">
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label>Nota (opcional)</label>
+      <input type="text" id="ppNota" placeholder="Ej: apartado inicial, transferencia" style="width:100%;padding:10px 12px;border-radius:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);color:#fff;font-size:0.9rem;outline:none;">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn btn-gold" style="flex:1;" onclick="savePrimerPago()">Guardar y mover a Seguimiento</button>
+      <button class="btn btn-outline" onclick="closePrimerPagoModal()">Cancelar</button>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════
@@ -1027,6 +1052,7 @@ function setFilter(f) {
   document.getElementById('fb-todos').classList.toggle('active', f === 'todos');
   document.getElementById('fb-semana').classList.toggle('active', f === 'semana');
   document.getElementById('fb-interesados').classList.toggle('active', f === 'interesados');
+  document.getElementById('fb-seguimiento').classList.toggle('active', f === 'seguimiento');
   renderLeads();
 }
 
@@ -1092,6 +1118,49 @@ function toggleAddPago(emailId) {
   if (!f) return;
   f.style.display = f.style.display === 'flex' ? 'none' : 'flex';
   if (f.style.display === 'flex') f.querySelector('input[type=number]').focus();
+}
+
+/* ── Primer Pago Modal (cuando se mueve a seguimiento sin pagos) ── */
+let _ppEmail = null;
+
+function openPrimerPagoModal(email, nombre) {
+  _ppEmail = email;
+  document.getElementById('primerPagoNombre').textContent = nombre || email;
+  document.getElementById('ppMonto').value = '';
+  document.getElementById('ppNota').value = '';
+  document.getElementById('primerPagoModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('ppMonto').focus(), 50);
+}
+
+function closePrimerPagoModal() {
+  document.getElementById('primerPagoModal').style.display = 'none';
+  _ppEmail = null;
+}
+
+async function savePrimerPago() {
+  const email = _ppEmail;
+  if (!email) return;
+  const monto = parseFloat(document.getElementById('ppMonto').value);
+  if (!monto || monto <= 0) { alert('Ingresa un monto válido.'); return; }
+  const nota = document.getElementById('ppNota').value.trim() || '';
+
+  await logActivity('pago_parcial', email, JSON.stringify({ monto, nota }));
+
+  if (!pagosParciales[email]) pagosParciales[email] = [];
+  pagosParciales[email].push({ monto, nota, ts: new Date().toISOString() });
+
+  // Move to seguimiento
+  const estadoActual = (estadosMap[email] || {}).estado;
+  await fetch(SB_URL + '/rest/v1/lead_estados?on_conflict=registro_email', {
+    method: 'POST',
+    headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({ registro_email: email, vendedor: currentVendedor, estado: 'seguimiento', updated_at: new Date().toISOString() })
+  });
+  estadosMap[email] = { ...(estadosMap[email] || {}), registro_email: email, estado: 'seguimiento', vendedor: currentVendedor };
+  logActivity('estado_change', email, `${estadoActual} → seguimiento`);
+
+  closePrimerPagoModal();
+  renderLeads();
 }
 
 async function savePagoParcial(email, emailId) {
@@ -1321,6 +1390,38 @@ function renderLeads() {
     return;
   }
 
+  // ── Seguimiento tab: all leads currently in seguimiento ──
+  if (currentFilter === 'seguimiento') {
+    let segLeads = allLeads.filter(l => (estadosMap[l.email] || {}).estado === 'seguimiento');
+    if (search) segLeads = segLeads.filter(l => (l.nombre + l.email + (l.phone||'')).toLowerCase().includes(search));
+    segLeads.sort((a, b) => new Date((estadosMap[b.email]?.updated_at || b.ts)) - new Date((estadosMap[a.email]?.updated_at || a.ts)));
+
+    document.getElementById('st-total').textContent = segLeads.length;
+    document.getElementById('st-porconf').textContent = 0;
+    document.getElementById('st-confirmados').textContent = segLeads.length;
+    document.getElementById('st-compraron').textContent = 0;
+
+    if (!segLeads.length) {
+      container.innerHTML = '<div class="card" style="padding:30px;text-align:center;color:var(--muted)"><span style="font-size:2rem;display:block;margin-bottom:8px">📞</span>Sin leads en seguimiento aún.</div>';
+      return;
+    }
+
+    const thead = '<thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>';
+    container.innerHTML = `<div class="estado-section" style="margin-bottom:10px;">
+      <div class="section-hdr" onclick="toggleSection('seg-view')">
+        <span style="width:8px;height:8px;border-radius:50%;background:#60a5fa;flex-shrink:0;display:inline-block;"></span>
+        <span class="section-title" style="color:#60a5fa">📞 En Seguimiento</span>
+        <span style="font-size:0.72rem;color:var(--muted);margin-left:4px;">Dieron apartado · pendiente liquidar</span>
+        <span class="section-badge" style="margin-left:auto;">${segLeads.length}</span>
+        <span class="section-chevron" id="chev-seg-view">▼</span>
+      </div>
+      <div class="section-body" id="body-seg-view">
+        <div class="table-wrap"><table>${thead}<tbody>${segLeads.map((l,i) => leadRow(l,i) + pagosRow(l)).join('')}</tbody></table></div>
+      </div>
+    </div>`;
+    return;
+  }
+
   let leads = allLeads;
   if (currentFilter === 'semana') leads = leads.filter(l => isThisWeek(l.ts));
   if (search) leads = leads.filter(l => (l.nombre + l.email).toLowerCase().includes(search));
@@ -1429,9 +1530,13 @@ async function onEstadoChange(select, email, nombre, leadTs) {
     return;
   }
 
-  // Regla 2: seguimiento = apartado/depósito dado → requiere al menos un pago registrado
+  // Regla 2: seguimiento = apartado/depósito dado → si no hay pagos, mostrar modal para registrar el primero
   if (newEstado === 'seguimiento' && !(pagosParciales[email] && pagosParciales[email].length > 0)) {
-    blockEstado(select, prevEstado, '⚠️ Registra al menos un pago antes de poner en seguimiento');
+    // Revert the select visually (will be updated after payment is saved)
+    select.value = prevEstado;
+    select.className = `estado-select estado-${prevEstado}`;
+    // Open the first-payment modal — when saved it will auto-move to seguimiento
+    openPrimerPagoModal(email, nombre);
     return;
   }
 
