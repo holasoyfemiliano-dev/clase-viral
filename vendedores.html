@@ -1364,7 +1364,7 @@ function leadRow(l, i) {
     <td>${l.phone ? phoneCell(l.phone, l.email) : '<span style="color:var(--muted)">—</span>'}</td>
     <td style="color:var(--muted);font-size:0.8rem">${fecha}</td>
     <td>
-      <select class="asignado-select" onchange="onAsignadoChange('${esc(l.email)}', this.value)" style="background:transparent;border:1px solid rgba(96,165,250,0.35);border-radius:6px;color:var(--blue);font-size:0.8rem;font-weight:600;padding:3px 6px;cursor:pointer;max-width:120px;">
+      <select class="asignado-select" onchange="onAsignadoChange('${esc(l.email)}', this.value, this)" style="background:transparent;border:1px solid ${vendedorBorderColor(asignadoA)};border-radius:6px;color:${vendedorColor(asignadoA)};font-size:0.8rem;font-weight:600;padding:3px 6px;cursor:pointer;max-width:130px;">
         <option value="">— sin asignar —</option>
         ${vendedoresList.map(v => `<option value="${esc(v)}" ${v===asignadoA?'selected':''}>${esc(v)}</option>`).join('')}
       </select>
@@ -1401,7 +1401,23 @@ function leadRow(l, i) {
   </tr>`;
 }
 
-async function onAsignadoChange(email, nuevoVendedor) {
+const VENDEDOR_COLORS = {
+  'Diego Martinez':  '#a78bfa',  // violeta
+  'Karen Contreras': '#34d399',  // verde menta
+  'Femiliano':       '#fb923c',  // naranja
+  'Maye crack':      '#f472b6',  // rosa
+};
+function vendedorColor(nombre) { return VENDEDOR_COLORS[nombre] || 'var(--muted)'; }
+function vendedorBorderColor(nombre) {
+  const c = VENDEDOR_COLORS[nombre];
+  return c ? c.replace(')', ',0.4)').replace('rgb', 'rgba') : 'rgba(150,150,150,0.3)';
+}
+
+async function onAsignadoChange(email, nuevoVendedor, selectEl) {
+  if (selectEl) {
+    selectEl.style.color = vendedorColor(nuevoVendedor);
+    selectEl.style.borderColor = vendedorBorderColor(nuevoVendedor);
+  }
   await fetch(SB_URL + '/rest/v1/lead_estados?on_conflict=registro_email', {
     method: 'POST',
     headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
