@@ -1076,16 +1076,14 @@ async function loadData() {
     if (a.accion === 'phone_copy') copiedLeads.add(a.lead_email);
   });
 
-  // Admins see all leads; vendors see only their assigned (or unassigned) leads
+  // All vendors see all leads — deduplicate by email only
   const seenEmails = new Set();
   allLeads = leads
     .map(r => ({ id: r.id, nombre: r.nombre || r.name || '', email: r.email || '', phone: r.phone || '', ts: r.ts }))
     .filter(l => {
       if (seenEmails.has(l.email)) return false;
       seenEmails.add(l.email);
-      if (isAdmin) return true; // admins see everything
-      const e = estadosMap[l.email];
-      return !e || !e.asignado_a || e.asignado_a === currentVendedor;
+      return true;
     });
 
   misVentas = ventas;
@@ -1353,6 +1351,7 @@ function leadRow(l, i) {
   const datos          = eMap.notas          || '';   // "Datos" = campo notas existente
   const notasVendedor  = eMap.notas_vendedor || '';   // nuevo campo personal
   const categoria      = eMap.categoria      || '';
+  const asignadoA      = eMap.asignado_a     || '—';
   const fecha = l.ts ? new Date(l.ts).toLocaleDateString('es-MX') : '—';
   const catBadge = categoria ? `<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:700;background:${categoriaBg(categoria)};color:#fff;white-space:nowrap;">${esc(categoria)}</span>` : '';
   return `<tr>
@@ -1361,6 +1360,7 @@ function leadRow(l, i) {
     <td style="color:var(--text);font-size:0.82rem">${esc(l.email)}</td>
     <td>${l.phone ? phoneCell(l.phone, l.email) : '<span style="color:var(--muted)">—</span>'}</td>
     <td style="color:var(--muted);font-size:0.8rem">${fecha}</td>
+    <td style="font-size:0.82rem;font-weight:600;color:var(--blue)">${esc(asignadoA)}</td>
     <td>
       <select class="estado-select estado-${estado}"
         onchange="onEstadoChange(this,'${esc(l.email)}','${esc(l.nombre)}','${l.ts||''}')"
@@ -1503,7 +1503,7 @@ function renderLeads() {
       return;
     }
 
-    const thead = '<thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>';
+    const thead = '<thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Vendedor</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>';
     container.innerHTML = PIPELINE.map(p => {
       const rows = byEstado[p.key];
       return `<div class="estado-section" style="margin-bottom:10px;">
@@ -1545,7 +1545,7 @@ function renderLeads() {
     const sinPagos  = segLeads.filter(l => !(pagosParciales[l.email]||[]).length);
     const conPagos  = segLeads.filter(l =>  (pagosParciales[l.email]||[]).length > 0);
 
-    const thead = '<thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>';
+    const thead = '<thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Vendedor</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>';
 
     let html = '';
 
@@ -1633,7 +1633,7 @@ function renderLeads() {
         <div class="section-body" id="body-${estado}">
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>
+              <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Vendedor</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>
               <tbody>${grp.map((l,i) => leadRow(l, i)).join('')}</tbody>
             </table>
           </div>
@@ -1649,7 +1649,7 @@ function renderLeads() {
     container.innerHTML = `<div class="card" style="padding:0;overflow:hidden;">
       <div class="table-wrap">
         <table>
-          <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>
+          <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Vendedor</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>
           <tbody>${leads.slice().sort((a,b) => {
             const DONE = ['confirmado','asistio','no_asistio','compro_evento','seguimiento_exitoso','no_asistira'];
             const aD = DONE.includes((estadosMap[a.email]||{}).estado||'por_confirmar');
