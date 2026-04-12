@@ -818,17 +818,20 @@
           <span id="assignTableChevron" style="font-size:0.9rem;color:var(--muted);transition:transform 0.2s;">▼</span>
         </div>
         <div id="assignTableBody" style="display:none;padding:16px 20px 20px;">
-          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
             <input type="text" class="search-input" id="assignSearch" placeholder="🔍 Buscar lead…" oninput="renderAssignTable()">
             <select id="assignFilterVend" class="search-input" style="min-width:160px;" onchange="renderAssignTable()">
               <option value="">Todos los leads</option>
             </select>
+            <button class="btn btn-outline btn-sm" onclick="autoAsignar11()" title="Asignar automáticamente 1:1 entre los 2 primeros vendedores activos a los leads sin asignar">
+              ⚡ Auto 1:1
+            </button>
           </div>
           <div class="card" style="padding:0;overflow:hidden;margin-bottom:0;">
             <div class="table-wrap">
               <table>
-                <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Registro</th><th>Asignado a</th></tr></thead>
-                <tbody id="assignBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+                <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Registro</th><th>Estado</th><th>Asignado a</th></tr></thead>
+                <tbody id="assignBody"><tr><td colspan="6"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
               </table>
             </div>
           </div>
@@ -4364,13 +4367,26 @@ function renderAssignTable() {
   if (search) leads = leads.filter(l => (l.nombre + l.email).toLowerCase().includes(search));
   if (filterVend) leads = leads.filter(l => (estadosAdmin[l.email] || {}).asignado_a === filterVend);
 
+  const ESTADO_LABELS = {
+    confirmado: { label: 'Confirmado', color: '#22c55e' },
+    asistio: { label: 'Asistió', color: '#3b82f6' },
+    seguimiento: { label: 'Seguimiento', color: '#f59e0b' },
+    pendiente_confirmar: { label: 'Pendiente', color: '#a78bfa' },
+    por_confirmar: { label: 'Sin contactar', color: '#6b7280' },
+    numero_invalido: { label: 'Nº inválido', color: '#ef4444' },
+    no_interesado: { label: 'No interesado', color: '#ef4444' },
+  };
+
   if (!leads.length) {
-    document.getElementById('assignBody').innerHTML = '<tr><td colspan="5"><div class="empty">Sin resultados.</div></td></tr>';
+    document.getElementById('assignBody').innerHTML = '<tr><td colspan="6"><div class="empty">Sin resultados.</div></td></tr>';
     return;
   }
 
   document.getElementById('assignBody').innerHTML = leads.slice(0, 100).map((l, i) => {
-    const asignado = (estadosAdmin[l.email] || {}).asignado_a || '';
+    const est = estadosAdmin[l.email] || {};
+    const asignado = est.asignado_a || '';
+    const estadoKey = est.estado || 'por_confirmar';
+    const { label: estadoLabel, color: estadoColor } = ESTADO_LABELS[estadoKey] || { label: estadoKey, color: '#6b7280' };
     const fecha = l.ts ? new Date(l.ts).toLocaleDateString('es-MX') : '—';
     const vendOptions = ['<option value="">Sin asignar</option>']
       .concat(vendedoresList.map(v => `<option value="${esc(v.nombre)}" ${v.nombre === asignado ? 'selected' : ''}>${esc(v.nombre)}</option>`))
@@ -4380,6 +4396,7 @@ function renderAssignTable() {
       <td class="bold">${esc(l.nombre)}</td>
       <td style="color:var(--text);font-size:0.82rem">${esc(l.email)}</td>
       <td style="color:var(--muted);font-size:0.8rem">${fecha}</td>
+      <td><span style="font-size:0.75rem;font-weight:600;color:${estadoColor};background:${estadoColor}22;padding:2px 8px;border-radius:20px;white-space:nowrap;">${estadoLabel}</span></td>
       <td style="display:flex;align-items:center;gap:8px;">
         <select style="background:var(--card2);border:1px solid var(--border);color:var(--white);padding:5px 8px;border-radius:5px;font-size:0.8rem;cursor:pointer;"
           onchange="asignarLead('${esc(l.email)}', this.value)">
@@ -4394,6 +4411,30 @@ function renderAssignTable() {
       </td>
     </tr>`;
   }).join('');
+}
+
+async function autoAsignar11() {
+  // Round-robin 1:1 entre los primeros 2 vendedores activos (o Diego/Karen si existen)
+  const activos = vendedoresList.filter(v => v.activo);
+  if (activos.length < 2) { alert('Se necesitan al menos 2 vendedores activos para la asignación 1:1.'); return; }
+
+  // Prefer Diego and Karen if they exist, otherwise use first 2 active
+  const prefNames = ['Diego Martinez', 'Karen'];
+  let pair = activos.filter(v => prefNames.some(p => v.nombre.toLowerCase().includes(p.toLowerCase())));
+  if (pair.length < 2) pair = activos.slice(0, 2);
+
+  const sinAsignar = allLeadsAdmin.filter(l => !(estadosAdmin[l.email] || {}).asignado_a);
+  if (!sinAsignar.length) { alert('No hay leads sin asignar.'); return; }
+
+  if (!confirm(`Asignar ${sinAsignar.length} leads en alternancia:\n• ${pair[0].nombre}\n• ${pair[1].nombre}\n\n¿Continuar?`)) return;
+
+  for (let i = 0; i < sinAsignar.length; i++) {
+    const lead = sinAsignar[i];
+    const vendedor = pair[i % 2].nombre;
+    await asignarLead(lead.email, vendedor);
+  }
+  renderAssignTable();
+  alert(`✅ ${sinAsignar.length} leads asignados (${Math.ceil(sinAsignar.length/2)} a ${pair[0].nombre}, ${Math.floor(sinAsignar.length/2)} a ${pair[1].nombre})`);
 }
 
 async function asignarLead(email, vendedor) {
