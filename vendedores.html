@@ -474,10 +474,10 @@
 
         <div class="toolbar">
           <div class="filter-btns">
-            <button class="filter-btn" id="fb-todos" onclick="setFilter('todos')">Todos</button>
+            <button class="filter-btn active" id="fb-todos" onclick="setFilter('todos')">Todos</button>
             <button class="filter-btn" id="fb-interesados" onclick="setFilter('interesados')" style="color:#f97316;border-color:rgba(249,115,22,0.3);">🔥 Interesados</button>
             <button class="filter-btn" id="fb-seguimiento" onclick="setFilter('seguimiento')" style="color:#60a5fa;border-color:rgba(96,165,250,0.3);">📞 Seguimiento</button>
-            <button class="filter-btn active" id="fb-semana" onclick="setFilter('semana')">Esta semana</button>
+            <button class="filter-btn" id="fb-semana" onclick="setFilter('semana')">Esta semana</button>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <input type="text" class="search-input" id="leadSearch" placeholder="🔍 Buscar nombre o email…" oninput="renderLeads()">
@@ -843,7 +843,7 @@ let allLeads = [];
 let estadosMap = {};  // email → estado object
 let misVentas = [];
 let ventasAprobadasGlobal = [];
-let currentFilter = 'semana';
+let currentFilter = 'todos';
 let pendingVenta = null; // { email, nombre, tipo }
 
 // Activity tracking
