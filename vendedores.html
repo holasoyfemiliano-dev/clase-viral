@@ -844,6 +844,7 @@ let estadosMap = {};  // email → estado object
 let misVentas = [];
 let ventasAprobadasGlobal = [];
 let currentFilter = 'todos';
+let vendedoresList = [];  // nombres de vendedores activos
 let pendingVenta = null; // { email, nombre, tipo }
 
 // Activity tracking
@@ -1057,17 +1058,19 @@ function renderVendInteresados() {
 async function loadData() {
   document.getElementById('leadsContainer').innerHTML = '<div class="card" style="padding:40px;text-align:center;color:var(--muted)"><span style="font-size:2rem;display:block;margin-bottom:10px">⏳</span>Cargando leads…</div>';
 
-  const [leads, estados, ventas, contactActivity, pagosData, ventasAprobadasAll] = await Promise.all([
+  const [leads, estados, ventas, contactActivity, pagosData, ventasAprobadasAll, vendedoresData] = await Promise.all([
     sbGet('/rest/v1/clase_viral_registros?select=*&order=ts.desc'),
     sbGet('/rest/v1/lead_estados?select=*'),
     sbGet(`/rest/v1/ventas?select=*&vendedor=eq.${encodeURIComponent(currentVendedor)}&order=created_at.desc`),
     sbGet(`/rest/v1/vendedor_actividad?select=lead_email,accion&vendedor=eq.${encodeURIComponent(currentVendedor)}&accion=in.(wa_click,phone_copy)&limit=2000`),
     sbGet(`/rest/v1/vendedor_actividad?select=id,lead_email,detalle,ts,vendedor&accion=eq.pago_parcial&order=ts.asc`),
     sbGet('/rest/v1/ventas?select=registro_email&aprobado=eq.true'),
+    sbGet('/rest/v1/vendedores?select=nombre&activo=eq.true&order=nombre'),
   ]);
 
   estadosMap = {};
   estados.forEach(e => { estadosMap[e.registro_email] = e; });
+  vendedoresList = (vendedoresData || []).map(v => v.nombre);
 
   // Pre-populate contact sets from history so validation survives page refreshes
   (contactActivity || []).forEach(a => {
@@ -1360,7 +1363,12 @@ function leadRow(l, i) {
     <td style="color:var(--text);font-size:0.82rem">${esc(l.email)}</td>
     <td>${l.phone ? phoneCell(l.phone, l.email) : '<span style="color:var(--muted)">—</span>'}</td>
     <td style="color:var(--muted);font-size:0.8rem">${fecha}</td>
-    <td style="font-size:0.82rem;font-weight:600;color:var(--blue)">${esc(asignadoA)}</td>
+    <td>
+      <select class="asignado-select" onchange="onAsignadoChange('${esc(l.email)}', this.value)" style="background:transparent;border:1px solid rgba(96,165,250,0.35);border-radius:6px;color:var(--blue);font-size:0.8rem;font-weight:600;padding:3px 6px;cursor:pointer;max-width:120px;">
+        <option value="">— sin asignar —</option>
+        ${vendedoresList.map(v => `<option value="${esc(v)}" ${v===asignadoA?'selected':''}>${esc(v)}</option>`).join('')}
+      </select>
+    </td>
     <td>
       <select class="estado-select estado-${estado}"
         onchange="onEstadoChange(this,'${esc(l.email)}','${esc(l.nombre)}','${l.ts||''}')"
@@ -1391,6 +1399,20 @@ function leadRow(l, i) {
         onblur="onNotasVendedorChange('${esc(l.email)}', this.value)">${esc(notasVendedor)}</textarea>
     </td>
   </tr>`;
+}
+
+async function onAsignadoChange(email, nuevoVendedor) {
+  await fetch(SB_URL + '/rest/v1/lead_estados?on_conflict=registro_email', {
+    method: 'POST',
+    headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({
+      registro_email: email,
+      vendedor: nuevoVendedor,
+      asignado_a: nuevoVendedor,
+      estado: (estadosMap[email] || {}).estado || 'por_confirmar',
+    })
+  });
+  estadosMap[email] = { ...(estadosMap[email] || {}), asignado_a: nuevoVendedor, vendedor: nuevoVendedor };
 }
 
 const CATEGORIAS = [
