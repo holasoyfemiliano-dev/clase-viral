@@ -838,6 +838,7 @@ function isPenalized(tipo, leadTs) {
    STATE
 ───────────────────────────────────── */
 let currentVendedor = null;
+let isAdmin = false;
 let allLeads = [];
 let estadosMap = {};  // email → estado object
 let misVentas = [];
@@ -1075,14 +1076,15 @@ async function loadData() {
     if (a.accion === 'phone_copy') copiedLeads.add(a.lead_email);
   });
 
-  // Only show leads assigned to me OR unassigned (no asignado_a), deduplicate by email
+  // Admins see all leads; vendors see only their assigned (or unassigned) leads
   const seenEmails = new Set();
   allLeads = leads
     .map(r => ({ id: r.id, nombre: r.nombre || r.name || '', email: r.email || '', phone: r.phone || '', ts: r.ts }))
     .filter(l => {
-      const e = estadosMap[l.email];
       if (seenEmails.has(l.email)) return false;
       seenEmails.add(l.email);
+      if (isAdmin) return true; // admins see everything
+      const e = estadosMap[l.email];
       return !e || !e.asignado_a || e.asignado_a === currentVendedor;
     });
 
@@ -2068,10 +2070,12 @@ async function loadPerfil() {
 
 async function fetchVendedorPerfil() {
   try {
-    const rows = await sbGet(`/rest/v1/vendedores?select=apodo,foto_url&nombre=eq.${encodeURIComponent(currentVendedor)}`);
+    const rows = await sbGet(`/rest/v1/vendedores?select=apodo,foto_url,es_admin&nombre=eq.${encodeURIComponent(currentVendedor)}`);
     if (rows && rows[0]) {
       currentApodo = rows[0].apodo || null;
       currentFotoUrl = rows[0].foto_url || null;
+      // es_admin column may not exist yet (pending migration) — fallback by name
+      isAdmin = rows[0].es_admin === true || currentVendedor === 'Femiliano';
     }
   } catch(e) { /* silent — columns may not exist yet */ }
 }
