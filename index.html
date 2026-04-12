@@ -1514,7 +1514,12 @@ document.getElementById('regForm').addEventListener('submit', function(e) {
   const name  = document.getElementById('fname').value.trim();
   const email = document.getElementById('femail').value.trim();
   const code  = document.getElementById('fphonecode').value.replace(/-[A-Z]+$/, '');
-  const phone = code + document.getElementById('fphone').value.trim();
+  let phoneRaw = document.getElementById('fphone').value.trim();
+  // Normalize: strip leading + then any duplicate country code prefix
+  if (phoneRaw.startsWith('+')) phoneRaw = phoneRaw.slice(1);
+  const codeDigits = code.replace(/^\+/, '');
+  if (phoneRaw.startsWith(codeDigits)) phoneRaw = phoneRaw.slice(codeDigits.length);
+  const phone = code + phoneRaw;
   const v     = getVariant();
   _bhv.email = email; _bhv.registered = true;
   trackConversion(v, name, email, phone);
