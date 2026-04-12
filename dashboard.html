@@ -196,6 +196,9 @@
     .stat-card.blue .s-value { color: var(--blue); }
     .stat-card.green .s-value { color: var(--green); }
     .stat-card.white .s-value { color: var(--white); }
+    .stat-card.nav-card { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, background 0.15s; }
+    .stat-card.nav-card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.3); background: rgba(255,255,255,0.04); }
+    .stat-card.nav-card:active { transform: translateY(0); }
 
     /* ── TABLE ── */
     .table-wrap { overflow-x: auto; }
@@ -411,6 +414,10 @@
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="2"/><line x1="2" y1="6" x2="14" y2="6"/><line x1="5" y1="10" x2="9" y2="10"/></svg>
         Landing
       </button>
+      <button class="tab" data-tab="registros">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><line x1="5" y1="6" x2="11" y2="6"/><line x1="5" y1="9" x2="11" y2="9"/><line x1="5" y1="12" x2="8" y2="12"/></svg>
+        Registros
+      </button>
       <button class="tab" data-tab="evento">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13V2M2 13h12"/><path d="M2 11l3-3.5 2.5 2L12 4"/></svg>
         Evento
@@ -435,27 +442,27 @@
       <!-- ── NEGOCIO ── -->
       <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;">💰 Negocio</div>
       <div class="stats-row" style="margin-bottom:8px;grid-template-columns:repeat(5,1fr);">
-        <div class="stat-card" style="border-color:rgba(255,229,0,0.5);background:rgba(255,229,0,0.06);">
+        <div class="stat-card nav-card" style="border-color:rgba(255,229,0,0.5);background:rgba(255,229,0,0.06);" onclick="navTo('ventas','apartadosPendBody')" title="Ver seguimientos">
           <div class="s-label" style="color:var(--gold);">Este mes</div>
           <div class="s-value" id="ov-facturacion-mes" style="color:var(--gold);font-size:2rem;">$0</div>
           <div class="s-sub" id="ov-facturacion-mes-label">Cargando…</div>
         </div>
-        <div class="stat-card" style="border-color:rgba(255,229,0,0.2);">
+        <div class="stat-card nav-card" style="border-color:rgba(255,229,0,0.2);" onclick="navTo('ventas','apartadosAprobBody')" title="Ver facturación total">
           <div class="s-label">Facturación Total</div>
           <div class="s-value" id="ov-facturacion" style="color:rgba(255,229,0,0.7);font-size:1.6rem;">$0</div>
           <div class="s-sub">Histórico acumulado</div>
         </div>
-        <div class="stat-card green">
+        <div class="stat-card green nav-card" onclick="navTo('ventas','aprobBody')" title="Ver ventas aprobadas">
           <div class="s-label">Ventas aprobadas</div>
           <div class="s-value" id="ov-ventas">0</div>
           <div class="s-sub" id="ov-ventas-sub">Por vendedores</div>
         </div>
-        <div class="stat-card" style="border-color:rgba(249,115,22,0.3);">
+        <div class="stat-card nav-card" style="border-color:rgba(249,115,22,0.3);" onclick="navTo('miembros')" title="Ver miembros">
           <div class="s-label">Nuevos miembros</div>
           <div class="s-value" id="ov-miembros" style="color:var(--orange);">0</div>
           <div class="s-sub">Compraron acceso</div>
         </div>
-        <div class="stat-card" style="border-color:rgba(239,68,68,0.3);">
+        <div class="stat-card nav-card" style="border-color:rgba(239,68,68,0.3);" onclick="navTo('ventas','aprobBody')" title="Ver comisiones">
           <div class="s-label">Comisiones a Pagar</div>
           <div class="s-value" id="ov-comisiones" style="color:var(--red);font-size:1.6rem;">$0</div>
           <div class="s-sub" id="ov-comisiones-sub">Este mes · aprobadas</div>
@@ -465,17 +472,17 @@
       <!-- ── TRÁFICO ── -->
       <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">Tráfico</div>
       <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:8px;">
-        <div class="stat-card blue">
+        <div class="stat-card blue nav-card" onclick="navTo('landing')" title="Ver tráfico">
           <div class="s-label">Visitas Landing</div>
           <div class="s-value" id="ov-views">0</div>
           <div class="s-sub">Sesiones rastreadas</div>
         </div>
-        <div class="stat-card" style="border-color:rgba(168,85,247,0.3);">
+        <div class="stat-card nav-card" style="border-color:rgba(168,85,247,0.3);" onclick="navTo('registros')" title="Ver registrados">
           <div class="s-label">Registrados Total</div>
           <div class="s-value" id="ov-total" style="color:#a855f7;">0</div>
           <div class="s-sub">Todos los eventos</div>
         </div>
-        <div class="stat-card blue">
+        <div class="stat-card blue nav-card" onclick="navTo('landing')" title="Ver conversión">
           <div class="s-label">Conversión Landing</div>
           <div class="s-value" id="ov-cvr" style="color:var(--blue);">—%</div>
           <div class="s-sub">Visitas → registro</div>
@@ -485,12 +492,12 @@
       <!-- ── PRÓXIMO EVENTO ── -->
       <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">Próximo Evento <span id="ov-prox-fecha" style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.68rem;color:rgba(255,255,255,0.3);"></span></div>
       <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:8px;">
-        <div class="stat-card" style="border-color:rgba(168,85,247,0.4);background:rgba(168,85,247,0.04);">
+        <div class="stat-card nav-card" style="border-color:rgba(168,85,247,0.4);background:rgba(168,85,247,0.04);" onclick="navTo('registros')" title="Ver registros">
           <div class="s-label" style="color:#a855f7;">Registros</div>
           <div class="s-value" id="ov-prox-regs" style="color:#a855f7;font-size:2rem;">0</div>
           <div class="s-sub" id="ov-prox-regs-sub">desde el último jueves</div>
         </div>
-        <div class="stat-card" style="border-color:rgba(59,130,246,0.4);">
+        <div class="stat-card nav-card" style="border-color:rgba(59,130,246,0.4);" onclick="navTo('registros','confBody')" title="Ver confirmados">
           <div class="s-label">Confirmados</div>
           <div class="s-value" id="ov-tasa-conf" style="color:var(--blue);font-size:1.5rem;">—</div>
           <div class="s-sub" id="ov-tasa-conf-sub">confirmados / registrados</div>
@@ -534,28 +541,23 @@
 
       <!-- ── EMBUDO DE VENTAS ── -->
       <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">🔥 Embudo de ventas</div>
-      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:8px;">
-        <div class="stat-card" style="border-color:rgba(249,115,22,0.4);background:rgba(249,115,22,0.05);">
+      <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:8px;">
+        <div class="stat-card nav-card" style="border-color:rgba(249,115,22,0.4);background:rgba(249,115,22,0.05);" onclick="navTo('ventas','ventasLeadsBody','interesado')" title="Ver interesados">
           <div class="s-label" style="color:#f97316;">Interesados</div>
           <div class="s-value" id="ov-int-total" style="color:#f97316;font-size:2rem;">—</div>
           <div class="s-sub">Llegaron a la página de pago</div>
         </div>
-        <div class="stat-card">
-          <div class="s-label">Interesados hoy</div>
-          <div class="s-value" id="ov-int-hoy" style="color:var(--white);font-size:2rem;">—</div>
-          <div class="s-sub">Nuevos hoy</div>
-        </div>
-        <div class="stat-card">
-          <div class="s-label">Interesados semana</div>
-          <div class="s-value" id="ov-int-semana" style="color:var(--blue);font-size:2rem;">—</div>
-          <div class="s-sub">Últimos 7 días</div>
-        </div>
-        <div class="stat-card" style="border-color:rgba(249,115,22,0.3);">
+        <div class="stat-card nav-card" style="border-color:rgba(249,115,22,0.3);" onclick="navTo('ventas','ventasLeadsBody','seguimiento')" title="Ver seguimientos">
           <div class="s-label">Seguimientos</div>
           <div class="s-value" id="ov-seguimientos" style="color:#f97316;font-size:2rem;">—</div>
           <div class="s-sub">En proceso por vendedores</div>
         </div>
-        <div class="stat-card" style="border-color:rgba(255,229,0,0.35);">
+        <div class="stat-card nav-card" style="border-color:rgba(249,115,22,0.2);" onclick="navTo('ventas','ventasLeadsBody','seguimiento')" title="Ver seguimientos esta semana">
+          <div class="s-label">Seguimientos semana</div>
+          <div class="s-value" id="ov-seg-semana" style="color:#fb923c;font-size:2rem;">—</div>
+          <div class="s-sub">Nuevos últimos 7 días</div>
+        </div>
+        <div class="stat-card nav-card" style="border-color:rgba(255,229,0,0.35);" onclick="navTo('ventas','aprobBody')" title="Ver seguimientos exitosos">
           <div class="s-label">Seguimientos exitosos</div>
           <div class="s-value" id="ov-seg-exitosos" style="color:var(--gold);font-size:2rem;">—</div>
           <div class="s-sub">Cerraron después del evento</div>
@@ -645,6 +647,41 @@
         </div>
       </div>
 
+    </div>
+
+    <!-- ════════════ REGISTROS ════════════ -->
+    <div class="panel" id="tab-registros">
+
+      <!-- ── Stats rápidos ── -->
+      <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+        <div class="stat-card" style="border-color:rgba(168,85,247,0.3)">
+          <div class="s-label">Total registros</div>
+          <div class="s-value" id="rc-total" style="color:#a855f7">—</div>
+          <div class="s-sub">Todos los eventos</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="s-label">Confirmados</div>
+          <div class="s-value" id="rc-confirmados">—</div>
+          <div class="s-sub">Confirmaron o asistieron</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(34,197,94,0.3)">
+          <div class="s-label">Asistieron</div>
+          <div class="s-value" id="rc-asistieron" style="color:#22c55e">—</div>
+          <div class="s-sub">Presentes en el evento</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(255,229,0,0.3)">
+          <div class="s-label">Tasa confirmación</div>
+          <div class="s-value" id="rc-tasa" style="color:var(--gold)">—%</div>
+          <div class="s-sub">Confirmados / registrados</div>
+        </div>
+      </div>
+
+      <!-- ── Ciclos de evento ── -->
+      <div id="rc-cycles" style="margin-bottom:24px;"></div>
+
+      <!-- ── Estados por vendedor ── -->
+      <div id="rc-estados" style="margin-bottom:24px;"></div>
+
       <!-- ── Registros por día ── -->
       <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Registros por día</div>
       <div class="card" style="margin-bottom:28px;">
@@ -654,7 +691,15 @@
         <div class="chart-wrap"><canvas id="chartRegistros"></canvas></div>
       </div>
 
-      <!-- ── Lista de registros ── -->
+      <!-- ── Confirmaciones ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#3b82f6;margin-bottom:12px;">📋 Confirmaciones</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span style="font-size:0.82rem;color:var(--muted);">Agrupado por estado actual</span>
+        <input type="text" class="search-input" id="confSearch" placeholder="🔍 Buscar…" oninput="renderConfirmaciones()" style="max-width:220px;">
+      </div>
+      <div id="confBody" style="margin-bottom:28px;"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></div>
+
+      <!-- ── Lista completa de registros ── -->
       <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Registros</div>
       <div class="toolbar" style="margin-bottom:12px;">
         <div><span id="reg-count-label" style="font-size:0.88rem;color:var(--muted);">0 registros</span></div>
@@ -680,13 +725,12 @@
     <div class="panel" id="tab-ventas">
 
       <!-- ── Resumen rápido ── -->
-      <div class="stats-row" style="grid-template-columns:repeat(6,1fr);margin-bottom:20px;" id="ventas-stats-row">
-        <div class="stat-card" style="border-color:rgba(168,85,247,0.3)"><div class="s-label">Registros</div><div class="s-value" id="vs-registros" style="color:#a855f7">—</div><div class="s-sub">Total leads</div></div>
-        <div class="stat-card blue"><div class="s-label">Confirmados</div><div class="s-value" id="vs-confirmados">—</div><div class="s-sub">Dijeron que sí</div></div>
-        <div class="stat-card" style="border-color:rgba(249,115,22,0.3)"><div class="s-label">Seguimientos</div><div class="s-value" id="vs-seguimientos" style="color:var(--orange)">—</div><div class="s-sub">En proceso</div></div>
-        <div class="stat-card green"><div class="s-label">Ventas</div><div class="s-value" id="vs-ventas">—</div><div class="s-sub">Aprobadas</div></div>
-        <div class="stat-card" style="border-color:rgba(255,229,0,0.3)"><div class="s-label">Comisiones</div><div class="s-value" id="vs-comisiones" style="color:var(--gold);font-size:1.4rem">$—</div><div class="s-sub" id="vs-comisiones-sub">Este mes</div></div>
-        <div class="stat-card"><div class="s-label">Top Nicho</div><div class="s-value" id="vs-nicho" style="font-size:1rem;color:var(--text)">—</div><div class="s-sub">Categoría líder</div></div>
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px;" id="ventas-stats-row">
+        <div class="stat-card nav-card" style="border-color:rgba(249,115,22,0.3)" onclick="navTo('ventas','ventasLeadsBody','seguimiento')"><div class="s-label">Seguimientos</div><div class="s-value" id="vs-seguimientos" style="color:var(--orange)">—</div><div class="s-sub">En proceso</div></div>
+        <div class="stat-card green nav-card" onclick="navTo('ventas','aprobBody')"><div class="s-label">Ventas</div><div class="s-value" id="vs-ventas">—</div><div class="s-sub">Aprobadas</div></div>
+        <div class="stat-card nav-card" style="border-color:rgba(255,229,0,0.3)" onclick="navTo('ventas','comisionesPorPagarBody')"><div class="s-label">Comisiones</div><div class="s-value" id="vs-comisiones" style="color:var(--gold);font-size:1.4rem">$—</div><div class="s-sub" id="vs-comisiones-sub">Este mes</div></div>
+        <div class="stat-card"><div class="s-label">Top Nicho · Ventas</div><div class="s-value" id="vs-nicho" style="font-size:1rem;color:var(--text)">—</div><div class="s-sub">Por compradores</div></div>
+        <div class="stat-card" style="border-color:rgba(59,130,246,0.3)"><div class="s-label">Top Nicho · Confirmados</div><div class="s-value" id="vs-nicho-conf" style="font-size:1rem;color:#3b82f6">—</div><div class="s-sub">Por confirmados</div></div>
       </div>
 
       <!-- ── Apartados pendientes de aprobación ── -->
@@ -700,6 +744,47 @@
           <table>
             <thead><tr><th>#</th><th>Lead</th><th>Vendedor</th><th>Monto</th><th>Nota</th><th>Comprobante</th><th>Fecha</th><th>Acción</th></tr></thead>
             <tbody id="apartadosPendBody"><tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Seguimientos aprobados ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#22c55e;margin-bottom:12px;margin-top:4px;">✅ Seguimientos aprobados</div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:0.85rem;font-weight:700;">Pagos parciales aprobados · cuentan en facturación</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Lead</th><th>Vendedor</th><th>Monto</th><th>Nota</th><th>Comprobante</th><th>Fecha</th><th>Acción</th></tr></thead>
+            <tbody id="apartadosAprobBody"><tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Comisiones ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fbbf24;margin-bottom:12px;margin-top:4px;">💰 Comisiones</div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px;">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);">
+          <span style="font-size:0.85rem;font-weight:700;color:#fbbf24;">Por pagar</span>
+          <span style="font-size:0.75rem;color:var(--muted);margin-left:8px;">Ventas aprobadas · comisión pendiente</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Vendedor</th><th>Ventas</th><th>Monto generado</th><th>Comisión</th><th>Acción</th></tr></thead>
+            <tbody id="comisionesPorPagarBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);">
+          <span style="font-size:0.85rem;font-weight:700;color:var(--muted);">Pagadas</span>
+          <span style="font-size:0.75rem;color:var(--muted);margin-left:8px;">Historial de comisiones liquidadas</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Vendedor</th><th>Ventas</th><th>Monto generado</th><th>Comisión</th><th>Fecha de pago</th><th>Acción</th></tr></thead>
+            <tbody id="comisionesPagadasBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
           </table>
         </div>
       </div>
@@ -727,48 +812,36 @@
           <button class="btn btn-gold" onclick="crearVendedor()">Crear →</button>
         </div>
       </div>
-      <div class="card" style="margin-bottom:28px;">
-        <div class="card-title">Asignar leads a vendedores</div>
-        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-          <input type="text" class="search-input" id="assignSearch" placeholder="🔍 Buscar lead…" oninput="renderAssignTable()">
-          <select id="assignFilterVend" class="search-input" style="min-width:160px;" onchange="renderAssignTable()">
-            <option value="">Todos los leads</option>
-          </select>
+      <div class="card" style="margin-bottom:28px;padding:0;overflow:hidden;">
+        <div onclick="toggleAssignTable()" style="padding:16px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
+          <span style="font-weight:700;font-size:0.9rem;">Asignar leads a vendedores</span>
+          <span id="assignTableChevron" style="font-size:0.9rem;color:var(--muted);transition:transform 0.2s;">▼</span>
         </div>
-        <div class="card" style="padding:0;overflow:hidden;margin-bottom:0;">
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Registro</th><th>Asignado a</th></tr></thead>
-              <tbody id="assignBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
-            </table>
+        <div id="assignTableBody" style="display:none;padding:16px 20px 20px;">
+          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+            <input type="text" class="search-input" id="assignSearch" placeholder="🔍 Buscar lead…" oninput="renderAssignTable()">
+            <select id="assignFilterVend" class="search-input" style="min-width:160px;" onchange="renderAssignTable()">
+              <option value="">Todos los leads</option>
+            </select>
+          </div>
+          <div class="card" style="padding:0;overflow:hidden;margin-bottom:0;">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Registro</th><th>Asignado a</th></tr></thead>
+                <tbody id="assignBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- ── Leads ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Leads</div>
-      <div id="ventasAlert"></div>
-      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
-        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-          <span style="font-weight:700;font-size:0.88rem;">Leads activos</span>
-          <div style="display:flex;gap:8px;">
-            <select id="ventasFilterEstado" class="search-input" style="min-width:160px;" onchange="renderVentasLeads()">
-              <option value="">Todos los estados</option>
-              <option value="confirmado">Confirmados</option>
-              <option value="seguimiento">En seguimiento</option>
-              <option value="asistio">Asistieron</option>
-              <option value="interesado">Interesados</option>
-            </select>
-            <input type="text" class="search-input" id="ventasSearch" placeholder="🔍 Buscar…" oninput="renderVentasLeads()">
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Estado</th><th>Vendedor</th><th>Actualizado</th><th>Acción</th></tr></thead>
-            <tbody id="ventasLeadsBody"><tr><td colspan="9"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
-          </table>
-        </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Leads</div>
+        <input type="text" class="search-input" id="ventasSearch" placeholder="🔍 Buscar…" oninput="renderVentasLeads()" style="max-width:220px;">
       </div>
+      <div id="ventasAlert"></div>
+      <div id="ventasLeadsBody" style="margin-bottom:28px;"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></div>
 
       <!-- ── Interesados ── -->
       <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;margin-top:28px;">🔥 Interesados · Abrieron página de pago</div>
@@ -1276,6 +1349,26 @@ function fmtFull(d) {
 /* ──────────────────────────────────────
    TABS
 ────────────────────────────────────── */
+// Navigate to a tab and optionally set a filter + scroll to an element
+function navTo(tab, scrollId, filterValue) {
+  activateTab(tab);
+  // After the tab loads (async), scroll and/or filter
+  setTimeout(() => {
+    // Scroll to section group if filterValue matches a leads-group key
+    if (filterValue) {
+      const sectionEl = document.getElementById('vl-body-' + filterValue);
+      if (sectionEl) {
+        sectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+    }
+    if (scrollId) {
+      const el = document.getElementById(scrollId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 350);
+}
+
 function activateTab(tabName) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -1285,13 +1378,14 @@ function activateTab(tabName) {
   tabEl.classList.add('active');
   panelEl.classList.add('active');
   localStorage.setItem('dash_active_tab', tabName);
-  if (tabName === 'overview') renderOverview();
-  if (tabName === 'ventas')   loadVentasTab();
-  if (tabName === 'landing')  loadLandingTab();
-  if (tabName === 'evento')   loadEventoTab();
-  if (tabName === 'pauta')    loadPautaTab();
-  if (tabName === 'miembros') loadMiembros();
-  if (tabName === 'config')   renderConfig();
+  if (tabName === 'overview')   renderOverview();
+  if (tabName === 'ventas')     loadVentasTab();
+  if (tabName === 'landing')    loadLandingTab();
+  if (tabName === 'registros')  loadRegistrosTab();
+  if (tabName === 'evento')     loadEventoTab();
+  if (tabName === 'pauta')      loadPautaTab();
+  if (tabName === 'miembros')   loadMiembros();
+  if (tabName === 'config')     renderConfig();
 }
 
 document.querySelectorAll('.tab').forEach(tab => {
@@ -1322,7 +1416,7 @@ async function renderOverview() {
   try {
     const [ventas, estados, miembros, sbRegs, interesados, pagosActv] = await Promise.all([
       fetchSB('/rest/v1/ventas?select=monto,tipo,aprobado,comision_porcentaje,created_at&order=created_at.desc'),
-      fetchSB('/rest/v1/lead_estados?select=estado,registro_email'),
+      fetchSB('/rest/v1/lead_estados?select=estado,registro_email,updated_at'),
       fetchSB('/rest/v1/miembros?select=id,monto_pagado,fecha_ingreso'),
       fetchSB('/rest/v1/clase_viral_registros?select=id,email,ts&order=ts.desc'),
       fetchSB('/rest/v1/proximity_creators_interesados?select=id,created_at'),
@@ -1339,10 +1433,6 @@ async function renderOverview() {
     const mbMes = mbList.filter(m => m.fecha_ingreso && new Date(m.fecha_ingreso) >= inicioMes);
     const mbMesTotal = mbMes.reduce((s,m) => s + Number(m.monto_pagado||0), 0);
 
-    // Pagos parciales — solo contar: leads en seguimiento + aprobado === true
-    const enSeguimiento = new Set(
-      (estados || []).filter(e => e.estado === 'seguimiento').map(e => (e.registro_email||'').toLowerCase())
-    );
     const paList = (pagosActv || []).map(a => {
       try {
         const d = typeof a.detalle === 'string' ? JSON.parse(a.detalle) : a.detalle;
@@ -1350,8 +1440,8 @@ async function renderOverview() {
       } catch(e) { return null; }
     }).filter(Boolean);
 
-    // Para facturación: solo aprobados de leads aún en seguimiento
-    const paAprobados = paList.filter(p => p.aprobado && p.lead_email && enSeguimiento.has(p.lead_email.toLowerCase()));
+    // Para facturación: todos los aprobados (la aprobación es la fuente de verdad)
+    const paAprobados = paList.filter(p => p.aprobado);
     const paTotal = paAprobados.reduce((s,p) => s + p.monto, 0);
     const paMes   = paAprobados.filter(p => p.ts && new Date(p.ts) >= inicioMes).reduce((s,p) => s + p.monto, 0);
 
@@ -1372,39 +1462,6 @@ async function renderOverview() {
     const totalRegistrados = (sbRegs||[]).length;
     const confirmados = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado)).length;
 
-    // Render pending apartados table
-    const regNombres = {};
-    (sbRegs||[]).forEach(r => { if(r.email) regNombres[r.email.toLowerCase()] = r; });
-    const fmtMXN = n => '$' + Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:0});
-    const fmtDate = d => d ? new Date(d).toLocaleDateString('es-MX') : '—';
-    const pendBody = document.getElementById('apartadosPendBody');
-    if (pendBody) {
-      if (!paPendientes.length) {
-        pendBody.innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">✅</span>Sin apartados pendientes de aprobación.</div></td></tr>';
-      } else {
-        pendBody.innerHTML = paPendientes.map((p, i) => {
-          const reg = regNombres[(p.lead_email||'').toLowerCase()] || {};
-          const nombre = reg.nombre || p.lead_email || '—';
-          return `<tr>
-            <td style="color:var(--muted)">${i+1}</td>
-            <td class="bold">${esc(nombre)}</td>
-            <td style="font-size:0.82rem;color:var(--text)">${esc(p.vendedor||'—')}</td>
-            <td style="color:#60a5fa;font-weight:700">${fmtMXN(p.monto)}</td>
-            <td style="font-size:0.78rem;color:var(--muted)">${esc(p.nota||'—')}</td>
-            <td><a href="${esc(p.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.82rem;">Ver →</a></td>
-            <td style="font-size:0.78rem;color:var(--muted)">${fmtDate(p.ts)}</td>
-            <td>
-              <button onclick="aprobarPago('${esc(p.id)}',${JSON.stringify(p.detalle).replace(/'/g,"&#39;")})"
-                style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.35);border-radius:5px;color:#22c55e;font-size:0.78rem;padding:4px 12px;cursor:pointer;font-weight:600;"
-                onmouseover="this.style.background='rgba(34,197,94,0.22)'" onmouseout="this.style.background='rgba(34,197,94,0.12)'">
-                ✓ Aprobar
-              </button>
-            </td>
-          </tr>`;
-        }).join('');
-      }
-    }
-
     document.getElementById('ov-facturacion-mes').textContent = '$' + facturacionMes.toLocaleString('es-MX', {maximumFractionDigits:0});
     document.getElementById('ov-facturacion-mes-label').textContent = MESES[ahora.getMonth()] + ' ' + ahora.getFullYear() + ' · ' + mbMes.length + ' miembros' + (paMes > 0 ? ' + $' + paMes.toLocaleString('es-MX',{maximumFractionDigits:0}) + ' apartados aprobados' : '');
     document.getElementById('ov-facturacion').textContent = '$' + facturacionTotal.toLocaleString('es-MX', {maximumFractionDigits:0});
@@ -1423,8 +1480,7 @@ async function renderOverview() {
       const daysBack = day >= 4 ? day - 4 : day + 3;
       const cut = new Date(nowMx);
       cut.setDate(nowMx.getDate() - daysBack);
-      cut.setHours(22, 0, 0, 0); // 10 PM hora MX
-      // Si hoy es jueves pero antes de las 10pm, retroceder una semana más
+      cut.setHours(22, 0, 0, 0); // 10 PM hora MX (después del evento)
       if (daysBack === 0 && nowMx < cut) cut.setDate(cut.getDate() - 7);
       // Convertir de vuelta a UTC para comparar con timestamps de DB
       return new Date(cut.getTime() - new Date().getTimezoneOffset() * 60000 - MX_OFFSET);
@@ -1433,10 +1489,10 @@ async function renderOverview() {
 
     // ── Próximo Evento: registros DESDE el último jueves 10pm ──
     const regsProximo = (sbRegs||[]).filter(r => r.ts && new Date(r.ts) >= corteFecha);
-    const emailsProximo = new Set(regsProximo.map(r => r.email).filter(Boolean));
-    const confirmadosProximo = (estados||[]).filter(e =>
-      ['confirmado'].includes(e.estado) && emailsProximo.has(e.registro_email)
-    ).length;
+    const emailsProximo = new Set(regsProximo.map(r => (r.email||'').toLowerCase()).filter(Boolean));
+    // Confirmados = quienes tienen estado 'confirmado' AHORA (son para el próximo evento)
+    // 'asistio' es del evento anterior, no cuenta aquí
+    const confirmadosProximo = (estados||[]).filter(e => e.estado === 'confirmado').length;
 
     // Fecha del próximo jueves para mostrar en el label
     const proxJueves = (() => {
@@ -1471,35 +1527,36 @@ async function renderOverview() {
     document.getElementById('ov-tasa-conv').textContent = asistentes > 0 ? ventasAnterior + ' / ' + asistentes : '—';
     document.getElementById('ov-tasa-conv-sub').textContent = asistentes > 0 ? ventasAnterior + ' ventas de ' + asistentes + ' asistentes' : 'ventas / asistentes';
 
-    // ── Predicciones (solo cuando hay suficiente data histórica) ──
-    // Tasa histórica asistencia = asistentes_histórico / registrados_histórico
-    // ── Predicciones para Próximo Evento (basado en tasa histórica del evento anterior) ──
-    const MIN_DATA = 3;
-    if (asistentes >= MIN_DATA && regsAnterior >= MIN_DATA) {
-      const histAsistRate = asistentes / regsAnterior;
-      const histConvRate  = ventasAnterior > 0 ? ventasAnterior / asistentes : 0;
+    // ── Predicciones con tasa fija de asistencia 30% ──
+    {
+      const TASA_ASIST = 0.30; // tasa fija configurada
+      const histConvRate = ventasAnterior > 0 && asistentes > 0 ? ventasAnterior / asistentes : 0;
 
-      const predAsist  = Math.round(regsProximo.length * histAsistRate);
+      const predAsist  = Math.round(regsProximo.length * TASA_ASIST);
       const predVentas = Math.round(predAsist * histConvRate);
-      const pctAsist   = Math.round(histAsistRate * 100);
       const pctConv    = Math.round(histConvRate * 100);
 
-      document.getElementById('ov-prox-asist-pct').textContent = pctAsist + '%';
-      document.getElementById('ov-prox-asist-sub').textContent = regsProximo.length + ' registros × ' + pctAsist + '% histórico';
-      document.getElementById('ov-prox-ventas').textContent = '~' + predVentas;
-      document.getElementById('ov-prox-ventas-sub').textContent = predAsist + ' asistentes est. × ' + pctConv + '% cierre';
+      document.getElementById('ov-prox-asist-pct').textContent = '30%';
+      document.getElementById('ov-prox-asist-sub').textContent = regsProximo.length + ' registros × 30% tasa esperada';
+      document.getElementById('ov-prox-ventas').textContent = predVentas > 0 ? '~' + predVentas : '—';
+      document.getElementById('ov-prox-ventas-sub').textContent = predVentas > 0
+        ? predAsist + ' asistentes est. × ' + pctConv + '% cierre'
+        : 'sin histórico de ventas aún';
 
       const predAsistEl = document.getElementById('ov-pred-asist');
       if (predAsistEl) { predAsistEl.style.display = 'block'; }
       document.getElementById('ov-pred-asist-val').textContent = '~' + predAsist + ' personas';
-      document.getElementById('ov-pred-asist-sub').textContent = regsProximo.length + ' registros × ' + pctAsist + '% tasa histórica';
+      document.getElementById('ov-pred-asist-sub').textContent = regsProximo.length + ' registros × 30% tasa esperada';
 
       const predConvEl = document.getElementById('ov-pred-conv');
-      if (predConvEl) { predConvEl.style.display = 'block'; }
-      document.getElementById('ov-pred-conv-val').textContent = '~' + predVentas + ' ventas';
-      document.getElementById('ov-pred-conv-sub').textContent = predAsist + ' est. asistentes × ' + pctConv + '% tasa histórica';
-    } else {
-      // Sin datos históricos suficientes — mostrar solo conteo
+      if (predConvEl && predVentas > 0) { predConvEl.style.display = 'block'; }
+      if (predVentas > 0) {
+        document.getElementById('ov-pred-conv-val').textContent = '~' + predVentas + ' ventas';
+        document.getElementById('ov-pred-conv-sub').textContent = predAsist + ' est. asistentes × ' + pctConv + '% tasa histórica';
+      }
+    }
+    if (false) {
+      // unreachable — kept for structure
       document.getElementById('ov-prox-asist-pct').textContent = '—';
       document.getElementById('ov-prox-asist-sub').textContent = 'se calculará con más eventos';
       document.getElementById('ov-prox-ventas').textContent = '—';
@@ -1514,18 +1571,17 @@ async function renderOverview() {
       const intHoy = intList.filter(r => new Date(r.created_at) >= hoyMidnight).length;
       const intSem = intList.filter(r => new Date(r.created_at) >= semAtras).length;
       const elTotal = document.getElementById('ov-int-total');
-      const elHoy   = document.getElementById('ov-int-hoy');
-      const elSem   = document.getElementById('ov-int-semana');
       if (elTotal) elTotal.textContent = intList.length;
-      if (elHoy)   elHoy.textContent   = intHoy;
-      if (elSem)   elSem.textContent   = intSem;
 
       const seguimientosCnt = (estados||[]).filter(e => e.estado === 'seguimiento').length;
       const segExitososCnt  = (estados||[]).filter(e => e.estado === 'seguimiento_exitoso').length;
-      const elSeg  = document.getElementById('ov-seguimientos');
-      const elSExt = document.getElementById('ov-seg-exitosos');
-      if (elSeg)  elSeg.textContent  = seguimientosCnt;
-      if (elSExt) elSExt.textContent = segExitososCnt;
+      const segSemana = (estados||[]).filter(e => e.estado === 'seguimiento' && e.updated_at && new Date(e.updated_at) >= semAtras).length;
+      const elSeg     = document.getElementById('ov-seguimientos');
+      const elSegSem  = document.getElementById('ov-seg-semana');
+      const elSExt    = document.getElementById('ov-seg-exitosos');
+      if (elSeg)    elSeg.textContent    = seguimientosCnt;
+      if (elSegSem) elSegSem.textContent = segSemana;
+      if (elSExt)   elSExt.textContent   = segExitososCnt;
     }
 
     // ── Pauta / Meta Ads ──
@@ -1596,8 +1652,8 @@ async function renderOverview() {
 
     const [vends, actividad, actividadHoy, ventasVend, leadsVend] = await Promise.all([
       fetchSB('/rest/v1/vendedores?select=nombre,activo,last_active,apodo,foto_url&order=nombre'),
-      fetchSB('/rest/v1/vendedor_actividad?select=vendedor,accion,detalle,ts&order=ts.desc&limit=1000'),
-      fetchSB(`/rest/v1/vendedor_actividad?select=vendedor,accion,detalle&accion=eq.session_end&ts=gte.${encodeURIComponent(hoyISO)}`),
+      fetchSB('/rest/v1/vendedor_actividad?select=vendedor,accion,detalle,ts&order=ts.asc&limit=1000'),
+      fetchSB(`/rest/v1/vendedor_actividad?select=vendedor,accion,detalle,ts&accion=in.(session_start,session_end)&ts=gte.${encodeURIComponent(hoyISO)}&order=ts.asc`),
       fetchSB('/rest/v1/ventas?select=vendedor,monto,tipo,aprobado,comision_porcentaje'),
       fetchSB('/rest/v1/lead_estados?select=vendedor,asignado_a,estado,updated_at'),
     ]);
@@ -1617,11 +1673,25 @@ async function renderOverview() {
       }
     });
 
-    // ── Per-vendor time: today vs total ──
+    // ── Per-vendor time: today (completed + currently active session) ──
     const tiempoHoyMap = {};
+    const lastStartHoy = {}; // track open sessions
     (actividadHoy||[]).forEach(a => {
-      const mins = a.detalle ? parseInt(a.detalle) : 0;
-      if (!isNaN(mins) && mins > 0) tiempoHoyMap[a.vendedor] = (tiempoHoyMap[a.vendedor]||0) + mins;
+      if (a.accion === 'session_end') {
+        const mins = a.detalle ? parseInt(a.detalle) : 0;
+        if (!isNaN(mins) && mins > 0) tiempoHoyMap[a.vendedor] = (tiempoHoyMap[a.vendedor]||0) + mins;
+        delete lastStartHoy[a.vendedor]; // session closed
+      } else if (a.accion === 'session_start') {
+        lastStartHoy[a.vendedor] = new Date(a.ts);
+      }
+    });
+    // Add time from any still-open session (vendor has app open right now)
+    const _nowMs = Date.now();
+    Object.entries(lastStartHoy).forEach(([vend, startTs]) => {
+      const activeMins = (_nowMs - startTs) / 60000;
+      if (activeMins > 0 && activeMins < 600) { // cap at 10h for sanity
+        tiempoHoyMap[vend] = (tiempoHoyMap[vend]||0) + activeMins;
+      }
     });
 
     const byVend = {};
@@ -2153,31 +2223,434 @@ async function loadLandingTab() {
   renderABTest();
   loadAnalisis();
   setAnalisisFilter('todos');
+  loadBehaviorData();
+}
+
+function getLastThursdayCut() {
+  const MX_OFFSET = -6 * 3600000;
+  const nowUtc = Date.now();
+  const nowMx = new Date(nowUtc + new Date().getTimezoneOffset() * 60000 + MX_OFFSET);
+  const day = nowMx.getDay();
+  const daysBack = day >= 4 ? day - 4 : day + 3;
+  const cut = new Date(nowMx);
+  cut.setDate(nowMx.getDate() - daysBack);
+  cut.setHours(22, 0, 0, 0);
+  if (daysBack === 0 && nowMx < cut) cut.setDate(cut.getDate() - 7);
+  return new Date(cut.getTime() - new Date().getTimezoneOffset() * 60000 - MX_OFFSET);
+}
+
+async function loadRegistrosTab() {
   loadBehaviorData().then(() => renderRegistros());
+  try {
+    const [regs, estados, ventas] = await Promise.all([
+      fetchSB('/rest/v1/clase_viral_registros?select=id,email,nombre,phone,ts&order=ts.desc'),
+      fetchSB('/rest/v1/lead_estados?select=estado,registro_email,vendedor,updated_at'),
+      fetchSB('/rest/v1/ventas?select=registro_email,monto,aprobado,created_at'),
+    ]);
+
+    const corteFecha = getLastThursdayCut();
+    // One week before cut = start of previous cycle
+    const corteAnterior = new Date(corteFecha.getTime() - 7 * 24 * 3600000);
+
+    const regsProximo   = (regs||[]).filter(r => r.ts && new Date(r.ts) >= corteFecha);
+    const regsAnterior  = (regs||[]).filter(r => r.ts && new Date(r.ts) >= corteAnterior && new Date(r.ts) < corteFecha);
+    const total = (regs||[]).length;
+
+    const estadosMap = {};
+    (estados||[]).forEach(e => { if (e.registro_email) estadosMap[e.registro_email.toLowerCase()] = e; });
+
+    // Canonical set: only emails that exist in clase_viral_registros
+    const emailsTodos    = new Set((regs||[]).map(r => r.email?.toLowerCase()).filter(Boolean));
+    const emailsProximo  = new Set(regsProximo.map(r => r.email?.toLowerCase()).filter(Boolean));
+    const emailsAnterior = new Set(regsAnterior.map(r => r.email?.toLowerCase()).filter(Boolean));
+
+    // Cross-referenced against real registros — no phantom estados
+    const confTotal    = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado) && emailsTodos.has((e.registro_email||'').toLowerCase())).length;
+    const asistTotal   = (estados||[]).filter(e => e.estado === 'asistio' && emailsTodos.has((e.registro_email||'').toLowerCase())).length;
+    const confProximo  = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado) && emailsProximo.has((e.registro_email||'').toLowerCase())).length;
+    const confAnterior = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado) && emailsAnterior.has((e.registro_email||'').toLowerCase())).length;
+    const asistAnterior= (estados||[]).filter(e => e.estado === 'asistio' && emailsAnterior.has((e.registro_email||'').toLowerCase())).length;
+    const ventasAnterior = (ventas||[]).filter(v => v.aprobado && v.created_at && new Date(v.created_at) >= corteAnterior && new Date(v.created_at) < corteFecha).length;
+
+    const fmtCut = d => d.toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
+    const pct = (a,b) => b > 0 ? Math.round(a/b*100) + '%' : '—';
+
+    // Render stat cards
+    document.getElementById('rc-total').textContent       = total || '—';
+    document.getElementById('rc-confirmados').textContent = confTotal || '—';
+    document.getElementById('rc-asistieron').textContent  = asistTotal || '—';
+    document.getElementById('rc-tasa').textContent        = pct(confTotal, total);
+
+    // Render event cycle sections
+    const cycleEl = document.getElementById('rc-cycles');
+    if (cycleEl) {
+      cycleEl.innerHTML = `
+        <!-- Siguiente evento -->
+        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#a855f7;margin-bottom:10px;margin-top:4px;">
+          📅 Siguiente evento <span style="font-weight:400;text-transform:none;font-size:0.68rem;color:rgba(255,255,255,0.35);margin-left:6px;">desde ${fmtCut(corteFecha)}</span>
+        </div>
+        <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+          <div class="stat-card" style="border-color:rgba(168,85,247,0.4);background:rgba(168,85,247,0.04)">
+            <div class="s-label" style="color:#a855f7">Registros</div>
+            <div class="s-value" style="color:#a855f7;font-size:2rem">${regsProximo.length}</div>
+            <div class="s-sub">en este ciclo</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(59,130,246,0.4)">
+            <div class="s-label">Confirmados</div>
+            <div class="s-value" style="color:#3b82f6;font-size:2rem">${confProximo}</div>
+            <div class="s-sub">${pct(confProximo, regsProximo.length)} de registrados</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(255,229,0,0.3)">
+            <div class="s-label">Por confirmar</div>
+            <div class="s-value" style="color:var(--gold);font-size:2rem">${regsProximo.length - confProximo}</div>
+            <div class="s-sub">leads sin confirmar aún</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(34,197,94,0.3)">
+            <div class="s-label">Tasa confirmación</div>
+            <div class="s-value" style="color:#22c55e;font-size:2rem">${pct(confProximo, regsProximo.length)}</div>
+            <div class="s-sub">confirmados / registrados</div>
+          </div>
+        </div>
+
+        <!-- Evento anterior -->
+        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;">
+          📆 Evento anterior <span style="font-weight:400;text-transform:none;font-size:0.68rem;color:rgba(255,255,255,0.3);margin-left:6px;">${fmtCut(corteAnterior)} — ${fmtCut(corteFecha)}</span>
+        </div>
+        <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:24px;">
+          <div class="stat-card" style="border-color:rgba(168,85,247,0.3)">
+            <div class="s-label">Registros</div>
+            <div class="s-value" style="color:#a855f7;font-size:2rem">${regsAnterior.length}</div>
+            <div class="s-sub">en ese ciclo</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="s-label">Confirmados</div>
+            <div class="s-value" style="font-size:2rem">${confAnterior}</div>
+            <div class="s-sub">${pct(confAnterior, regsAnterior.length)} de registrados</div>
+          </div>
+          <div class="stat-card green">
+            <div class="s-label">Asistieron</div>
+            <div class="s-value" style="font-size:2rem">${asistAnterior}</div>
+            <div class="s-sub">${pct(asistAnterior, regsAnterior.length)} de registrados</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(255,229,0,0.3)">
+            <div class="s-label">Ventas</div>
+            <div class="s-value" style="color:var(--gold);font-size:2rem">${ventasAnterior}</div>
+            <div class="s-sub">${pct(ventasAnterior, asistAnterior)} de asistentes</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(34,197,94,0.3)">
+            <div class="s-label">Tasa asistencia</div>
+            <div class="s-value" style="color:#22c55e;font-size:2rem">${pct(asistAnterior, regsAnterior.length)}</div>
+            <div class="s-sub">asistentes / registrados</div>
+          </div>
+        </div>`;
+    }
+
+    // ── Estados por vendedor ──
+    const estadosEl = document.getElementById('rc-estados');
+    if (estadosEl && estados && estados.length) {
+      // Group lead_estados by vendedor
+      const byVendedor = {};
+      (estados||[]).forEach(e => {
+        const v = e.vendedor || '(sin asignar)';
+        if (!byVendedor[v]) byVendedor[v] = [];
+        byVendedor[v].push(e);
+      });
+
+      // For each vendedor compute totals + this cycle + last cycle
+      const rows = Object.entries(byVendedor).sort((a,b) => b[1].length - a[1].length).map(([v, leads]) => {
+        const total     = leads.length;
+        const conf      = leads.filter(e => ['confirmado','asistio'].includes(e.estado)).length;
+        const asist     = leads.filter(e => e.estado === 'asistio').length;
+        const seg       = leads.filter(e => e.estado === 'seguimiento').length;
+        const venV      = (ventas||[]).filter(vt => {
+          const le = leads.find(e => (e.registro_email||'').toLowerCase() === (vt.registro_email||'').toLowerCase());
+          return le && vt.aprobado;
+        }).length;
+        // This cycle (emails that registered in current cycle)
+        const proxLeads = leads.filter(e => emailsProximo.has((e.registro_email||'').toLowerCase()));
+        const proxConf  = proxLeads.filter(e => ['confirmado','asistio'].includes(e.estado)).length;
+        // Last cycle
+        const antLeads  = leads.filter(e => emailsAnterior.has((e.registro_email||'').toLowerCase()));
+        const antConf   = antLeads.filter(e => ['confirmado','asistio'].includes(e.estado)).length;
+        const antAsist  = antLeads.filter(e => e.estado === 'asistio').length;
+
+        return `<tr>
+          <td style="font-weight:600">${v}</td>
+          <td style="text-align:center">${total}</td>
+          <td style="text-align:center;color:#3b82f6">${conf}</td>
+          <td style="text-align:center;color:#22c55e">${asist}</td>
+          <td style="text-align:center;color:var(--gold)">${seg}</td>
+          <td style="text-align:center;color:#a855f7">${venV}</td>
+          <td style="text-align:center">${proxLeads.length} <span style="font-size:0.7rem;color:rgba(255,255,255,0.4)">/ ${proxConf} conf</span></td>
+          <td style="text-align:center">${antLeads.length} <span style="font-size:0.7rem;color:rgba(255,255,255,0.4)">/ ${antConf} conf / ${antAsist} asist</span></td>
+        </tr>`;
+      }).join('');
+
+      estadosEl.innerHTML = `
+        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;">
+          👥 Estados por vendedor
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+            <thead>
+              <tr style="background:rgba(255,255,255,0.04);border-bottom:1px solid var(--border);">
+                <th style="padding:10px 16px;text-align:left;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)">Vendedor</th>
+                <th style="padding:10px 8px;text-align:center;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)">Total leads</th>
+                <th style="padding:10px 8px;text-align:center;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#3b82f6">Conf.</th>
+                <th style="padding:10px 8px;text-align:center;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#22c55e">Asistió</th>
+                <th style="padding:10px 8px;text-align:center;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--gold)">Seguim.</th>
+                <th style="padding:10px 8px;text-align:center;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#a855f7">Ventas</th>
+                <th style="padding:10px 8px;text-align:center;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)">Este ciclo</th>
+                <th style="padding:10px 8px;text-align:center;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)">Ciclo anterior</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }
+
+    // Build confirmaciones table data (all estados)
+    window._confData = (regs||[]).map(r => {
+      const e = estadosMap[r.email?.toLowerCase()] || {};
+      return { nombre: r.nombre||'', email: r.email||'', phone: r.phone||'', estado: e.estado||'por_confirmar', vendedor: e.vendedor||'—', updated_at: e.updated_at||r.ts||'' };
+    });
+    renderConfirmaciones();
+  } catch(e) {
+    console.error('loadRegistrosTab', e);
+    document.getElementById('confBody').innerHTML = '<tr><td colspan="7"><div class="empty">Error al cargar.</div></td></tr>';
+  }
+}
+
+const CONF_ESTADOS = [
+  { key: 'asistio',              label: 'Asistió',                color: '#a855f7' },
+  { key: 'compro_evento',        label: 'Compró en evento',        color: '#22c55e' },
+  { key: 'seguimiento',          label: 'Seguimiento',             color: '#f97316' },
+  { key: 'confirmado',           label: 'Confirmado',              color: '#3b82f6' },
+  { key: 'pendiente_confirmar',  label: 'Pendiente por confirmar', color: '#eab308' },
+  { key: 'por_confirmar',        label: 'Por confirmar',           color: '#6b7280' },
+  { key: 'no_asistio',           label: 'No asistió',              color: '#9ca3af' },
+  { key: 'no_asistira',          label: 'No asistirá',             color: '#6b7280' },
+  { key: 'numero_invalido',      label: 'Número inválido',         color: '#ef4444' },
+  { key: 'interesado',           label: '🔥 Interesado',           color: '#f97316' },
+];
+
+function toggleConfSection(key) {
+  const body = document.getElementById('conf-body-' + key);
+  const chev = document.getElementById('conf-chev-' + key);
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  if (chev) chev.textContent = open ? '▶' : '▼';
+}
+
+function renderConfirmaciones() {
+  const container = document.getElementById('confBody');
+  if (!container) return;
+  const search = (document.getElementById('confSearch')?.value || '').toLowerCase();
+  let data = (window._confData || []);
+  if (search) data = data.filter(r => (r.nombre + r.email + (r.phone||'')).toLowerCase().includes(search));
+
+  if (!data.length) {
+    container.innerHTML = '<div class="empty"><span class="empty-icon">📭</span>Sin registros aún.</div>';
+    return;
+  }
+
+  // Group by estado
+  const groups = {};
+  data.forEach(r => { (groups[r.estado] = groups[r.estado] || []).push(r); });
+
+  const fmtDate = d => d ? new Date(d).toLocaleDateString('es-MX') : '—';
+  const thead = `<thead><tr>
+    <th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Vendedor</th><th>Actualizado</th>
+  </tr></thead>`;
+
+  const sectionStyle = `border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;`;
+  const hdrStyle = `display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;user-select:none;background:rgba(255,255,255,0.02);`;
+  const badgeStyle = `margin-left:auto;background:rgba(255,255,255,0.08);color:var(--text);font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:20px;`;
+
+  container.innerHTML = CONF_ESTADOS.map(({ key, label, color }) => {
+    const grp = groups[key];
+    if (!grp || !grp.length) return '';
+    const rows = grp.map((r, i) => `<tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td class="bold">${esc(r.nombre||'—')}</td>
+      <td style="font-size:0.82rem;color:var(--muted)">${esc(r.email)}</td>
+      <td style="font-size:0.82rem">${esc(r.phone||'—')}</td>
+      <td style="font-size:0.82rem;color:var(--muted)">${esc(r.vendedor)}</td>
+      <td style="font-size:0.78rem;color:var(--muted)">${fmtDate(r.updated_at)}</td>
+    </tr>`).join('');
+    return `<div style="${sectionStyle}">
+      <div style="${hdrStyle}" onclick="toggleConfSection('${key}')">
+        <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
+        <span style="font-weight:700;font-size:0.88rem;color:${color}">${label}</span>
+        <span style="${badgeStyle}">${grp.length}</span>
+        <span id="conf-chev-${key}" style="font-size:0.8rem;color:var(--muted);">▼</span>
+      </div>
+      <div id="conf-body-${key}">
+        <div class="table-wrap"><table>${thead}<tbody>${rows}</tbody></table></div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 async function loadVentasTab() {
   loadVentasStats();
   loadVentasLeads();
   loadAprobaciones();
+  loadApartadosPendientes();
+  loadApartadosAprobados();
+  loadComisiones();
   loadVendedoresAdmin();
   loadInteresados();
 }
 
-async function loadVentasStats() {
+// Global cache for pending pagos — avoids passing JSON through onclick attributes
+const _pendientesCache = {};
+
+async function loadApartadosPendientes() {
+  const pendBody = document.getElementById('apartadosPendBody');
+  if (!pendBody) return;
+  pendBody.innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
   try {
-    const [leads, leadsEstado, ventas, registros] = await Promise.all([
-      fetchSB('/rest/v1/clase_viral_registros?select=id,categoria'),
-      fetchSB('/rest/v1/lead_estados?select=estado,vendedor,categoria'),
-      fetchSB('/rest/v1/ventas?select=monto,aprobado,tipo&aprobado=eq.true'),
-      fetchSB('/rest/v1/clase_viral_registros?select=id'),
+    const [pagosRows, regsRows] = await Promise.all([
+      fetchSB('/rest/v1/vendedor_actividad?accion=eq.pago_parcial&select=id,lead_email,detalle,ts,vendedor&order=ts.desc'),
+      fetchSB('/rest/v1/clase_viral_registros?select=email,nombre'),
     ]);
 
-    const totalRegistros = (registros||[]).length;
-    document.getElementById('vs-registros').textContent = totalRegistros || '—';
+    // Build name lookup
+    const nombresMap = {};
+    (regsRows||[]).forEach(r => { if (r.email) nombresMap[r.email.toLowerCase()] = r.nombre || ''; });
 
-    const confirmados = (leadsEstado||[]).filter(r => r.estado === 'confirmado').length;
-    document.getElementById('vs-confirmados').textContent = confirmados || '—';
+    const fmtMXN = n => '$' + Number(n||0).toLocaleString('es-MX', {maximumFractionDigits:0});
+    const fmtDate = d => d ? new Date(d).toLocaleDateString('es-MX') : '—';
+
+    const pendientes = (pagosRows||[])
+      .map(a => {
+        let d = {};
+        try { d = typeof a.detalle === 'string' ? JSON.parse(a.detalle) : (a.detalle || {}); } catch(e) {}
+        return { id: a.id, lead_email: a.lead_email, monto: d.monto, nota: d.nota, comprobante_url: d.comprobante_url, aprobado: d.aprobado === true, detalle: d, ts: a.ts, vendedor: a.vendedor };
+      })
+      .filter(p => !p.aprobado && p.comprobante_url);
+
+    if (!pendientes.length) {
+      pendBody.innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">✅</span>Sin apartados pendientes de aprobación.</div></td></tr>';
+      return;
+    }
+
+    // Store in global cache keyed by id so onclick can look up safely
+    pendientes.forEach(p => { _pendientesCache[p.id] = p; });
+
+    pendBody.innerHTML = pendientes.map((p, i) => {
+      const nombre = nombresMap[(p.lead_email||'').toLowerCase()] || p.lead_email || '—';
+      return `<tr>
+        <td style="color:var(--muted)">${i+1}</td>
+        <td class="bold">${esc(nombre)}</td>
+        <td style="font-size:0.82rem;color:var(--text)">${esc(p.vendedor||'—')}</td>
+        <td style="color:#60a5fa;font-weight:700">${fmtMXN(p.monto)}</td>
+        <td style="font-size:0.78rem;color:var(--muted)">${esc(p.nota||'—')}</td>
+        <td><a href="${esc(p.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.82rem;">Ver →</a></td>
+        <td style="font-size:0.78rem;color:var(--muted)">${fmtDate(p.ts)}</td>
+        <td style="display:flex;gap:6px;align-items:center;">
+          <button onclick="aprobarPagoCached('${esc(p.id)}')"
+            style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.35);border-radius:5px;color:#22c55e;font-size:0.78rem;padding:4px 12px;cursor:pointer;font-weight:600;"
+            onmouseover="this.style.background='rgba(34,197,94,0.22)'" onmouseout="this.style.background='rgba(34,197,94,0.12)'">
+            ✓ Aprobar
+          </button>
+          <button onclick="rechazarPago('${esc(p.id)}','${esc(p.lead_email||'')}')"
+            style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);border-radius:5px;color:#ef4444;font-size:0.78rem;padding:4px 12px;cursor:pointer;font-weight:600;"
+            onmouseover="this.style.background='rgba(239,68,68,0.22)'" onmouseout="this.style.background='rgba(239,68,68,0.12)'">
+            ✗ Rechazar
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    if (pendBody) pendBody.innerHTML = '<tr><td colspan="8"><div class="empty">Error al cargar.</div></td></tr>';
+  }
+}
+
+function aprobarPagoCached(id) {
+  const p = _pendientesCache[id];
+  if (!p) return;
+  aprobarPago(id, p.detalle);
+}
+
+async function loadApartadosAprobados() {
+  const body = document.getElementById('apartadosAprobBody');
+  if (!body) return;
+  body.innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+  try {
+    const [pagosRows, regsRows] = await Promise.all([
+      fetchSB('/rest/v1/vendedor_actividad?accion=eq.pago_parcial&select=id,lead_email,detalle,ts,vendedor&order=ts.desc'),
+      fetchSB('/rest/v1/clase_viral_registros?select=email,nombre'),
+    ]);
+
+    const nombresMap = {};
+    (regsRows||[]).forEach(r => { if (r.email) nombresMap[r.email.toLowerCase()] = r.nombre || ''; });
+
+    const fmtMXN = n => '$' + Number(n||0).toLocaleString('es-MX', {maximumFractionDigits:0});
+    const fmtDate = d => d ? new Date(d).toLocaleDateString('es-MX') : '—';
+
+    const aprobados = (pagosRows||[])
+      .map(a => {
+        let d = {};
+        try { d = typeof a.detalle === 'string' ? JSON.parse(a.detalle) : (a.detalle || {}); } catch(e) {}
+        return { id: a.id, lead_email: a.lead_email, monto: d.monto, nota: d.nota, comprobante_url: d.comprobante_url, aprobado: d.aprobado === true, ts: a.ts, vendedor: a.vendedor };
+      })
+      .filter(p => p.aprobado);
+
+    if (!aprobados.length) {
+      body.innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">📭</span>Sin seguimientos aprobados aún.</div></td></tr>';
+      return;
+    }
+
+    body.innerHTML = aprobados.map((p, i) => {
+      const nombre = nombresMap[(p.lead_email||'').toLowerCase()] || p.lead_email || '—';
+      const comp = p.comprobante_url
+        ? `<a href="${esc(p.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.82rem;">Ver →</a>`
+        : '<span style="color:var(--muted);font-size:0.78rem;">—</span>';
+      return `<tr>
+        <td style="color:var(--muted)">${i+1}</td>
+        <td class="bold">${esc(nombre)}</td>
+        <td style="font-size:0.82rem;color:var(--text)">${esc(p.vendedor||'—')}</td>
+        <td style="color:#22c55e;font-weight:700">${fmtMXN(p.monto)}</td>
+        <td style="font-size:0.78rem;color:var(--muted)">${esc(p.nota||'—')}</td>
+        <td>${comp}</td>
+        <td style="font-size:0.78rem;color:var(--muted)">${fmtDate(p.ts)}</td>
+        <td>
+          <button onclick="eliminarPagoAprobado('${esc(p.id)}','${esc(p.lead_email||'')}')"
+            style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:5px;color:#ef4444;font-size:0.78rem;padding:4px 10px;cursor:pointer;"
+            onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">
+            🗑 Eliminar
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    body.innerHTML = '<tr><td colspan="8"><div class="empty">Error al cargar.</div></td></tr>';
+  }
+}
+
+async function eliminarPagoAprobado(id, email) {
+  if (!confirm('¿Eliminar este pago aprobado?\nSe quitará de la facturación.')) return;
+  try {
+    await fetchSB(`/rest/v1/vendedor_actividad?id=eq.${encodeURIComponent(id)}`, {
+      method: 'DELETE', rawResponse: true, headers: { 'Prefer': 'return=minimal' }
+    });
+    await renderOverview();
+    loadApartadosAprobados();
+  } catch(e) {
+    alert('Error al eliminar: ' + e.message);
+  }
+}
+
+async function loadVentasStats() {
+  try {
+    const [leads, leadsEstado, ventas] = await Promise.all([
+      fetchSB('/rest/v1/clase_viral_registros?select=email,categoria'),
+      fetchSB('/rest/v1/lead_estados?select=estado,vendedor,registro_email'),
+      fetchSB('/rest/v1/ventas?select=monto,aprobado,tipo,registro_email&aprobado=eq.true'),
+    ]);
 
     const seguimientos = (leadsEstado||[]).filter(r => r.estado === 'seguimiento').length;
     document.getElementById('vs-seguimientos').textContent = seguimientos || '—';
@@ -2191,12 +2664,25 @@ async function loadVentasStats() {
     }, 0);
     document.getElementById('vs-comisiones').textContent = '$' + totalComisiones.toLocaleString('es-MX', {maximumFractionDigits:0});
 
-    // Top nicho
+    // Top nicho — basado en compradores (ventas aprobadas cruzadas con su categoría)
+    const emailCategoria = {};
+    (leads||[]).forEach(r => { if (r.email && r.categoria) emailCategoria[r.email.toLowerCase()] = r.categoria; });
     const catCount = {};
-    (leadsEstado||[]).forEach(r => { if (r.categoria) catCount[r.categoria] = (catCount[r.categoria]||0)+1; });
-    (leads||[]).forEach(r => { if (r.categoria) catCount[r.categoria] = (catCount[r.categoria]||0)+1; });
+    (ventas||[]).forEach(v => {
+      const cat = emailCategoria[(v.registro_email||'').toLowerCase()];
+      if (cat) catCount[cat] = (catCount[cat]||0) + 1;
+    });
     const topCat = Object.entries(catCount).sort((a,b)=>b[1]-a[1])[0];
     document.getElementById('vs-nicho').textContent = topCat ? topCat[0] : '—';
+
+    // Top nicho confirmados — leads con estado 'confirmado' cruzados con su categoría
+    const catCountConf = {};
+    (leadsEstado||[]).filter(e => e.estado === 'confirmado').forEach(e => {
+      const cat = emailCategoria[(e.registro_email||'').toLowerCase()];
+      if (cat) catCountConf[cat] = (catCountConf[cat]||0) + 1;
+    });
+    const topCatConf = Object.entries(catCountConf).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('vs-nicho-conf').textContent = topCatConf ? topCatConf[0] : '—';
   } catch(e) {
     console.error('loadVentasStats:', e);
   }
@@ -2215,88 +2701,135 @@ async function loadVentasLeads() {
     (regs || []).forEach(r => { if (r.email) ventasLeadsNombres[r.email.toLowerCase()] = { nombre: r.nombre || r.email, phone: r.phone || '' }; });
     renderVentasLeads(rows || []);
   } catch(e) {
-    document.getElementById('ventasLeadsBody').innerHTML = '<tr><td colspan="8"><div class="empty">Error cargando.</div></td></tr>';
+    document.getElementById('ventasLeadsBody').innerHTML = '<div class="empty">Error cargando leads.</div>';
   }
+}
+
+const VENTAS_LEADS_GRUPOS = [
+  { key: 'compro_evento',        label: 'Compró en evento',        color: '#22c55e' },
+  { key: 'seguimiento_exitoso',  label: 'Seguimiento exitoso',     color: '#a3e635' },
+  { key: 'seguimiento',          label: 'Seguimiento',             color: '#f97316' },
+  { key: 'asistio',              label: 'Asistió',                 color: '#a855f7' },
+  { key: 'confirmado',           label: 'Confirmado',              color: '#3b82f6' },
+  { key: 'pendiente_confirmar',  label: 'Pendiente por confirmar', color: '#eab308' },
+  { key: 'por_confirmar',        label: 'Por confirmar',           color: '#6b7280' },
+  { key: 'no_asistio',           label: 'No asistió',              color: '#9ca3af' },
+  { key: 'no_asistira',          label: 'No asistirá',             color: '#6b7280' },
+  { key: 'numero_invalido',      label: 'Número inválido',         color: '#ef4444' },
+  { key: 'interesado',           label: '🔥 Interesado',           color: '#f97316' },
+];
+
+function toggleVentasSection(key) {
+  const body = document.getElementById('vl-body-' + key);
+  const chev = document.getElementById('vl-chev-' + key);
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  if (chev) chev.textContent = open ? '▶' : '▼';
 }
 
 let ventasLeadsCache = [];
 function renderVentasLeads(data) {
   if (data) ventasLeadsCache = data;
-  const filterEstado = document.getElementById('ventasFilterEstado')?.value || '';
   const search = (document.getElementById('ventasSearch')?.value || '').toLowerCase();
   let rows = ventasLeadsCache;
-  if (filterEstado) rows = rows.filter(r => r.estado === filterEstado);
   if (search) rows = rows.filter(r => {
     const info = ventasLeadsNombres[(r.registro_email||'').toLowerCase()] || {};
     return (r.registro_email+r.vendedor+(info.nombre||'')+(info.phone||'')+'').toLowerCase().includes(search);
   });
 
+  const container = document.getElementById('ventasLeadsBody');
   if (!rows.length) {
-    document.getElementById('ventasLeadsBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">📭</span>Sin resultados.</div></td></tr>';
+    container.innerHTML = '<div class="empty"><span class="empty-icon">📭</span>Sin resultados.</div>';
     return;
   }
-  const ESTADO_COLOR = { confirmado:'#3b82f6', asistio:'#22c55e', seguimiento:'#f97316', interesado:'#a855f7', 'no-confirmado':'#ef4444' };
-  const fmt = d => d ? new Date(d).toLocaleDateString('es-MX') : '—';
-  const rowHtml = (r, i) => {
-    const info = ventasLeadsNombres[(r.registro_email||'').toLowerCase()] || {};
-    const nombre = info.nombre || r.registro_email || '—';
-    const phone = info.phone || '';
-    const color = ESTADO_COLOR[r.estado] || '#aaa';
-    return `<tr>
-      <td style="color:var(--muted)">${i+1}</td>
-      <td class="bold">${esc(nombre)}</td>
-      <td style="font-size:0.8rem;color:var(--text)">${esc(r.registro_email||'')}</td>
-      <td style="font-size:0.8rem;color:var(--text)">${esc(phone)}</td>
-      <td><span style="padding:2px 8px;border-radius:10px;font-size:0.72rem;font-weight:700;background:${color}22;color:${color}">${r.estado||'—'}</span></td>
-      <td style="font-size:0.82rem;color:var(--text)">${esc(r.asignado_a||r.vendedor||'—')}</td>
-      <td style="font-size:0.78rem;color:var(--muted)">${fmt(r.updated_at)}</td>
-      <td>
-        <button onclick="deleteVentasLead('${esc(r.registro_email)}')" title="Eliminar lead"
-          style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:4px;
-          color:#ef4444;font-size:0.75rem;padding:3px 8px;cursor:pointer;"
-          onmouseover="this.style.background='rgba(239,68,68,0.18)'"
-          onmouseout="this.style.background='rgba(239,68,68,0.08)'">🗑 Eliminar</button>
-      </td>
-    </tr>`;
-  };
 
-  // If no filter selected, show pipeline grouped by estado
-  if (!filterEstado) {
-    const GROUPS = [
-      { key: 'interesado',    label: '🔥 Interesados',    color: '#f97316' },
-      { key: 'seguimiento',   label: '📞 En Seguimiento', color: '#60a5fa' },
-      { key: 'confirmado',    label: '✅ Confirmados',     color: '#3b82f6' },
-      { key: 'asistio',       label: '🎯 Asistieron',     color: '#22c55e' },
-    ];
-    const thead = '<thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Estado</th><th>Vendedor</th><th>Actualizado</th><th>Acción</th></tr></thead>';
-    const grouped = {};
-    rows.forEach(r => { const k = r.estado||'otro'; (grouped[k]=grouped[k]||[]).push(r); });
-    const sections = GROUPS.map(g => {
-      const grp = grouped[g.key] || [];
-      if (!grp.length) return '';
-      return `<tr><td colspan="8" style="padding:0;border:none;">
-        <div style="padding:8px 14px 4px;background:${g.color}10;border-top:1px solid ${g.color}30;font-size:0.73rem;font-weight:700;color:${g.color};letter-spacing:0.06em;">
-          ${g.label} <span style="font-weight:400;color:var(--muted);margin-left:6px;">${grp.length} lead${grp.length>1?'s':''}</span>
-        </div>
-      </td></tr>` + grp.map((r,i) => rowHtml(r,i)).join('');
+  const fmt = d => d ? new Date(d).toLocaleDateString('es-MX') : '—';
+  const thead = `<thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Vendedor</th><th>Actualizado</th><th>Acción</th></tr></thead>`;
+  const sectionStyle = `border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;`;
+  const hdrStyle = `display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;user-select:none;background:rgba(255,255,255,0.02);`;
+  const badgeStyle = `margin-left:auto;background:rgba(255,255,255,0.08);color:var(--text);font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:20px;`;
+
+  // Group by estado
+  const groups = {};
+  rows.forEach(r => { const k = r.estado || 'por_confirmar'; (groups[k] = groups[k] || []).push(r); });
+
+  container.innerHTML = VENTAS_LEADS_GRUPOS.map(({ key, label, color }) => {
+    const grp = groups[key];
+    if (!grp || !grp.length) return '';
+    const tableRows = grp.map((r, i) => {
+      const info = ventasLeadsNombres[(r.registro_email||'').toLowerCase()] || {};
+      const nombre = esc(info.nombre || r.registro_email || '—');
+      const phone = esc(info.phone || '—');
+      return `<tr>
+        <td style="color:var(--muted)">${i+1}</td>
+        <td class="bold">${nombre}</td>
+        <td style="font-size:0.8rem;color:var(--muted)">${esc(r.registro_email||'')}</td>
+        <td style="font-size:0.8rem">${phone}</td>
+        <td style="font-size:0.82rem;color:var(--muted)">${esc(r.asignado_a||r.vendedor||'—')}</td>
+        <td style="font-size:0.78rem;color:var(--muted)">${fmt(r.updated_at)}</td>
+        <td><button onclick="deleteVentasLead('${esc(r.registro_email)}')"
+          style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:4px;color:#ef4444;font-size:0.75rem;padding:3px 8px;cursor:pointer;"
+          onmouseover="this.style.background='rgba(239,68,68,0.18)'" onmouseout="this.style.background='rgba(239,68,68,0.08)'">🗑</button></td>
+      </tr>`;
     }).join('');
-    document.getElementById('ventasLeadsBody').innerHTML = `<tr style="display:none"><td></td></tr>${sections}`;
-  } else {
-    document.getElementById('ventasLeadsBody').innerHTML = rows.map((r,i) => rowHtml(r,i)).join('');
-  }
+    return `<div style="${sectionStyle}">
+      <div style="${hdrStyle}" onclick="toggleVentasSection('${key}')">
+        <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
+        <span style="font-weight:700;font-size:0.88rem;color:${color}">${label}</span>
+        <span style="${badgeStyle}">${grp.length}</span>
+        <span id="vl-chev-${key}" style="font-size:0.8rem;color:var(--muted);">▼</span>
+      </div>
+      <div id="vl-body-${key}">
+        <div class="table-wrap"><table>${thead}<tbody>${tableRows}</tbody></table></div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 async function aprobarPago(id, detalleActual) {
   if (!confirm('¿Confirmar que el pago cayó a la cuenta? Esto lo sumará a la facturación.')) return;
-  const nuevoDetalle = { ...(typeof detalleActual === 'string' ? JSON.parse(detalleActual) : detalleActual), aprobado: true };
-  const res = await fetchSB(`/rest/v1/vendedor_actividad?id=eq.${encodeURIComponent(id)}`, {
-    method: 'PATCH',
-    rawResponse: true,
-    headers: { 'Prefer': 'return=minimal' },
-    body: JSON.stringify({ detalle: nuevoDetalle })
-  });
-  // Reload overview to reflect the approved payment
-  renderOverview();
+  try {
+    const detalleObj = typeof detalleActual === 'string' ? JSON.parse(detalleActual) : (detalleActual || {});
+    const nuevoDetalle = { ...detalleObj, aprobado: true };
+    const res = await fetchSB(`/rest/v1/vendedor_actividad?id=eq.${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      rawResponse: true,
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ detalle: nuevoDetalle })
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => res.status);
+      alert('Error al aprobar el pago: ' + errText);
+      return;
+    }
+    // Reload overview and tables to reflect the approved payment
+    await renderOverview();
+    loadApartadosPendientes();
+    loadApartadosAprobados();
+  } catch(e) {
+    alert('Error al aprobar: ' + e.message);
+  }
+}
+
+async function rechazarPago(id, email) {
+  if (!confirm('¿Rechazar este pago?\nSe eliminará el registro del pago y el lead saldrá de seguimiento.')) return;
+  try {
+    await Promise.all([
+      // Delete the pago_parcial record
+      fetchSB(`/rest/v1/vendedor_actividad?id=eq.${encodeURIComponent(id)}`, {
+        method: 'DELETE', rawResponse: true, headers: { 'Prefer': 'return=minimal' }
+      }),
+      // Remove lead from seguimiento (delete lead_estado row so it goes back to interesado)
+      fetchSB(`/rest/v1/lead_estados?registro_email=eq.${encodeURIComponent(email)}&estado=eq.seguimiento`, {
+        method: 'DELETE', rawResponse: true, headers: { 'Prefer': 'return=minimal' }
+      }),
+    ]);
+    loadApartadosPendientes();
+    renderOverview();
+  } catch(e) {
+    alert('Error al rechazar: ' + e.message);
+  }
 }
 
 async function deleteVentasLead(email) {
@@ -2342,11 +2875,7 @@ async function loadInteresados() {
     const hoyCount = interesadosCache.filter(r => new Date(r.created_at) >= hoy).length;
     const semCount = interesadosCache.filter(r => new Date(r.created_at) >= semana).length;
     const elTotal = document.getElementById('ov-int-total');
-    const elHoy   = document.getElementById('ov-int-hoy');
-    const elSem   = document.getElementById('ov-int-semana');
     if (elTotal) elTotal.textContent = total;
-    if (elHoy)   elHoy.textContent   = hoyCount;
-    if (elSem)   elSem.textContent   = semCount;
   } catch(e) {
     if (tbody) tbody.innerHTML = '<tr><td colspan="5"><div class="empty">Error cargando interesados.</div></td></tr>';
   }
@@ -3485,6 +4014,135 @@ let vendedoresList = [];
 let allLeadsAdmin = [];
 let estadosAdmin = {};
 
+/* ──────────────────────────────────────
+   COMISIONES
+────────────────────────────────────── */
+async function loadComisiones() {
+  const porPagarEl = document.getElementById('comisionesPorPagarBody');
+  const pagadasEl  = document.getElementById('comisionesPagadasBody');
+  if (porPagarEl) porPagarEl.innerHTML = '<tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+  if (pagadasEl)  pagadasEl.innerHTML  = '<tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+  try {
+    const ventas = await fetchSB('/rest/v1/ventas?select=id,vendedor,monto,tipo,comision_porcentaje,comision_pagada,comision_pagada_at&aprobado=eq.true&order=created_at.desc');
+    if (!ventas || !ventas.length) {
+      if (porPagarEl) porPagarEl.innerHTML = '<tr><td colspan="5"><div class="empty">Sin ventas aprobadas aún.</div></td></tr>';
+      if (pagadasEl)  pagadasEl.innerHTML  = '<tr><td colspan="5"><div class="empty">Sin comisiones pagadas aún.</div></td></tr>';
+      return;
+    }
+
+    const fmtMXN = n => '$' + Number(n||0).toLocaleString('es-MX', {maximumFractionDigits:0});
+    const fmtDate = d => d ? new Date(d).toLocaleDateString('es-MX') : '—';
+    const getRate = v => (v.comision_porcentaje != null ? v.comision_porcentaje : (v.tipo === 'compro_evento' ? 5 : 10)) / 100;
+
+    // Group by vendedor, then split por pagar vs pagadas
+    const grupos = {};
+    ventas.forEach(v => {
+      const vend = v.vendedor || 'Sin vendedor';
+      if (!grupos[vend]) grupos[vend] = { porPagar: [], pagadas: [] };
+      if (v.comision_pagada) grupos[vend].pagadas.push(v);
+      else grupos[vend].porPagar.push(v);
+    });
+
+    // Render "Por pagar"
+    const ppRows = Object.entries(grupos)
+      .map(([vend, g]) => {
+        if (!g.porPagar.length) return '';
+        const totalMonto = g.porPagar.reduce((s,v) => s + Number(v.monto||0), 0);
+        const totalCom   = g.porPagar.reduce((s,v) => s + Number(v.monto||0) * getRate(v), 0);
+        const ids = g.porPagar.map(v => v.id).join(',');
+        return `<tr>
+          <td class="bold">${esc(vend)}</td>
+          <td style="color:var(--muted)">${g.porPagar.length} venta${g.porPagar.length>1?'s':''}</td>
+          <td style="color:var(--text)">${fmtMXN(totalMonto)}</td>
+          <td style="color:#fbbf24;font-weight:700;font-size:1rem">${fmtMXN(totalCom)}</td>
+          <td>
+            <button onclick="pagarComision('${esc(vend)}','${esc(ids)}')"
+              style="background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.4);border-radius:5px;color:#fbbf24;font-size:0.78rem;padding:5px 14px;cursor:pointer;font-weight:700;"
+              onmouseover="this.style.background='rgba(251,191,36,0.22)'" onmouseout="this.style.background='rgba(251,191,36,0.12)'">
+              ✓ Pagado
+            </button>
+          </td>
+        </tr>`;
+      }).filter(Boolean).join('');
+
+    if (porPagarEl) porPagarEl.innerHTML = ppRows || '<tr><td colspan="5"><div class="empty"><span class="empty-icon">✅</span>Todas las comisiones están al día.</div></td></tr>';
+
+    // Render "Pagadas" — group paid ventas by vendedor + fecha (same pagada_at day = one row)
+    const pagGroups = {};
+    ventas.filter(v => v.comision_pagada).forEach(v => {
+      const vend = v.vendedor || 'Sin vendedor';
+      const day  = (v.comision_pagada_at || '').split('T')[0] || 'sin-fecha';
+      const key  = vend + '|' + day;
+      if (!pagGroups[key]) pagGroups[key] = { vend, day, ventas: [] };
+      pagGroups[key].ventas.push(v);
+    });
+
+    const pagRows = Object.values(pagGroups)
+      .sort((a,b) => b.day.localeCompare(a.day))
+      .map(g => {
+        const totalMonto = g.ventas.reduce((s,v) => s + Number(v.monto||0), 0);
+        const totalCom   = g.ventas.reduce((s,v) => s + Number(v.monto||0) * getRate(v), 0);
+        const ids = g.ventas.map(v => v.id).join(',');
+        return `<tr>
+          <td class="bold">${esc(g.vend)}</td>
+          <td style="color:var(--muted)">${g.ventas.length} venta${g.ventas.length>1?'s':''}</td>
+          <td style="color:var(--text)">${fmtMXN(totalMonto)}</td>
+          <td style="color:#22c55e;font-weight:700">${fmtMXN(totalCom)}</td>
+          <td style="color:var(--muted);font-size:0.82rem">${fmtDate(g.day)}</td>
+          <td>
+            <button onclick="revertirComision('${esc(g.vend)}','${esc(ids)}')"
+              style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:5px;color:#ef4444;font-size:0.75rem;padding:4px 10px;cursor:pointer;"
+              onmouseover="this.style.background='rgba(239,68,68,0.18)'" onmouseout="this.style.background='rgba(239,68,68,0.08)'"
+              title="Regresar a Por pagar">
+              ↩ Revertir
+            </button>
+          </td>
+        </tr>`;
+      }).join('');
+
+    if (pagadasEl) pagadasEl.innerHTML = pagRows || '<tr><td colspan="5"><div class="empty"><span class="empty-icon">📭</span>Sin comisiones pagadas aún.</div></td></tr>';
+
+  } catch(e) {
+    if (porPagarEl) porPagarEl.innerHTML = '<tr><td colspan="5"><div class="empty">Error al cargar.</div></td></tr>';
+    if (pagadasEl)  pagadasEl.innerHTML  = '<tr><td colspan="5"><div class="empty">Error al cargar.</div></td></tr>';
+  }
+}
+
+async function pagarComision(vendedor, idsStr) {
+  const ids = idsStr.split(',').filter(Boolean);
+  if (!ids.length) return;
+  if (!confirm(`¿Marcar comisión de ${vendedor} como pagada?\nEsto registrará la fecha de pago de hoy.`)) return;
+  try {
+    const now = new Date().toISOString();
+    await fetchSB(`/rest/v1/ventas?id=in.(${ids.join(',')})`, {
+      method: 'PATCH',
+      rawResponse: true,
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ comision_pagada: true, comision_pagada_at: now })
+    });
+    loadComisiones();
+  } catch(e) {
+    alert('Error al registrar pago: ' + e.message);
+  }
+}
+
+async function revertirComision(vendedor, idsStr) {
+  const ids = idsStr.split(',').filter(Boolean);
+  if (!ids.length) return;
+  if (!confirm(`¿Revertir el pago de comisión de ${vendedor}?\nVolverá a aparecer en "Por pagar".`)) return;
+  try {
+    await fetchSB(`/rest/v1/ventas?id=in.(${ids.join(',')})`, {
+      method: 'PATCH',
+      rawResponse: true,
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ comision_pagada: false, comision_pagada_at: null })
+    });
+    loadComisiones();
+  } catch(e) {
+    alert('Error al revertir: ' + e.message);
+  }
+}
+
 async function loadVendedoresAdmin() {
   document.getElementById('vendBody').innerHTML = '<tr><td colspan="9"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
 
@@ -3666,8 +4324,8 @@ function renderVendedorReporte(actividad, vends) {
       </thead>
       <tbody>
         ${rows.map(v => {
-          const mins = Math.round(v.tiempoMin);
-          const tiempoStr = mins >= 60 ? `${Math.floor(mins/60)}h ${mins%60}m` : `${mins}m`;
+          const mins = Math.max(0, Math.round(v.tiempoMin));
+          const tiempoStr = mins >= 60 ? `${Math.floor(mins/60)}h ${mins%60}m` : mins > 0 ? `${mins}m` : '—';
           const contactos = v.waClicks + v.copies;
           const efic = contactos > 0 ? Math.round(v.confirmaciones / contactos * 100) : 0;
           const eficColor = efic >= 50 ? 'var(--green)' : efic >= 20 ? '#eab308' : 'var(--red)';
@@ -3688,6 +4346,14 @@ function renderVendedorReporte(actividad, vends) {
     </table>
   </div>
   <div style="font-size:0.72rem;color:var(--muted);margin-top:10px;">Eficiencia = confirmaciones ÷ (WA abiertos + números copiados). ⚠️ Solo mira = tuvo sesiones pero no hizo ninguna acción real.</div>`;
+}
+
+function toggleAssignTable() {
+  const body = document.getElementById('assignTableBody');
+  const chevron = document.getElementById('assignTableChevron');
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  chevron.style.transform = open ? 'rotate(180deg)' : '';
 }
 
 function renderAssignTable() {
@@ -3968,7 +4634,7 @@ async function refreshData() {
   const sbRegs = await fetchFromSupabase();
   if (sbRegs.length > 0) {
     localStorage.setItem('registrations', JSON.stringify(sbRegs));
-    renderOverview(); loadBehaviorData().then(() => renderRegistros()); renderABTest();
+    renderOverview(); loadBehaviorData().then(() => renderRegistros()); renderABTest(); loadRegistrosTab();
     showAlert('configAlert', '✅ Datos actualizados desde Supabase (' + sbRegs.length + ' registros).', 'success');
   } else {
     showAlert('configAlert', 'ℹ️ Sin registros en Supabase aún.', 'error');
