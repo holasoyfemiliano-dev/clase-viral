@@ -1364,25 +1364,29 @@ const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsIn
 
 async function saveToSupabase(name, email, phone, variant) {
   try {
-    // Prevent duplicate registrations by same email
-    const check = await fetch(SB_URL + `/rest/v1/clase_viral_registros?email=eq.${encodeURIComponent(email)}&select=id`, {
-      headers: { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON }
-    });
-    if (check.ok) {
-      const existing = await check.json();
-      if (existing.length > 0) return; // Already registered, skip duplicate
-    }
-    await fetch(SB_URL + '/rest/v1/clase_viral_registros', {
+    // ON CONFLICT DO NOTHING on email — requires unique constraint in DB
+    // This is the cross-device safety net (localStorage handles same-device)
+    await fetch(SB_URL + '/rest/v1/clase_viral_registros?on_conflict=email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': SB_ANON,
         'Authorization': 'Bearer ' + SB_ANON,
-        'Prefer': 'return=minimal'
+        'Prefer': 'resolution=ignore-duplicates,return=minimal'
       },
       body: JSON.stringify({ nombre: name, email, phone, variante: variant, session_id: SESSION_ID })
     });
   } catch(e) { console.warn('Supabase save failed', e); }
+}
+
+// Check if email or phone already registered (localStorage, same device)
+function isAlreadyRegistered(email, phone) {
+  const regs = JSON.parse(localStorage.getItem('registrations') || '[]');
+  const emailLow = email.toLowerCase();
+  return regs.some(r =>
+    (r.email && r.email.toLowerCase() === emailLow) ||
+    (r.phone && phone && r.phone === phone)
+  );
 }
 
 function trackConversion(v, name, email, phone) {
@@ -1520,7 +1524,18 @@ document.getElementById('regForm').addEventListener('submit', function(e) {
   const codeDigits = code.replace(/^\+/, '');
   if (phoneRaw.startsWith(codeDigits)) phoneRaw = phoneRaw.slice(codeDigits.length);
   const phone = code + phoneRaw;
-  const v     = getVariant();
+  const v = getVariant();
+
+  // Duplicate check (same device)
+  if (isAlreadyRegistered(email, phone)) {
+    const btn = document.querySelector('#regForm .btn-gold');
+    const orig = btn.textContent;
+    btn.textContent = '✅ ¡Ya estás registrado! Entrando al grupo…';
+    btn.disabled = true;
+    setTimeout(() => { window.location.href = cfg().whatsappLink; }, 1500);
+    return;
+  }
+
   _bhv.email = email; _bhv.registered = true;
   trackConversion(v, name, email, phone);
   saveBehavior();
