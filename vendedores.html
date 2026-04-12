@@ -921,22 +921,41 @@ async function startApp() {
   loadVendInteresados();
 }
 
-function endSession() {
+let _sessionEndTimer = null; // debounce timer for session_end
+
+function endSession(immediate = false) {
   if (!currentVendedor || !sessionStartTime) return;
   const mins = Math.round((Date.now() - sessionStartTime) / 60000);
   logActivity('session_end', null, `${mins} minutos`);
-  sessionStartTime = null; // prevent double-logging
+  sessionStartTime = null;
 }
 
 // Auto session_end on tab hide / close (works on mobile Safari too)
+// Debounced 30s: WA/app clicks hide the tab briefly — we ignore those
+// Only end session if tab stays hidden > 30s (real background/close)
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
-    endSession();
-  } else if (document.visibilityState === 'visible' && currentVendedor && !sessionStartTime) {
-    // Tab came back to foreground — start new session
-    sessionStartTime = Date.now();
-    logActivity('session_start');
+    _sessionEndTimer = setTimeout(() => {
+      endSession();
+      _sessionEndTimer = null;
+    }, 30000);
+  } else if (document.visibilityState === 'visible') {
+    if (_sessionEndTimer) {
+      // Came back within 30s (e.g. opened WA, returned) — keep session alive
+      clearTimeout(_sessionEndTimer);
+      _sessionEndTimer = null;
+    } else if (currentVendedor && !sessionStartTime) {
+      // Was away > 30s, old session ended — start fresh
+      sessionStartTime = Date.now();
+      logActivity('session_start');
+    }
   }
+});
+
+// On actual page close, end immediately (no debounce)
+window.addEventListener('beforeunload', () => {
+  if (_sessionEndTimer) { clearTimeout(_sessionEndTimer); _sessionEndTimer = null; }
+  endSession();
 });
 
 /* ─────────────────────────────────────
@@ -1200,7 +1219,9 @@ function closePrimerPagoModal() {
   _ppEmail = null;
 }
 
+let _savingPrimerPago = false;
 async function savePrimerPago() {
+  if (_savingPrimerPago) return;
   const email = _ppEmail;
   if (!email) return;
   const monto = parseFloat(document.getElementById('ppMonto').value);
@@ -1209,30 +1230,40 @@ async function savePrimerPago() {
   const file = document.getElementById('ppFile').files?.[0] || null;
   if (!file) { alert('El comprobante es obligatorio para registrar el pago.'); return; }
 
-  // Upload comprobante
-  const comprobante_url = await uploadApartado(file, email);
-  if (!comprobante_url) { alert('Error al subir el comprobante. Intenta de nuevo.'); return; }
+  _savingPrimerPago = true;
+  const btn = document.querySelector('#primerPagoModal .btn-gold');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
+  try {
+    // Upload comprobante
+    const comprobante_url = await uploadApartado(file, email);
+    if (!comprobante_url) { alert('Error al subir el comprobante. Intenta de nuevo.'); return; }
 
-  await logActivity('pago_parcial', email, JSON.stringify({ monto, nota, comprobante_url, aprobado: false }));
+    await logActivity('pago_parcial', email, JSON.stringify({ monto, nota, comprobante_url, aprobado: false }));
 
-  if (!pagosParciales[email]) pagosParciales[email] = [];
-  pagosParciales[email].push({ monto, nota, comprobante_url, aprobado: false, ts: new Date().toISOString() });
+    if (!pagosParciales[email]) pagosParciales[email] = [];
+    pagosParciales[email].push({ monto, nota, comprobante_url, aprobado: false, ts: new Date().toISOString() });
 
-  // Move to seguimiento
-  const estadoActual = (estadosMap[email] || {}).estado;
-  await fetch(SB_URL + '/rest/v1/lead_estados?on_conflict=registro_email', {
-    method: 'POST',
-    headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-    body: JSON.stringify({ registro_email: email, vendedor: currentVendedor, estado: 'seguimiento', updated_at: new Date().toISOString() })
-  });
-  estadosMap[email] = { ...(estadosMap[email] || {}), registro_email: email, estado: 'seguimiento', vendedor: currentVendedor };
-  logActivity('estado_change', email, `${estadoActual} → seguimiento`);
+    // Move to seguimiento
+    const estadoActual = (estadosMap[email] || {}).estado;
+    await fetch(SB_URL + '/rest/v1/lead_estados?on_conflict=registro_email', {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ registro_email: email, vendedor: currentVendedor, estado: 'seguimiento', updated_at: new Date().toISOString() })
+    });
+    estadosMap[email] = { ...(estadosMap[email] || {}), registro_email: email, estado: 'seguimiento', vendedor: currentVendedor };
+    logActivity('estado_change', email, `${estadoActual} → seguimiento`);
 
-  closePrimerPagoModal();
-  renderLeads();
+    closePrimerPagoModal();
+    renderLeads();
+  } finally {
+    _savingPrimerPago = false;
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar y mover a Seguimiento'; }
+  }
 }
 
+const _savingPago = {};
 async function savePagoParcial(email, emailId) {
+  if (_savingPago[emailId]) return;
   const montoEl = document.getElementById('pago-monto-' + emailId);
   const notaEl  = document.getElementById('pago-nota-'  + emailId);
   const fileEl  = document.getElementById('pago-file-'  + emailId);
@@ -1242,30 +1273,38 @@ async function savePagoParcial(email, emailId) {
   const file = fileEl?.files?.[0] || null;
   if (!file) { alert('El comprobante es obligatorio para registrar el pago.'); return; }
 
-  // Upload comprobante
-  const comprobante_url = await uploadApartado(file, email);
-  if (!comprobante_url) { alert('Error al subir el comprobante. Intenta de nuevo.'); return; }
+  _savingPago[emailId] = true;
+  const saveBtn = document.querySelector(`#add-pago-${emailId} .btn-add-pago[onclick*="savePago"]`);
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Guardando…'; }
+  try {
+    // Upload comprobante
+    const comprobante_url = await uploadApartado(file, email);
+    if (!comprobante_url) { alert('Error al subir el comprobante. Intenta de nuevo.'); return; }
 
-  await logActivity('pago_parcial', email, JSON.stringify({ monto, nota, comprobante_url, aprobado: false }));
+    await logActivity('pago_parcial', email, JSON.stringify({ monto, nota, comprobante_url, aprobado: false }));
 
-  // Update local cache
-  if (!pagosParciales[email]) pagosParciales[email] = [];
-  pagosParciales[email].push({ monto, nota, comprobante_url, aprobado: false, ts: new Date().toISOString() });
+    // Update local cache
+    if (!pagosParciales[email]) pagosParciales[email] = [];
+    pagosParciales[email].push({ monto, nota, comprobante_url, aprobado: false, ts: new Date().toISOString() });
 
-  // Si es el primer pago y el lead no está en seguimiento todavía → moverlo automáticamente
-  const estadoActual = (estadosMap[email] || {}).estado;
-  if (pagosParciales[email].length === 1 && estadoActual !== 'seguimiento') {
-    await fetch(SB_URL + '/rest/v1/lead_estados?on_conflict=registro_email', {
-      method: 'POST',
-      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ registro_email: email, vendedor: currentVendedor, estado: 'seguimiento', updated_at: new Date().toISOString() })
-    });
-    estadosMap[email] = { ...(estadosMap[email] || {}), registro_email: email, estado: 'seguimiento', vendedor: currentVendedor };
-    logActivity('estado_change', email, `${estadoActual} → seguimiento`);
+    // Si es el primer pago y el lead no está en seguimiento todavía → moverlo automáticamente
+    const estadoActual = (estadosMap[email] || {}).estado;
+    if (pagosParciales[email].length === 1 && estadoActual !== 'seguimiento') {
+      await fetch(SB_URL + '/rest/v1/lead_estados?on_conflict=registro_email', {
+        method: 'POST',
+        headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({ registro_email: email, vendedor: currentVendedor, estado: 'seguimiento', updated_at: new Date().toISOString() })
+      });
+      estadosMap[email] = { ...(estadosMap[email] || {}), registro_email: email, estado: 'seguimiento', vendedor: currentVendedor };
+      logActivity('estado_change', email, `${estadoActual} → seguimiento`);
+    }
+
+    // Re-render
+    renderLeads();
+  } finally {
+    _savingPago[emailId] = false;
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Guardar'; }
   }
-
-  // Re-render
-  renderLeads();
 }
 
 async function deletePagoParcial(id, email) {
@@ -1422,7 +1461,7 @@ function renderLeads() {
       if (ventasAprobadas.has(lead.email.toLowerCase())) bucket = 'miembros_nuevos';
       else if (estado === 'compro_evento' || estado === 'seguimiento_exitoso') bucket = 'para_aprobacion';
       else if (byEstado[estado] !== undefined) bucket = estado;
-      else bucket = 'interesado';
+      else return; // estados como 'confirmado', 'asistio', 'cancelado' no van aquí
       byEstado[bucket].push(lead);
     });
 
@@ -1470,7 +1509,7 @@ function renderLeads() {
           <span style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0;display:inline-block;"></span>
           <span class="section-title" style="color:${p.color}">${p.label}</span>
           <span style="font-size:0.72rem;color:var(--muted);margin-left:4px;">${p.sub}</span>
-          ${p.key === 'seguimiento' ? (() => { const tot = rows.reduce((s,l) => s + (pagosParciales[l.email]||[]).reduce((a,pp)=>a+Number(pp.monto||0),0), 0); return tot > 0 ? `<span style="font-size:0.78rem;color:#60a5fa;font-weight:600;margin-left:8px;">$${tot.toLocaleString('es-MX',{maximumFractionDigits:0})} cobrado</span>` : ''; })() : ''}
+          ${p.key === 'seguimiento' ? (() => { const tot = rows.reduce((s,l) => s + (pagosParciales[l.email]||[]).filter(pp=>pp.aprobado===true).reduce((a,pp)=>a+Number(pp.monto||0),0), 0); return tot > 0 ? `<span style="font-size:0.78rem;color:#60a5fa;font-weight:600;margin-left:8px;">$${tot.toLocaleString('es-MX',{maximumFractionDigits:0})} cobrado</span>` : ''; })() : ''}
           <span class="section-badge" style="margin-left:auto;">${rows.length}</span>
           <span class="section-chevron" id="chev-pipe-${p.key}">▼</span>
         </div>
@@ -1525,7 +1564,7 @@ function renderLeads() {
     }
 
     // ── Sección principal: con pagos ──
-    const totCobrado = conPagos.reduce((s,l) => s + (pagosParciales[l.email]||[]).reduce((a,p)=>a+Number(p.monto||0),0), 0);
+    const totCobrado = conPagos.reduce((s,l) => s + (pagosParciales[l.email]||[]).filter(p=>p.aprobado===true).reduce((a,p)=>a+Number(p.monto||0),0), 0);
     html += `<div class="estado-section" style="margin-bottom:10px;">
       <div class="section-hdr" onclick="toggleSection('seg-view')">
         <span style="width:8px;height:8px;border-radius:50%;background:#60a5fa;flex-shrink:0;display:inline-block;"></span>
@@ -1791,11 +1830,11 @@ function renderVentas() {
   document.getElementById('vs-pendiente').textContent = '$' + fmt(totalPendiente);
   document.getElementById('vs-count').textContent    = misVentas.length;
 
-  // ── Apartados (pagos parciales) ──
+  // ── Apartados (pagos parciales) — solo aprobados ──
   const allPagos = [];
   Object.entries(pagosParciales).forEach(([email, pagos]) => {
     const lead = allLeads.find(l => l.email === email);
-    pagos.forEach(p => allPagos.push({ email, nombre: lead?.nombre || email, monto: p.monto, nota: p.nota, ts: p.ts }));
+    pagos.filter(p => p.aprobado === true).forEach(p => allPagos.push({ email, nombre: lead?.nombre || email, monto: p.monto, nota: p.nota, comprobante_url: p.comprobante_url, ts: p.ts }));
   });
   allPagos.sort((a, b) => new Date(b.ts) - new Date(a.ts));
   const totalApartados = allPagos.reduce((s, p) => s + Number(p.monto || 0), 0);
@@ -1806,10 +1845,10 @@ function renderVentas() {
         <td class="bold">${esc(p.nombre)}</td>
         <td style="color:#60a5fa;font-weight:600">$${fmt(p.monto)}</td>
         <td style="color:var(--text);font-size:0.82rem">${esc(p.nota || '—')}</td>
-        <td>${p.comprobante_url ? `<a href="${esc(p.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.78rem">Ver →</a>` : '<span style="color:var(--red);font-size:0.78rem">Sin subir</span>'}</td>
+        <td>${p.comprobante_url ? `<a href="${esc(p.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.78rem">Ver →</a>` : '<span style="color:var(--muted);font-size:0.78rem">—</span>'}</td>
         <td style="color:var(--muted);font-size:0.8rem">${p.ts ? new Date(p.ts).toLocaleDateString('es-MX') : '—'}</td>
       </tr>`).join('')
-    : '<tr><td colspan="6"><div class="empty" style="padding:20px;"><span class="empty-icon">📞</span>Sin apartados registrados.</div></td></tr>';
+    : '<tr><td colspan="6"><div class="empty" style="padding:20px;"><span class="empty-icon">📞</span>Sin apartados aprobados aún.</div></td></tr>';
 
   if (!misVentas.length) {
     document.getElementById('ventasBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">💸</span>Aún no tienes ventas registradas.</div></td></tr>';
