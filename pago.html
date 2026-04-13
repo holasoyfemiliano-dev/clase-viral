@@ -555,11 +555,28 @@
         });
       } catch(e) { /* continuar aunque falle */ }
 
+      // Guardar datos para futuras visitas
+      localStorage.setItem('pago_datos', JSON.stringify({ nombre, email, phone }));
+
       // Ir al paso 2
       document.getElementById('step1').classList.remove('active');
       document.getElementById('step2').classList.add('active');
       window.scrollTo(0, 0);
     }
+
+    // Al cargar: si ya tiene datos guardados, saltar directo al paso 2
+    (function autoSkip() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('pago_datos') || 'null');
+        if (saved && saved.nombre && saved.email && saved.phone) {
+          document.getElementById('f-nombre').value = saved.nombre;
+          document.getElementById('f-email').value  = saved.email;
+          document.getElementById('f-phone').value  = saved.phone;
+          document.getElementById('step1').classList.remove('active');
+          document.getElementById('step2').classList.add('active');
+        }
+      } catch(e) {}
+    })();
 
     // Enter en inputs avanza al siguiente o envía
     ['f-nombre','f-email','f-phone'].forEach((id, i, arr) => {
