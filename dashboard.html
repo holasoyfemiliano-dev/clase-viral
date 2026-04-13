@@ -1476,7 +1476,9 @@ async function renderOverview() {
 
     // ── Corte de evento: desde el último jueves a las 10 PM (hora MX) ──
     function lastThursdayCut() {
-      const MX_OFFSET = -6 * 3600000;
+      // México: CDT (UTC-5) abr-oct, CST (UTC-6) nov-mar
+      const _mxM = new Date().getMonth(); // 0=ene
+      const MX_OFFSET = (_mxM >= 3 && _mxM <= 9 ? -5 : -6) * 3600000;
       const nowUtc = Date.now();
       const nowMx = new Date(nowUtc + new Date().getTimezoneOffset() * 60000 + MX_OFFSET);
       const day = nowMx.getDay(); // 0=Dom … 4=Jue
