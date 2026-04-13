@@ -38,6 +38,9 @@
     }
   ],
   "functions": {
+    "api/ghl-contact.js": {
+      "maxDuration": 10
+    },
     "api/sb-proxy.js": {
       "maxDuration": 10
     },

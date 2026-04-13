@@ -1364,8 +1364,6 @@ const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsIn
 
 async function saveToSupabase(name, email, phone, variant) {
   try {
-    // ON CONFLICT DO NOTHING on email — requires unique constraint in DB
-    // This is the cross-device safety net (localStorage handles same-device)
     await fetch(SB_URL + '/rest/v1/clase_viral_registros?on_conflict=email', {
       method: 'POST',
       headers: {
@@ -1377,6 +1375,13 @@ async function saveToSupabase(name, email, phone, variant) {
       body: JSON.stringify({ nombre: name, email, phone, variante: variant, session_id: SESSION_ID })
     });
   } catch(e) { console.warn('Supabase save failed', e); }
+
+  // Enviar también a GoHighLevel CRM (fire-and-forget)
+  fetch('/api/ghl-contact', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nombre: name, email, phone })
+  }).catch(() => {});
 }
 
 // Check if email or phone already registered (localStorage, same device)
