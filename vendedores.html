@@ -1176,8 +1176,10 @@ function fmt$(n) { return '$' + Number(n||0).toLocaleString('es-MX', {minimumFra
 function pagosRow(l) {
   const emailSafe = esc(l.email);
   const emailId   = l.email.replace(/[^a-zA-Z0-9]/g, '_');
-  const pagos     = pagosParciales[l.email] || [];
-  const total     = pagos.reduce((s, p) => s + Number(p.monto||0), 0);
+  const pagos          = pagosParciales[l.email] || [];
+  const pagosAprobados = pagos.filter(p => p.aprobado === true);
+  const total          = pagosAprobados.reduce((s, p) => s + Number(p.monto||0), 0);
+  const totalTodos     = pagos.reduce((s, p) => s + Number(p.monto||0), 0);
 
   const lista = pagos.length
     ? pagos.map(p => `<div class="pago-item" style="flex-wrap:wrap;gap:6px;">
@@ -1203,10 +1205,10 @@ function pagosRow(l) {
     <td colspan="9">
       <div class="pagos-row-inner">
         <div class="pagos-lista">${lista}</div>
-        ${pagos.length ? `<div class="pagos-total">Total recibido: ${fmt$(total)}</div>` : ''}
+        ${pagosAprobados.length ? `<div class="pagos-total">Total aprobado: ${fmt$(total)}</div>` : ''}
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <button class="btn-add-pago" onclick="toggleAddPago('${emailId}')">+ Añadir pago</button>
-          ${pagos.length ? `<button class="btn-liquidar" onclick="liquidarSeguimiento('${emailSafe}','${esc(l.nombre)}',${total})">✅ Liquidó — registrar venta</button>` : ''}
+          ${pagosAprobados.length ? `<button class="btn-liquidar" onclick="liquidarSeguimiento('${emailSafe}','${esc(l.nombre)}',${total})">✅ Liquidó — registrar venta</button>` : ''}
         </div>
         <div class="add-pago-form" id="add-pago-${emailId}" style="flex-wrap:wrap;">
           <input class="pago-input" type="number" placeholder="Monto ($)" id="pago-monto-${emailId}" style="width:120px;">
