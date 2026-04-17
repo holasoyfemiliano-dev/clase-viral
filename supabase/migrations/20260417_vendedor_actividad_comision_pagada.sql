@@ -1,0 +1,1 @@
+ALTER TABLE vendedor_actividad ADD COLUMN IF NOT EXISTS comision_pagada BOOLEAN DEFAULT FALSE;

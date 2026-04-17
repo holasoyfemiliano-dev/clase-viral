@@ -4127,7 +4127,7 @@ async function loadComisiones() {
   try {
     const [ventas, pagosActv] = await Promise.all([
       fetchSB('/rest/v1/ventas?select=id,vendedor,nombre_lead,registro_email,monto,tipo,comision_porcentaje,comision_pagada,comision_pagada_at,comision_comprobante_url&aprobado=eq.true&order=created_at.desc'),
-      fetchSB('/rest/v1/vendedor_actividad?select=lead_email,detalle,vendedor&accion=eq.pago_parcial'),
+      fetchSB('/rest/v1/vendedor_actividad?select=lead_email,detalle,vendedor&accion=eq.pago_parcial&comision_pagada=eq.false'),
     ]);
 
     const fmtMXN  = n => '$' + Number(n||0).toLocaleString('es-MX', {maximumFractionDigits:0});
@@ -4334,13 +4334,24 @@ async function confirmarPagoComision() {
       }
     }
     const now = new Date().toISOString();
-    const payload = { comision_pagada: true, comision_pagada_at: now };
-    if (comprobanteUrl) payload.comision_comprobante_url = comprobanteUrl;
-    await fetchSB(`/rest/v1/ventas?id=in.(${ids.join(',')})`, {
+    const promises = [];
+    // Marcar ventas como pagadas
+    if (ids.length) {
+      const payload = { comision_pagada: true, comision_pagada_at: now };
+      if (comprobanteUrl) payload.comision_comprobante_url = comprobanteUrl;
+      promises.push(fetchSB(`/rest/v1/ventas?id=in.(${ids.join(',')})`, {
+        method: 'PATCH', rawResponse: true,
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify(payload)
+      }));
+    }
+    // Marcar apartados del vendedor como pagados (los que aún no tienen venta completa)
+    promises.push(fetchSB(`/rest/v1/vendedor_actividad?accion=eq.pago_parcial&vendedor=eq.${encodeURIComponent(vend)}&comision_pagada=eq.false`, {
       method: 'PATCH', rawResponse: true,
       headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify(payload)
-    });
+      body: JSON.stringify({ comision_pagada: true })
+    }));
+    await Promise.all(promises);
     closeComisionModal();
     loadComisiones();
   } catch(e) {
@@ -4383,11 +4394,18 @@ async function revertirComision(vendedor, idsStr) {
   if (!ids.length) return;
   if (!confirm(`¿Revertir el pago de comisión de ${vendedor}?\nVolverá a aparecer en "Por pagar".`)) return;
   try {
-    await fetchSB(`/rest/v1/ventas?id=in.(${ids.join(',')})`, {
-      method: 'PATCH', rawResponse: true,
-      headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ comision_pagada: false, comision_pagada_at: null, comision_comprobante_url: null })
-    });
+    await Promise.all([
+      ids.length ? fetchSB(`/rest/v1/ventas?id=in.(${ids.join(',')})`, {
+        method: 'PATCH', rawResponse: true,
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ comision_pagada: false, comision_pagada_at: null, comision_comprobante_url: null })
+      }) : Promise.resolve(),
+      fetchSB(`/rest/v1/vendedor_actividad?accion=eq.pago_parcial&vendedor=eq.${encodeURIComponent(vendedor)}&comision_pagada=eq.true`, {
+        method: 'PATCH', rawResponse: true,
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ comision_pagada: false })
+      })
+    ]);
     loadComisiones();
   } catch(e) {
     alert('Error al revertir: ' + e.message);
