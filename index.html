@@ -56,6 +56,7 @@
     .bg-blobs {
       position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
     }
+    .bg-blobs *, .bg-blobs::before, .bg-blobs::after { pointer-events: none; }
     /* Blue glow — bottom center */
     .bg-blobs::before {
       content: '';
@@ -306,6 +307,11 @@
       border: 1px solid var(--border);
       border-radius: 16px; padding: 36px 32px;
       box-shadow: 0 0 60px rgba(255,229,0,0.06);
+      position: relative; z-index: 10;
+    }
+    .field input, .field select, .field textarea {
+      pointer-events: auto !important;
+      position: relative; z-index: 11;
     }
     .form-box-title {
       font-family: 'Bebas Neue', sans-serif;
@@ -732,6 +738,7 @@
     .sym-layer {
       position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
     }
+    .sym-layer * { pointer-events: none; }
     .sym {
       position: absolute;
       background-image: url('Logotipo/SVG/Simbolo%20Blanco.svg');
@@ -1324,7 +1331,7 @@
    CONFIG — sincroniza con dashboard
 ────────────────────────────────────── */
 const DEFAULTS = {
-  whatsappLink:    'https://chat.whatsapp.com/Fs0EufLqgmZI3aUiR9zM02?mode=gi_t',
+  whatsappLink:    'https://chat.whatsapp.com/EhGzQGgJJYdCOXA3duuHyj?mode=gi_t',
   socialProofBase: 847,
   variants: {
     A: 'Los <span style="color:var(--gold)">3 Hacks</span> para Crecer tu <span style="color:var(--gold)">Marca Personal</span> con Contenido Viral que <span style="color:var(--gold)">Posicione y Venda</span>',
@@ -1382,6 +1389,13 @@ async function saveToSupabase(name, email, phone, variant) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ nombre: name, email, phone })
   }).catch(() => {});
+
+  // Enviar a Google Sheets vía proxy seguro
+  fetch('/api/sheets-proxy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nombre: name, email, phone, ts: new Date().toISOString(), variante: variant })
+  }).catch(() => {});
 }
 
 // Check if email or phone already registered (localStorage, same device)
@@ -1408,15 +1422,22 @@ function trackConversion(v, name, email, phone) {
    NEXT THURSDAY 7PM MEXICO (UTC-6)
 ────────────────────────────────────── */
 function nextThursday7PM() {
-  const MX = -6 * 3600000;
+  // Offset dinámico: CDT (UTC-5) abril-oct, CST (UTC-6) nov-mar
   const now = new Date();
-  const mxNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + MX);
-  let days = (4 - mxNow.getDay() + 7) % 7;
-  if (days === 0 && mxNow.getHours() >= 19) days = 7;
+  const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+  const month = new Date(utcMs).getUTCMonth();
+  const mxOff = (month >= 3 && month <= 9) ? -5 : -6;
+  const mxNow = new Date(utcMs + mxOff * 3600000);
+
+  // Corte: miércoles a las 8PM. A partir de ese momento ya se muestra el jueves siguiente.
+  let daysToWed = (3 - mxNow.getDay() + 7) % 7;
+  if (daysToWed === 0 && mxNow.getHours() >= 20) daysToWed = 7; // ya pasaron las 8PM del miércoles
+
+  // El jueves a mostrar = ese miércoles + 1 día
   const target = new Date(mxNow);
-  target.setDate(mxNow.getDate() + days);
+  target.setDate(mxNow.getDate() + daysToWed + 1);
   target.setHours(19, 0, 0, 0);
-  return new Date(target.getTime() - now.getTimezoneOffset() * 60000 - MX);
+  return new Date(target.getTime() - mxOff * 3600000 - now.getTimezoneOffset() * 60000);
 }
 
 function fmtDate(d) {
@@ -1650,6 +1671,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ── Mouse drag ──
     track.addEventListener('mousedown', function(e) {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
       drag.active = true;
       drag.lastX  = e.clientX;
       drag.vel    = 0;
