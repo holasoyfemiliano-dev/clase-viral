@@ -787,37 +787,6 @@
         </div>
       </div>
 
-      <!-- ── Leads ── -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Leads</div>
-        <input type="text" class="search-input" id="ventasSearch" placeholder="🔍 Buscar…" oninput="renderVentasLeads()" style="max-width:220px;">
-      </div>
-      <div id="ventasAlert"></div>
-      <div id="ventasLeadsBody" style="margin-bottom:28px;"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></div>
-
-      <!-- ── Interesados (colapsable) ── -->
-      <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
-        <div onclick="toggleCollapse('interesados-body','interesados-chev')" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
-          <span style="font-weight:700;font-size:0.88rem;">🔥 Interesados · Abrieron página de pago</span>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div style="display:flex;gap:8px;" onclick="event.stopPropagation()">
-              <input type="text" class="search-input" id="intSearch" placeholder="🔍 Buscar…" oninput="renderInteresados()" style="max-width:160px;">
-              <button class="btn btn-gold btn-sm" onclick="distribuirLeads()" title="Reparte equitativamente">⚡ Distribuir</button>
-              <button class="btn btn-outline btn-sm" onclick="loadInteresados()">↺</button>
-            </div>
-            <span id="interesados-chev" style="font-size:0.9rem;color:var(--muted);transition:transform 0.2s;">▼</span>
-          </div>
-        </div>
-        <div id="interesados-body">
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Asignado a</th><th>Fecha</th></tr></thead>
-              <tbody id="interesadosBody"><tr><td colspan="6"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
       <!-- ── Comisiones (colapsable) ── -->
       <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
         <div onclick="toggleCollapse('comisiones-body','comisiones-chev')" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
@@ -888,6 +857,46 @@
                 </table>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Leads (colapsable) ── -->
+      <div id="ventasAlert"></div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+        <div onclick="toggleCollapse('leads-body','leads-chev')" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
+          <span style="font-weight:700;font-size:0.88rem;">👤 Leads</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div onclick="event.stopPropagation()">
+              <input type="text" class="search-input" id="ventasSearch" placeholder="🔍 Buscar…" oninput="renderVentasLeads()" style="max-width:200px;">
+            </div>
+            <span id="leads-chev" style="font-size:0.9rem;color:var(--muted);transition:transform 0.2s;">▼</span>
+          </div>
+        </div>
+        <div id="leads-body" style="display:none;">
+          <div id="ventasLeadsBody" style="padding:4px 0;"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></div>
+        </div>
+      </div>
+
+      <!-- ── Interesados (colapsable) ── -->
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+        <div onclick="toggleCollapse('interesados-body','interesados-chev')" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
+          <span style="font-weight:700;font-size:0.88rem;">🔥 Interesados · Página de pago</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="display:flex;gap:8px;" onclick="event.stopPropagation()">
+              <input type="text" class="search-input" id="intSearch" placeholder="🔍 Buscar…" oninput="renderInteresados()" style="max-width:140px;">
+              <button class="btn btn-gold btn-sm" onclick="distribuirLeads()">⚡ Distribuir</button>
+              <button class="btn btn-outline btn-sm" onclick="loadInteresados()">↺</button>
+            </div>
+            <span id="interesados-chev" style="font-size:0.9rem;color:var(--muted);transition:transform 0.2s;">▼</span>
+          </div>
+        </div>
+        <div id="interesados-body" style="display:none;">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Asignado a</th><th>Fecha</th></tr></thead>
+              <tbody id="interesadosBody"><tr><td colspan="6"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+            </table>
           </div>
         </div>
       </div>
