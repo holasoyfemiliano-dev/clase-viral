@@ -4125,39 +4125,72 @@ async function loadComisiones() {
   if (porPagarEl) porPagarEl.innerHTML = '<tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
   if (pagadasEl)  pagadasEl.innerHTML  = '<tr><td colspan="7"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
   try {
-    const ventas = await fetchSB('/rest/v1/ventas?select=id,vendedor,nombre_lead,registro_email,monto,tipo,comision_porcentaje,comision_pagada,comision_pagada_at,comision_comprobante_url&aprobado=eq.true&order=created_at.desc');
-    if (!ventas || !ventas.length) {
-      if (porPagarEl) porPagarEl.innerHTML = '<tr><td colspan="5"><div class="empty">Sin ventas aprobadas aún.</div></td></tr>';
-      if (pagadasEl)  pagadasEl.innerHTML  = '<tr><td colspan="7"><div class="empty">Sin comisiones pagadas aún.</div></td></tr>';
-      return;
-    }
+    const [ventas, pagosActv] = await Promise.all([
+      fetchSB('/rest/v1/ventas?select=id,vendedor,nombre_lead,registro_email,monto,tipo,comision_porcentaje,comision_pagada,comision_pagada_at,comision_comprobante_url&aprobado=eq.true&order=created_at.desc'),
+      fetchSB('/rest/v1/vendedor_actividad?select=lead_email,detalle,vendedor&accion=eq.pago_parcial'),
+    ]);
 
     const fmtMXN  = n => '$' + Number(n||0).toLocaleString('es-MX', {maximumFractionDigits:0});
     const fmtDate = d => d ? new Date(d).toLocaleDateString('es-MX') : '—';
     const getRate = v => (v.comision_porcentaje != null ? v.comision_porcentaje : 10) / 100;
 
-    // Group by vendedor → porPagar / pagadas
+    // Emails con venta completa aprobada (para no doble contar)
+    const emailsConVenta = new Set((ventas||[]).map(v => (v.registro_email||'').toLowerCase()));
+
+    // Apartados aprobados sin venta completa → agregar como líneas extra por vendedor
+    const apartadosPorVend = {};
+    (pagosActv||[]).forEach(a => {
+      try {
+        const d = typeof a.detalle === 'string' ? JSON.parse(a.detalle) : (a.detalle||{});
+        if (d.aprobado !== true) return;
+        if (emailsConVenta.has((a.lead_email||'').toLowerCase())) return; // ya tiene venta completa
+        const vend = a.vendedor || 'Sin vendedor';
+        if (!apartadosPorVend[vend]) apartadosPorVend[vend] = [];
+        apartadosPorVend[vend].push({ email: a.lead_email, monto: Number(d.monto||0) });
+      } catch(e) {}
+    });
+
+    // Group ventas by vendedor → porPagar / pagadas
     const grupos = {};
-    ventas.forEach(v => {
+    (ventas||[]).forEach(v => {
       const vend = v.vendedor || 'Sin vendedor';
       if (!grupos[vend]) grupos[vend] = { porPagar: [], pagadas: [] };
       if (v.comision_pagada) grupos[vend].pagadas.push(v);
       else grupos[vend].porPagar.push(v);
     });
 
+    // Ensure vendedores con apartados tienen entrada en grupos
+    Object.keys(apartadosPorVend).forEach(vend => {
+      if (!grupos[vend]) grupos[vend] = { porPagar: [], pagadas: [] };
+    });
+
     // ── Por pagar ──
     const ppRows = Object.entries(grupos).flatMap(([vend, g]) => {
-      if (!g.porPagar.length) return [];
-      const totalMonto = g.porPagar.reduce((s,v) => s + Number(v.monto||0), 0);
-      const totalCom   = g.porPagar.reduce((s,v) => s + Number(v.monto||0) * getRate(v), 0);
+      const aps = apartadosPorVend[vend] || [];
+      if (!g.porPagar.length && !aps.length) return [];
+      const montoVentas   = g.porPagar.reduce((s,v) => s + Number(v.monto||0), 0);
+      const comVentas     = g.porPagar.reduce((s,v) => s + Number(v.monto||0) * getRate(v), 0);
+      const montoApartados = aps.reduce((s,a) => s + a.monto, 0);
+      const comApartados   = montoApartados * 0.10;
+      const totalMonto = montoVentas + montoApartados;
+      const totalCom   = comVentas + comApartados;
       const ids        = g.porPagar.map(v => v.id).join(',');
       const rowId      = 'com-pp-' + vend.replace(/\s+/g,'_');
-      const detalle    = g.porPagar.map(v =>
+      const count      = g.porPagar.length + aps.length;
+      const detalleVentas = g.porPagar.map(v =>
         `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center;gap:12px;">
           <span style="font-weight:600;font-size:0.82rem;">${esc(v.nombre_lead||v.registro_email||'—')}</span>
           <span style="color:var(--green);font-weight:700;font-size:0.82rem;">${fmtMXN(v.monto)}</span>
           <span style="color:#fbbf24;font-size:0.78rem;">→ ${fmtMXN(Number(v.monto)*getRate(v))}</span>
-          <span style="font-size:0.72rem;color:var(--muted);">${v.tipo==='compro_evento'?'Evento':'Seguimiento'}</span>
+          <span style="font-size:0.72rem;color:var(--muted);">Venta completa</span>
+        </div>`
+      ).join('');
+      const detalleAps = aps.map(a =>
+        `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <span style="font-weight:600;font-size:0.82rem;">${esc(a.email||'—')}</span>
+          <span style="color:var(--green);font-weight:700;font-size:0.82rem;">${fmtMXN(a.monto)}</span>
+          <span style="color:#fbbf24;font-size:0.78rem;">→ ${fmtMXN(a.monto*0.10)}</span>
+          <span style="font-size:0.72rem;color:#60a5fa;">Apartado parcial</span>
         </div>`
       ).join('');
       return [`<tr style="cursor:pointer;" onclick="toggleCollapse('${rowId}','chev-${rowId}')">
@@ -4165,7 +4198,7 @@ async function loadComisiones() {
             <span id="chev-${rowId}" style="font-size:0.75rem;color:var(--muted);transition:transform 0.2s;">▶</span>
             ${esc(vend)}
           </td>
-          <td style="color:var(--muted)">${g.porPagar.length} aprobación${g.porPagar.length>1?'es':''}</td>
+          <td style="color:var(--muted)">${count} aprobación${count>1?'es':''}</td>
           <td style="color:var(--text)">${fmtMXN(totalMonto)}</td>
           <td style="color:#fbbf24;font-weight:700;font-size:1rem">${fmtMXN(totalCom)}</td>
           <td onclick="event.stopPropagation()">
@@ -4178,8 +4211,8 @@ async function loadComisiones() {
         </tr>`,
         `<tr><td colspan="5" style="padding:0;">
           <div id="${rowId}" style="display:none;padding:10px 20px 14px;background:rgba(251,191,36,0.04);border-bottom:1px solid var(--border);">
-            <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Aprobaciones incluidas</div>
-            ${detalle}
+            <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Desglose de comisión</div>
+            ${detalleVentas}${detalleAps}
           </div>
         </td></tr>`];
     });
