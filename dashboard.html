@@ -1313,7 +1313,7 @@ const SB_URL = 'https://xpsvkhoeedinuvwrumvu.supabase.co';
 
 async function fetchFromSupabase() {
   try {
-    const res = await fetchSB('/rest/v1/clase_viral_registros?select=*&order=ts.desc', { rawResponse: true });
+    const res = await fetchSB('/rest/v1/clase_viral_registros?select=*&variante=neq.pago_proximity_creators&order=ts.desc', { rawResponse: true });
     const data = await res.json();
     return data.map(r => ({
       id: r.id, name: r.nombre, email: r.email,
@@ -1421,7 +1421,7 @@ async function renderOverview() {
       fetchSB('/rest/v1/ventas?select=monto,tipo,aprobado,comision_porcentaje,created_at&order=created_at.desc'),
       fetchSB('/rest/v1/lead_estados?select=estado,registro_email,updated_at'),
       fetchSB('/rest/v1/miembros?select=id,monto_pagado,fecha_ingreso'),
-      fetchSB('/rest/v1/clase_viral_registros?select=id,email,ts&order=ts.desc'),
+      fetchSB('/rest/v1/clase_viral_registros?select=id,email,ts&variante=neq.pago_proximity_creators&order=ts.desc'),
       fetchSB('/rest/v1/proximity_creators_interesados?select=id,created_at'),
       fetchSB('/rest/v1/vendedor_actividad?select=lead_email,detalle,ts&accion=eq.pago_parcial'),
     ]);
@@ -1458,8 +1458,15 @@ async function renderOverview() {
     const aprobadas = (ventas||[]).filter(v => v.aprobado);
     const aprobMes = aprobadas.filter(v => v.created_at && new Date(v.created_at) >= inicioMes);
     const comisionesMes = aprobMes.reduce((s,v) => {
-      const r = (v.comision_porcentaje != null ? v.comision_porcentaje : (v.tipo === 'compro_evento' ? 5 : 10)) / 100;
+      const r = (v.comision_porcentaje != null ? v.comision_porcentaje : 10) / 100;
       return s + Number(v.monto) * r;
+    }, 0);
+    // Sumar comisiones de apartados (pago_parcial aprobados) de este mes
+    const apartadosMes = (pagosActv||[]).filter(p => {
+      try { const d = JSON.parse(p.detalle||'{}'); return d.aprobado === true && new Date(p.ts) >= inicioMes; } catch(e) { return false; }
+    });
+    const comisionesApartadosMes = apartadosMes.reduce((s,p) => {
+      try { return s + Number(JSON.parse(p.detalle||'{}').monto || 0) * 0.10; } catch(e) { return s; }
     }, 0);
 
     const totalRegistrados = (sbRegs||[]).length;
@@ -1471,7 +1478,7 @@ async function renderOverview() {
     document.getElementById('ov-ventas').textContent = aprobadas.length;
     document.getElementById('ov-ventas-sub').textContent = `ventas de vendedores`;
     document.getElementById('ov-miembros').textContent = mbList.length;
-    document.getElementById('ov-comisiones').textContent = '$' + comisionesMes.toLocaleString('es-MX', {maximumFractionDigits:0});
+    document.getElementById('ov-comisiones').textContent = '$' + (comisionesMes + comisionesApartadosMes).toLocaleString('es-MX', {maximumFractionDigits:0});
     document.getElementById('ov-comisiones-sub').textContent = MESES[ahora.getMonth()] + ' · ' + aprobMes.length + ' ventas';
 
     // ── Corte de evento: desde el último jueves a las 10 PM (hora MX) ──
@@ -1717,7 +1724,7 @@ async function renderOverview() {
       if (!vd) return;
       if (vv.aprobado) {
         vd.ventas++;
-        const r = (vv.comision_porcentaje != null ? vv.comision_porcentaje : (vv.tipo==='compro_evento'?5:10)) / 100;
+        const r = (vv.comision_porcentaje != null ? vv.comision_porcentaje : 10) / 100;
         vd.comisiones += Number(vv.monto||0) * r;
       }
     });
@@ -1847,7 +1854,7 @@ async function renderABTest() {
   try {
     const [bhvRows, regRows] = await Promise.all([
       fetchSB('/rest/v1/page_behavior?select=variant'),
-      fetchSB('/rest/v1/clase_viral_registros?select=variante'),
+      fetchSB('/rest/v1/clase_viral_registros?select=variante&variante=neq.pago_proximity_creators'),
     ]);
     (bhvRows||[]).forEach(r => { const v = (r.variant||'').toUpperCase(); if (sbViews[v] !== undefined) sbViews[v]++; });
     (regRows||[]).forEach(r => { const v = (r.variante||'').toUpperCase(); if (sbConvs[v] !== undefined) sbConvs[v]++; });
@@ -2248,7 +2255,7 @@ async function loadRegistrosTab() {
   loadBehaviorData().then(() => renderRegistros());
   try {
     const [regs, estados, ventas] = await Promise.all([
-      fetchSB('/rest/v1/clase_viral_registros?select=id,email,nombre,phone,ts&order=ts.desc'),
+      fetchSB('/rest/v1/clase_viral_registros?select=id,email,nombre,phone,ts&variante=neq.pago_proximity_creators&order=ts.desc'),
       fetchSB('/rest/v1/lead_estados?select=estado,registro_email,vendedor,updated_at'),
       fetchSB('/rest/v1/ventas?select=registro_email,monto,aprobado,created_at'),
     ]);
@@ -2519,7 +2526,7 @@ async function loadApartadosPendientes() {
   try {
     const [pagosRows, regsRows] = await Promise.all([
       fetchSB('/rest/v1/vendedor_actividad?accion=eq.pago_parcial&select=id,lead_email,detalle,ts,vendedor&order=ts.desc'),
-      fetchSB('/rest/v1/clase_viral_registros?select=email,nombre'),
+      fetchSB('/rest/v1/clase_viral_registros?select=email,nombre&variante=neq.pago_proximity_creators'),
     ]);
 
     // Build name lookup
@@ -2587,7 +2594,7 @@ async function loadApartadosAprobados() {
   try {
     const [pagosRows, regsRows] = await Promise.all([
       fetchSB('/rest/v1/vendedor_actividad?accion=eq.pago_parcial&select=id,lead_email,detalle,ts,vendedor&order=ts.desc'),
-      fetchSB('/rest/v1/clase_viral_registros?select=email,nombre'),
+      fetchSB('/rest/v1/clase_viral_registros?select=email,nombre&variante=neq.pago_proximity_creators'),
     ]);
 
     const nombresMap = {};
@@ -2651,10 +2658,11 @@ async function eliminarPagoAprobado(id, email) {
 
 async function loadVentasStats() {
   try {
-    const [leads, leadsEstado, ventas] = await Promise.all([
-      fetchSB('/rest/v1/clase_viral_registros?select=email,categoria'),
+    const [leads, leadsEstado, ventas, pagosVentas] = await Promise.all([
+      fetchSB('/rest/v1/clase_viral_registros?select=email,categoria&variante=neq.pago_proximity_creators'),
       fetchSB('/rest/v1/lead_estados?select=estado,vendedor,registro_email'),
       fetchSB('/rest/v1/ventas?select=monto,aprobado,tipo,registro_email&aprobado=eq.true'),
+      fetchSB('/rest/v1/vendedor_actividad?select=detalle&accion=eq.pago_parcial'),
     ]);
 
     const seguimientos = (leadsEstado||[]).filter(r => r.estado === 'seguimiento').length;
@@ -2664,10 +2672,13 @@ async function loadVentasStats() {
     document.getElementById('vs-ventas').textContent = ventasAprobadas.length || '—';
 
     const totalComisiones = ventasAprobadas.reduce((acc, v) => {
-      const rate = v.tipo === 'seguimiento_exitoso' ? 0.10 : 0.05;
-      return acc + (Number(v.monto||0) * rate);
+      return acc + (Number(v.monto||0) * 0.10);
     }, 0);
-    document.getElementById('vs-comisiones').textContent = '$' + totalComisiones.toLocaleString('es-MX', {maximumFractionDigits:0});
+    // Sumar 10% de apartados aprobados
+    const comApartados = (pagosVentas||[]).reduce((s, p) => {
+      try { const d = JSON.parse(p.detalle||'{}'); return d.aprobado === true ? s + Number(d.monto||0) * 0.10 : s; } catch(e) { return s; }
+    }, 0);
+    document.getElementById('vs-comisiones').textContent = '$' + (totalComisiones + comApartados).toLocaleString('es-MX', {maximumFractionDigits:0});
 
     // Top nicho — basado en compradores (ventas aprobadas cruzadas con su categoría)
     const emailCategoria = {};
@@ -2700,7 +2711,7 @@ async function loadVentasLeads() {
   try {
     const [rows, regs] = await Promise.all([
       fetchSB('/rest/v1/lead_estados?select=*&order=updated_at.desc'),
-      fetchSB('/rest/v1/clase_viral_registros?select=email,nombre,phone&order=ts.desc'),
+      fetchSB('/rest/v1/clase_viral_registros?select=email,nombre,phone&variante=neq.pago_proximity_creators&order=ts.desc'),
     ]);
     ventasLeadsNombres = {};
     (regs || []).forEach(r => { if (r.email) ventasLeadsNombres[r.email.toLowerCase()] = { nombre: r.nombre || r.email, phone: r.phone || '' }; });
@@ -4156,7 +4167,7 @@ async function loadVendedoresAdmin() {
   const [vends, ventas, leads, estados, actividad] = await Promise.all([
     fetchSB('/rest/v1/vendedores?select=*&order=nombre'),
     fetchSB('/rest/v1/ventas?select=*'),
-    fetchSB('/rest/v1/clase_viral_registros?select=id,nombre,email,ts&order=ts.desc'),
+    fetchSB('/rest/v1/clase_viral_registros?select=id,nombre,email,ts&variante=neq.pago_proximity_creators&order=ts.desc'),
     fetchSB('/rest/v1/lead_estados?select=*'),
     fetchSB('/rest/v1/vendedor_actividad?select=vendedor,accion,ts&order=ts.desc&limit=500'),
   ]);
@@ -4510,7 +4521,7 @@ async function loadAprobaciones() {
   try {
     const [ventasRes, regRows] = await Promise.all([
       fetchSB('/rest/v1/ventas?select=*&order=created_at.desc', { rawResponse: true }),
-      fetchSB('/rest/v1/clase_viral_registros?select=email,created_at')
+      fetchSB('/rest/v1/clase_viral_registros?select=email,created_at&variante=neq.pago_proximity_creators')
     ]);
     const ventas = await ventasRes.json();
     ventasCache = ventas || [];
