@@ -4325,6 +4325,12 @@ async function confirmarPagoComision() {
       });
       if (upRes.ok) {
         comprobanteUrl = `${SB_URL}/storage/v1/object/public/comprobantes/${path}`;
+        // Registrar en tabla comprobantes
+        fetchSB('/rest/v1/comprobantes', {
+          method: 'POST',
+          headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ tipo: 'comision', url: comprobanteUrl, vendedor: vend, monto: totalCom })
+        }).catch(() => {});
       }
     }
     const now = new Date().toISOString();

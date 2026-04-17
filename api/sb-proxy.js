@@ -31,6 +31,7 @@ const ALLOWED_TABLES = new Set([
   'page_behavior',
   'ab_optimizations',
   'landing_config',
+  'comprobantes',
 ]);
 
 module.exports = async function handler(req, res) {

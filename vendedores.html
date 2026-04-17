@@ -974,6 +974,15 @@ async function sbPatch(path, body) {
   return res;
 }
 
+async function registrarComprobante(tipo, url, { leadEmail = null, monto = null, referencia = null } = {}) {
+  try {
+    await sbPost('/rest/v1/comprobantes', {
+      tipo, url, vendedor: currentVendedor,
+      lead_email: leadEmail, monto, referencia
+    }, 'return=minimal');
+  } catch(e) { /* no crítico */ }
+}
+
 async function uploadComprobante(file, ventaId) {
   const ext = file.name.split('.').pop().toLowerCase();
   const path = `${currentVendedor.replace(' ', '_')}/${ventaId}.${ext}`;
@@ -982,8 +991,10 @@ async function uploadComprobante(file, ventaId) {
     headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type },
     body: file
   });
-  if (res.ok) return `${SB_URL}/storage/v1/object/public/comprobantes/${path}`;
-  return null;
+  if (!res.ok) return null;
+  const url = `${SB_URL}/storage/v1/object/public/comprobantes/${path}`;
+  await registrarComprobante('venta', url, { referencia: ventaId });
+  return url;
 }
 
 async function uploadApartado(file, email) {
@@ -996,8 +1007,10 @@ async function uploadApartado(file, email) {
     headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type },
     body: file
   });
-  if (res.ok) return `${SB_URL}/storage/v1/object/public/comprobantes/${path}`;
-  return null;
+  if (!res.ok) return null;
+  const url = `${SB_URL}/storage/v1/object/public/comprobantes/${path}`;
+  await registrarComprobante('pago_parcial', url, { leadEmail: email });
+  return url;
 }
 
 async function uploadConversacion(file, pagoId, email) {
