@@ -2589,13 +2589,16 @@ async function loadApartadosAprobados() {
   if (!body) return;
   body.innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
   try {
-    const [pagosRows, regsRows] = await Promise.all([
+    const [pagosRows, regsRows, estadosRows] = await Promise.all([
       fetchSB('/rest/v1/vendedor_actividad?accion=eq.pago_parcial&select=id,lead_email,detalle,ts,vendedor&order=ts.desc'),
       fetchSB('/rest/v1/clase_viral_registros?select=email,nombre&variante=neq.pago_proximity_creators'),
+      fetchSB('/rest/v1/lead_estados?estado=eq.seguimiento_exitoso&select=email'),
     ]);
 
     const nombresMap = {};
     (regsRows||[]).forEach(r => { if (r.email) nombresMap[r.email.toLowerCase()] = r.nombre || ''; });
+
+    const liquidadosSet = new Set((estadosRows||[]).map(e => (e.email||'').toLowerCase()));
 
     const fmtMXN = n => '$' + Number(n||0).toLocaleString('es-MX', {maximumFractionDigits:0});
     const fmtDate = d => d ? new Date(d).toLocaleDateString('es-MX') : '—';
@@ -2606,7 +2609,7 @@ async function loadApartadosAprobados() {
         try { d = typeof a.detalle === 'string' ? JSON.parse(a.detalle) : (a.detalle || {}); } catch(e) {}
         return { id: a.id, lead_email: a.lead_email, monto: d.monto, nota: d.nota, comprobante_url: d.comprobante_url, aprobado: d.aprobado === true, ts: a.ts, vendedor: a.vendedor };
       })
-      .filter(p => p.aprobado);
+      .filter(p => p.aprobado && !liquidadosSet.has((p.lead_email||'').toLowerCase()));
 
     if (!aprobados.length) {
       body.innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">📭</span>Sin seguimientos aprobados aún.</div></td></tr>';
