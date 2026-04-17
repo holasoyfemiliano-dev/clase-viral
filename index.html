@@ -1342,7 +1342,12 @@ const DEFAULTS = {
 };
 
 function cfg() {
-  try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem('landing_config') || '{}')); }
+  try {
+    const stored = JSON.parse(localStorage.getItem('landing_config') || '{}');
+    // whatsappLink siempre viene del código — nunca del localStorage (evita links viejos)
+    delete stored.whatsappLink;
+    return Object.assign({}, DEFAULTS, stored);
+  }
   catch(e) { return DEFAULTS; }
 }
 
