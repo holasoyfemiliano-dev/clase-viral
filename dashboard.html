@@ -357,19 +357,25 @@
 <!-- Modal: Pagar comisión con comprobante -->
 <div id="comisionModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:none;align-items:center;justify-content:center;" onclick="if(event.target===this)closeComisionModal()">
   <div style="background:#0e0e14;border:1px solid rgba(255,214,0,0.25);border-radius:14px;padding:28px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
-    <div style="font-size:1rem;font-weight:700;margin-bottom:6px;color:#fbbf24;">💰 Pagar comisión</div>
-    <div id="comisionModalInfo" style="font-size:0.82rem;color:var(--muted);margin-bottom:20px;"></div>
+    <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px;">Pago de comisión a</div>
+    <div id="comisionModalVendedor" style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:16px;"></div>
+    <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fbbf24;margin-bottom:2px;">Vas a pagar</div>
+        <div id="comisionModalMonto" style="font-family:'Bebas Neue',sans-serif;font-size:2.4rem;color:#fbbf24;line-height:1;"></div>
+      </div>
+      <div style="font-size:2rem;opacity:0.4;">💳</div>
+    </div>
     <div style="margin-bottom:16px;">
       <label style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:8px;">Comprobante de pago (opcional)</label>
-      <div id="comisionUploadArea" onclick="document.getElementById('comisionFile').click()" style="border:2px dashed rgba(255,214,0,0.25);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onmouseenter="this.style.borderColor='rgba(255,214,0,0.5)'" onmouseleave="this.style.borderColor='rgba(255,214,0,0.25)'">
-        <div style="font-size:1.5rem;margin-bottom:6px;">📎</div>
-        <div style="font-size:0.82rem;color:var(--muted);" id="comisionUploadLabel">Subir imagen o PDF del comprobante</div>
+      <div id="comisionUploadArea" onclick="document.getElementById('comisionFile').click()" style="border:2px dashed rgba(255,214,0,0.25);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onmouseenter="this.style.borderColor='rgba(255,214,0,0.5)'" onmouseleave="this.style.borderColor='rgba(255,214,0,0.25)'">
+        <div style="font-size:0.82rem;color:var(--muted);" id="comisionUploadLabel">📎 Subir imagen o PDF</div>
       </div>
       <input type="file" id="comisionFile" accept="image/*,application/pdf" style="display:none" onchange="onComisionFileChange(this)">
     </div>
     <div style="display:flex;gap:10px;">
       <button onclick="closeComisionModal()" style="flex:1;padding:10px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:var(--muted);cursor:pointer;font-size:0.88rem;">Cancelar</button>
-      <button id="comisionModalBtn" onclick="confirmarPagoComision()" style="flex:2;padding:10px;background:linear-gradient(135deg,rgba(251,191,36,0.9),rgba(217,156,20,0.9));border:none;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;color:#000;">✓ Confirmar pago</button>
+      <button id="comisionModalBtn" onclick="confirmarPagoComision()" style="flex:2;padding:10px;background:linear-gradient(135deg,rgba(251,191,36,0.9),rgba(217,156,20,0.9));border:none;border-radius:8px;font-weight:700;font-size:0.95rem;cursor:pointer;color:#000;">✓ Confirmar pago</button>
     </div>
   </div>
 </div>
@@ -4288,12 +4294,13 @@ let _comisionModalData = null;
 
 function openComisionModal(vend, idsStr, totalCom) {
   _comisionModalData = { vend, idsStr, totalCom };
-  document.getElementById('comisionModalInfo').textContent =
-    `Vendedor: ${vend} · Comisión: $${Number(totalCom).toLocaleString('es-MX', {maximumFractionDigits:0})}`;
-  document.getElementById('comisionUploadLabel').textContent = 'Subir imagen o PDF del comprobante';
+  document.getElementById('comisionModalVendedor').textContent = vend;
+  document.getElementById('comisionModalMonto').textContent =
+    '$' + Number(totalCom).toLocaleString('es-MX', {maximumFractionDigits:0});
+  document.getElementById('comisionModalBtn').textContent = `✓ Pagar $${Number(totalCom).toLocaleString('es-MX', {maximumFractionDigits:0})}`;
+  document.getElementById('comisionUploadLabel').textContent = '📎 Subir imagen o PDF';
   document.getElementById('comisionFile').value = '';
-  const modal = document.getElementById('comisionModal');
-  modal.style.display = 'flex';
+  document.getElementById('comisionModal').style.display = 'flex';
 }
 
 function closeComisionModal() {
