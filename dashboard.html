@@ -827,7 +827,7 @@
         <div id="equipo-body" style="display:none;">
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>Nombre</th><th>Contraseña</th><th>Leads</th><th>Ventas</th><th>Comisión</th><th>Última actividad</th><th>Estado</th><th>Acción</th></tr></thead>
+              <thead><tr><th>#</th><th>Nombre</th><th>Contraseña</th><th>Leads</th><th>Ventas</th><th>Comisión total / pagada</th><th>Última actividad</th><th>Estado</th><th>Acción</th></tr></thead>
               <tbody id="vendBody"><tr><td colspan="9"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
             </table>
           </div>
@@ -4463,10 +4463,11 @@ async function loadVendedoresAdmin() {
       const myVentas = (ventas || []).filter(vv => vv.vendedor === v.nombre);
       const myLeads = Object.values(estadosAdmin).filter(e => e.asignado_a === v.nombre).length;
       const aprobadas = myVentas.filter(vv => vv.aprobado);
-      const totalComision = aprobadas.reduce((s, vv) => {
-        const r = (vv.comision_porcentaje != null ? vv.comision_porcentaje : (vv.tipo === 'compro_evento' ? 5 : 10)) / 100;
-        return s + Number(vv.monto) * r;
-      }, 0);
+      const commR = vv => (vv.comision_porcentaje != null ? vv.comision_porcentaje : 10) / 100;
+      const totalComision  = aprobadas.reduce((s, vv) => s + Number(vv.monto) * commR(vv), 0);
+      const comisionPagada = aprobadas.filter(vv => vv.comision_pagada).reduce((s, vv) => s + Number(vv.monto) * commR(vv), 0);
+      const comisionPendiente = totalComision - comisionPagada;
+      const fmtC = n => '$' + Number(n||0).toLocaleString('es-MX', {maximumFractionDigits:0});
       const badge = v.activo
         ? '<span style="color:var(--green);font-size:0.8rem;">● Activo</span>'
         : '<span style="color:var(--muted);font-size:0.8rem;">● Inactivo</span>';
@@ -4488,8 +4489,12 @@ async function loadVendedoresAdmin() {
         <td><div style="display:flex;align-items:center;">${vAvatar}<span class="bold">${esc(v.apodo||v.nombre)}</span>${v.apodo ? `<span style="font-size:0.72rem;color:var(--muted);margin-left:5px;">${esc(v.nombre)}</span>` : ''}</div></td>
         <td style="color:var(--muted);font-family:monospace;font-size:0.82rem">${esc(v.password)}</td>
         <td style="color:var(--text)">${myLeads} asignados</td>
-        <td style="color:var(--text)">${myVentas.length} total</td>
-        <td style="color:var(--gold);font-weight:600">$${Number(totalComision).toLocaleString('es-MX',{maximumFractionDigits:2})}</td>
+        <td style="color:var(--text)">${aprobadas.length} aprobadas</td>
+        <td>
+          <div style="font-weight:700;color:var(--gold)">${fmtC(totalComision)}</div>
+          <div style="font-size:0.72rem;color:#22c55e;margin-top:2px;">✓ ${fmtC(comisionPagada)} pagado</div>
+          ${comisionPendiente > 0 ? `<div style="font-size:0.72rem;color:#f97316;margin-top:1px;">⏳ ${fmtC(comisionPendiente)} pendiente</div>` : ''}
+        </td>
         <td>${lastAct}</td>
         <td>${badge}</td>
         <td style="display:flex;gap:6px;">
