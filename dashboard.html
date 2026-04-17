@@ -846,15 +846,16 @@
       <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
         <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
           <span style="font-weight:700;font-size:0.88rem;">Personas que llegaron a la página de pago</span>
-          <div style="display:flex;gap:8px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <input type="text" class="search-input" id="intSearch" placeholder="🔍 Buscar…" oninput="renderInteresados()">
+            <button class="btn btn-gold btn-sm" onclick="distribuirLeads()" title="Reparte equitativamente entre Karen, Diego y Lucas">⚡ Distribuir leads</button>
             <button class="btn btn-outline btn-sm" onclick="loadInteresados()">↺ Actualizar</button>
           </div>
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Fecha</th></tr></thead>
-            <tbody id="interesadosBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+            <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Asignado a</th><th>Fecha</th></tr></thead>
+            <tbody id="interesadosBody"><tr><td colspan="6"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
           </table>
         </div>
       </div>
@@ -2873,24 +2874,27 @@ async function deleteVentasLead(email) {
 ────────────────────────────────────── */
 let interesadosCache = [];
 
+const VENDEDORES_POOL = ['Karen', 'Diego', 'Lucas'];
+const VENDEDOR_COLORS = { Karen: '#f472b6', Diego: '#60a5fa', Lucas: '#34d399' };
+
 async function loadInteresados() {
   const tbody = document.getElementById('interesadosBody');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+  if (tbody) tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
   try {
     const rows = await fetchSB('/rest/v1/proximity_creators_interesados?select=*&order=created_at.desc');
     interesadosCache = rows || [];
     renderInteresados();
-    // Update overview cards
-    const hoy = new Date(); hoy.setHours(0,0,0,0);
-    const semana = new Date(Date.now() - 7 * 86400000);
-    const total = interesadosCache.length;
-    const hoyCount = interesadosCache.filter(r => new Date(r.created_at) >= hoy).length;
-    const semCount = interesadosCache.filter(r => new Date(r.created_at) >= semana).length;
     const elTotal = document.getElementById('ov-int-total');
-    if (elTotal) elTotal.textContent = total;
+    if (elTotal) elTotal.textContent = interesadosCache.length;
   } catch(e) {
-    if (tbody) tbody.innerHTML = '<tr><td colspan="5"><div class="empty">Error cargando interesados.</div></td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6"><div class="empty">Error cargando interesados.</div></td></tr>';
   }
+}
+
+function vendedorBadge(v) {
+  if (!v || v === '—') return '<span style="color:var(--muted);font-size:0.78rem;">Sin asignar</span>';
+  const color = VENDEDOR_COLORS[v] || '#aaa';
+  return `<span style="color:${color};font-weight:700;font-size:0.82rem;">${esc(v)}</span>`;
 }
 
 function renderInteresados() {
@@ -2900,7 +2904,7 @@ function renderInteresados() {
   let rows = interesadosCache;
   if (search) rows = rows.filter(r => (r.nombre+r.email+r.phone+'').toLowerCase().includes(search));
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><span class="empty-icon">📭</span>Sin resultados.</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><span class="empty-icon">📭</span>Sin resultados.</div></td></tr>';
     return;
   }
   const fmt = d => d ? new Date(d).toLocaleDateString('es-MX', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
@@ -2910,8 +2914,51 @@ function renderInteresados() {
       <td class="bold">${esc(r.nombre||'—')}</td>
       <td style="font-size:0.82rem;color:var(--text)">${esc(r.email||'—')}</td>
       <td style="font-size:0.82rem;color:var(--muted)">${esc(r.phone||'—')}</td>
+      <td>
+        <select onchange="asignarInteresado('${esc(r.email||'')}', this.value, this)"
+          style="background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:6px;
+                 color:${VENDEDOR_COLORS[r.vendedor_asignado]||'#aaa'};font-size:0.82rem;font-weight:600;
+                 padding:3px 8px;cursor:pointer;">
+          <option value="">Sin asignar</option>
+          ${VENDEDORES_POOL.map(v => `<option value="${v}" ${r.vendedor_asignado===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </td>
       <td style="font-size:0.78rem;color:var(--muted)">${fmt(r.created_at)}</td>
     </tr>`).join('');
+}
+
+async function asignarInteresado(email, vendedor, selectEl) {
+  if (!email) return;
+  if (selectEl) selectEl.style.color = VENDEDOR_COLORS[vendedor] || '#aaa';
+  await fetchSB(`/rest/v1/proximity_creators_interesados?email=eq.${encodeURIComponent(email)}`, {
+    method: 'PATCH', body: JSON.stringify({ vendedor_asignado: vendedor || null })
+  });
+  const row = interesadosCache.find(r => r.email === email);
+  if (row) row.vendedor_asignado = vendedor || null;
+}
+
+async function distribuirLeads() {
+  const sinAsignar = interesadosCache.filter(r => !r.vendedor_asignado);
+  if (!sinAsignar.length) { alert('Todos los leads ya tienen vendedor asignado.'); return; }
+  if (!confirm(`¿Distribuir ${sinAsignar.length} leads sin asignar entre Karen, Diego y Lucas?`)) return;
+
+  const updates = sinAsignar.map((r, i) => ({
+    email: r.email,
+    vendedor: VENDEDORES_POOL[i % VENDEDORES_POOL.length]
+  }));
+
+  await Promise.all(updates.map(u =>
+    fetchSB(`/rest/v1/proximity_creators_interesados?email=eq.${encodeURIComponent(u.email)}`, {
+      method: 'PATCH', body: JSON.stringify({ vendedor_asignado: u.vendedor })
+    })
+  ));
+
+  updates.forEach(u => {
+    const row = interesadosCache.find(r => r.email === u.email);
+    if (row) row.vendedor_asignado = u.vendedor;
+  });
+  renderInteresados();
+  alert(`✅ ${sinAsignar.length} leads distribuidos: ${updates.filter(u=>u.vendedor==='Karen').length} Karen · ${updates.filter(u=>u.vendedor==='Diego').length} Diego · ${updates.filter(u=>u.vendedor==='Lucas').length} Lucas`);
 }
 
 /* ──────────────────────────────────────

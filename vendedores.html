@@ -226,6 +226,7 @@
     }
     .filter-btn.active { background: rgba(255,229,0,0.1); border-color: rgba(255,229,0,0.4); color: var(--gold); }
     #fb-interesados.active { background: rgba(249,115,22,0.12); border-color: rgba(249,115,22,0.45); color: #f97316; }
+    #fb-mis-leads.active   { background: rgba(167,139,250,0.12); border-color: rgba(167,139,250,0.5); color: #a78bfa; }
     #fb-seguimiento.active { background: rgba(96,165,250,0.12); border-color: rgba(96,165,250,0.45); color: #60a5fa; }
     .search-input {
       padding: 8px 14px; border-radius: 5px; border: 1px solid var(--border);
@@ -478,9 +479,10 @@
             <button class="filter-btn" id="fb-interesados" onclick="setFilter('interesados')" style="color:#f97316;border-color:rgba(249,115,22,0.3);">🔥 Interesados</button>
             <button class="filter-btn" id="fb-seguimiento" onclick="setFilter('seguimiento')" style="color:#60a5fa;border-color:rgba(96,165,250,0.3);">📞 Seguimiento</button>
             <button class="filter-btn active" id="fb-semana" onclick="setFilter('semana')">Esta semana</button>
+            <button class="filter-btn" id="fb-mis-leads" onclick="setFilter('mis-leads')" style="color:#a78bfa;border-color:rgba(167,139,250,0.4);">⭐ Mis Leads</button>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <input type="text" class="search-input" id="leadSearch" placeholder="🔍 Buscar nombre o email…" oninput="renderLeads()">
+            <input type="text" class="search-input" id="leadSearch" placeholder="🔍 Buscar nombre, email o teléfono…" oninput="renderLeads()">
             <button class="btn btn-gold btn-sm" onclick="addLeadOpen()">+ Agregar lead</button>
             <button class="btn btn-outline btn-sm" onclick="loadData()">🔄 Actualizar</button>
           </div>
@@ -579,33 +581,22 @@
         <!-- Este mes (principal) -->
         <div style="background:linear-gradient(135deg,rgba(255,229,0,0.12),rgba(255,229,0,0.03));border:1px solid rgba(255,229,0,0.4);border-radius:12px;padding:20px 24px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
           <div>
-            <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:4px;">💰 Este mes</div>
+            <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:4px;">💰 Comisión este mes</div>
             <div style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:var(--gold);line-height:1;" id="vs-mes-comision">$0</div>
-            <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;" id="vs-mes-label">comisión del mes</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;" id="vs-mes-label">tu comisión · aprobada</div>
           </div>
-          <div style="display:flex;gap:24px;flex-wrap:wrap;">
-            <div>
-              <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Ventas este mes</div>
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--white);" id="vs-mes-count">0</div>
-            </div>
-            <div>
-              <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Facturado este mes</div>
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--white);" id="vs-mes-total">$0</div>
-            </div>
+          <div>
+            <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Ventas este mes</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--white);" id="vs-mes-count">0</div>
           </div>
         </div>
 
         <!-- Histórico -->
         <div class="ventas-summary">
           <div class="vs-item">
-            <div class="vs-label">Comisión Total</div>
+            <div class="vs-label">Comisión</div>
             <div class="vs-value green" id="vs-comision">$0</div>
-            <div class="vs-sub">histórico aprobado</div>
-          </div>
-          <div class="vs-item">
-            <div class="vs-label">Total Facturado</div>
-            <div class="vs-value" id="vs-total">$0</div>
-            <div class="vs-sub">ventas aprobadas</div>
+            <div class="vs-sub">comisión total aprobada</div>
           </div>
           <div class="vs-item">
             <div class="vs-label">Pendiente Aprobación</div>
@@ -613,9 +604,9 @@
             <div class="vs-sub">esperando revisión</div>
           </div>
           <div class="vs-item">
-            <div class="vs-label">Total Ventas</div>
+            <div class="vs-label">Ventas cerradas</div>
             <div class="vs-value white" id="vs-count">0</div>
-            <div class="vs-sub">registradas</div>
+            <div class="vs-sub">aprobadas en total</div>
           </div>
           <div class="vs-item">
             <div class="vs-label">Apartados</div>
@@ -656,7 +647,8 @@
                   <tr>
                     <th>#</th>
                     <th>Lead</th>
-                    <th>Monto</th>
+                    <th>Aporte</th>
+                    <th>Tu comisión (10%)</th>
                     <th>Nota</th>
                     <th>Comprobante</th>
                     <th>Fecha</th>
@@ -820,20 +812,10 @@ const CONTACTO_ESTADOS = {
   '2hr':            '2hr',
 };
 
-const COMMISSION = { compro_evento: 0.05, seguimiento_exitoso: 0.10 };
+const COMMISSION = { compro_evento: 0.10, seguimiento_exitoso: 0.10 };
 
-// Penalización: si el lead tiene 2+ semanas y no fue confirmado esa semana → 2%
 function getCommRate(tipo, leadTs) {
-  if (tipo === 'seguimiento_exitoso') return 0.10;
-  if (tipo === 'compro_evento') return isPenalized(tipo, leadTs) ? 0.02 : 0.05;
-  return 0;
-}
-
-function isPenalized(tipo, leadTs) {
-  if (tipo !== 'compro_evento') return false;
-  // Penalizado si el lead es de antes del ciclo anterior (2+ jueves atrás)
-  const dosCiclosAtras = new Date(lastThursday7PM().getTime() - 7 * 86400000);
-  return new Date(leadTs) < dosCiclosAtras;
+  return 0.10; // 10% en todos los casos: confirmar, seguimiento y aportes
 }
 
 /* ─────────────────────────────────────
@@ -1164,6 +1146,7 @@ function setFilter(f) {
   document.getElementById('fb-semana').classList.toggle('active', f === 'semana');
   document.getElementById('fb-interesados').classList.toggle('active', f === 'interesados');
   document.getElementById('fb-seguimiento').classList.toggle('active', f === 'seguimiento');
+  document.getElementById('fb-mis-leads').classList.toggle('active', f === 'mis-leads');
   renderLeads();
 }
 
@@ -1472,6 +1455,15 @@ async function onAsignadoChange(email, nuevoVendedor, selectEl) {
       estado: (estadosMap[email] || {}).estado || 'por_confirmar',
     })
   });
+  // También actualizar en proximity_creators_interesados si el lead viene de ahí
+  const esInteresado = (vendInteresadosCache || []).find(v => v.email === email);
+  if (esInteresado) {
+    fetch(SB_URL + `/rest/v1/proximity_creators_interesados?email=eq.${encodeURIComponent(email)}`, {
+      method: 'PATCH',
+      headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ vendedor_asignado: nuevoVendedor })
+    }).catch(() => {});
+  }
   estadosMap[email] = { ...(estadosMap[email] || {}), asignado_a: nuevoVendedor, vendedor: nuevoVendedor };
 }
 
@@ -1671,7 +1663,13 @@ function renderLeads() {
 
   let leads = allLeads;
   if (currentFilter === 'semana') leads = leads.filter(l => isThisWeek(l.ts));
-  if (search) leads = leads.filter(l => (l.nombre + l.email).toLowerCase().includes(search));
+  if (currentFilter === 'mis-leads') leads = leads.filter(l => {
+    const eMap = estadosMap[l.email] || {};
+    const vendInteresado = (vendInteresadosCache || []).find(v => v.email === l.email);
+    const asignado = eMap.asignado_a || (vendInteresado && vendInteresado.vendedor_asignado) || '';
+    return asignado === currentVendedor;
+  });
+  if (search) leads = leads.filter(l => (l.nombre + l.email + (l.phone||'')).toLowerCase().includes(search));
 
   // Stats
   const estadosArr = leads.map(l => (estadosMap[l.email] || {}).estado || 'por_confirmar');
@@ -1897,7 +1895,7 @@ function renderVentas() {
   const pendientes = misVentas.filter(v => !v.aprobado && !v.rechazado);
   const aprobMes   = aprobadas.filter(v => v.created_at && new Date(v.created_at) >= inicioMes);
 
-  const commRate = v => (v.comision_porcentaje != null ? v.comision_porcentaje : (v.tipo === 'compro_evento' ? 5 : 10)) / 100;
+  const commRate = v => (v.comision_porcentaje != null ? v.comision_porcentaje : 10) / 100;
 
   const totalAprobado  = aprobadas.reduce((s,v) => s + Number(v.monto), 0);
   const totalComision  = aprobadas.reduce((s,v) => s + Number(v.monto) * commRate(v), 0);
@@ -1905,34 +1903,46 @@ function renderVentas() {
   const mesMonto       = aprobMes.reduce((s,v) => s + Number(v.monto), 0);
   const mesComision    = aprobMes.reduce((s,v) => s + Number(v.monto) * commRate(v), 0);
 
-  document.getElementById('vs-mes-comision').textContent = '$' + fmt(mesComision);
+  // ── Apartados (pagos parciales) — solo aprobados del vendedor actual ──
+  const allPagos = [];
+  Object.entries(pagosParciales).forEach(([email, pagos]) => {
+    const lead = allLeads.find(l => l.email === email);
+    pagos.filter(p => p.aprobado === true && p.vendedor === currentVendedor).forEach(p => allPagos.push({ email, nombre: lead?.nombre || email, monto: p.monto, nota: p.nota, comprobante_url: p.comprobante_url, ts: p.ts }));
+  });
+  allPagos.sort((a, b) => new Date(b.ts) - new Date(a.ts));
+
+  const totalApartados = allPagos.reduce((s, p) => s + Number(p.monto || 0), 0);
+  const comisionApartados = totalApartados * 0.10;
+
+  // Apartados de este mes
+  const pagosMes = allPagos.filter(p => {
+    if (!p.ts) return false;
+    const d = new Date(p.ts);
+    return d.getMonth() === ahora.getMonth() && d.getFullYear() === ahora.getFullYear();
+  });
+  const comisionApartadosMes = pagosMes.reduce((s, p) => s + Number(p.monto || 0), 0) * 0.10;
+
+  document.getElementById('vs-mes-comision').textContent = '$' + fmt(mesComision + comisionApartadosMes);
   document.getElementById('vs-mes-total').textContent    = '$' + fmt(mesMonto);
   document.getElementById('vs-mes-count').textContent    = aprobMes.length;
   document.getElementById('vs-mes-label').textContent    = MESES[ahora.getMonth()] + ' ' + ahora.getFullYear() + ' · aprobadas';
   document.getElementById('vs-total').textContent    = '$' + fmt(totalAprobado);
-  document.getElementById('vs-comision').textContent = '$' + fmt(totalComision);
+  document.getElementById('vs-comision').textContent = '$' + fmt(totalComision + comisionApartados);
   document.getElementById('vs-pendiente').textContent = '$' + fmt(totalPendiente);
   document.getElementById('vs-count').textContent    = misVentas.length;
 
-  // ── Apartados (pagos parciales) — solo aprobados ──
-  const allPagos = [];
-  Object.entries(pagosParciales).forEach(([email, pagos]) => {
-    const lead = allLeads.find(l => l.email === email);
-    pagos.filter(p => p.aprobado === true).forEach(p => allPagos.push({ email, nombre: lead?.nombre || email, monto: p.monto, nota: p.nota, comprobante_url: p.comprobante_url, ts: p.ts }));
-  });
-  allPagos.sort((a, b) => new Date(b.ts) - new Date(a.ts));
-  const totalApartados = allPagos.reduce((s, p) => s + Number(p.monto || 0), 0);
-  document.getElementById('vs-apartados').textContent = '$' + fmt(totalApartados);
+  document.getElementById('vs-apartados').textContent = '$' + fmt(totalApartados) + ' · comisión $' + fmt(comisionApartados);
   document.getElementById('apartadosBody').innerHTML = allPagos.length
     ? allPagos.map((p, i) => `<tr>
         <td style="color:var(--muted)">${i+1}</td>
         <td class="bold">${esc(p.nombre)}</td>
         <td style="color:#60a5fa;font-weight:600">$${fmt(p.monto)}</td>
+        <td style="color:var(--gold);font-weight:600">$${fmt(Number(p.monto) * 0.10)}</td>
         <td style="color:var(--text);font-size:0.82rem">${esc(p.nota || '—')}</td>
         <td>${p.comprobante_url ? `<a href="${esc(p.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.78rem">Ver →</a>` : '<span style="color:var(--muted);font-size:0.78rem">—</span>'}</td>
         <td style="color:var(--muted);font-size:0.8rem">${p.ts ? new Date(p.ts).toLocaleDateString('es-MX') : '—'}</td>
       </tr>`).join('')
-    : '<tr><td colspan="6"><div class="empty" style="padding:20px;"><span class="empty-icon">📞</span>Sin apartados aprobados aún.</div></td></tr>';
+    : '<tr><td colspan="7"><div class="empty" style="padding:20px;"><span class="empty-icon">📞</span>Sin apartados aprobados aún.</div></td></tr>';
 
   if (!misVentas.length) {
     document.getElementById('ventasBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">💸</span>Aún no tienes ventas registradas.</div></td></tr>';
@@ -1940,7 +1950,7 @@ function renderVentas() {
   }
 
   document.getElementById('ventasBody').innerHTML = misVentas.map((v, i) => {
-    const rate = (v.comision_porcentaje != null ? v.comision_porcentaje : (v.tipo === 'compro_evento' ? 5 : 10)) / 100;
+    const rate = (v.comision_porcentaje != null ? v.comision_porcentaje : 10) / 100;
     const comision = Number(v.monto) * rate;
     const pct = Math.round(rate * 100);
     const tipoLabel = v.tipo === 'compro_evento' ? `Evento (${pct}%)` : `Seguimiento (${pct}%)`;
@@ -1971,30 +1981,14 @@ function renderVentas() {
 ───────────────────────────────────── */
 function openVentaModal(email, nombre, tipo, leadTs) {
   try {
-    const penalized = isPenalized(tipo, leadTs);
     const rate = getCommRate(tipo, leadTs);
     pendingVenta = { email, nombre, tipo, leadTs, rate };
 
     document.getElementById('ventaModalLead').textContent = (nombre || '') + ' · ' + (email || '');
     document.getElementById('commRate').textContent = (rate * 100) + '%';
 
-    // Show penalty warning
-    let penWarn = document.getElementById('penaltyWarn');
-    if (!penWarn) {
-      penWarn = document.createElement('div');
-      penWarn.id = 'penaltyWarn';
-      penWarn.style.cssText = 'background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;font-size:0.8rem;color:#f87171;margin-bottom:14px;';
-      const ci = document.getElementById('commissionInfo');
-      if (ci) ci.after(penWarn);
-    }
-    if (penWarn) {
-      if (penalized) {
-        penWarn.style.display = 'block';
-        penWarn.innerHTML = '⚠️ <strong>Comisión reducida al 2%</strong> — Este lead tiene más de 2 semanas sin ser confirmado.';
-      } else {
-        penWarn.style.display = 'none';
-      }
-    }
+    const penWarn = document.getElementById('penaltyWarn');
+    if (penWarn) penWarn.style.display = 'none';
 
     const monto = document.getElementById('ventaMonto');
     if (monto) monto.value = '';
