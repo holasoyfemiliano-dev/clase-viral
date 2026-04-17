@@ -1502,9 +1502,10 @@ async function renderOverview() {
     // ── Próximo Evento: registros DESDE el último jueves 10pm ──
     const regsProximo = (sbRegs||[]).filter(r => r.ts && new Date(r.ts) >= corteFecha);
     const emailsProximo = new Set(regsProximo.map(r => (r.email||'').toLowerCase()).filter(Boolean));
-    // Confirmados = quienes tienen estado 'confirmado' AHORA (son para el próximo evento)
-    // 'asistio' es del evento anterior, no cuenta aquí
-    const confirmadosProximo = (estados||[]).filter(e => e.estado === 'confirmado').length;
+    // Confirmados del próximo evento = estado 'confirmado' Y registrado desde el corte
+    const confirmadosProximo = (estados||[]).filter(e =>
+      e.estado === 'confirmado' && emailsProximo.has((e.email||'').toLowerCase())
+    ).length;
 
     // Fecha del próximo jueves para mostrar en el label
     const proxJueves = (() => {
