@@ -1994,7 +1994,6 @@ function renderVentas() {
   }).join('');
 
   // ── Estado de pago de comisiones ──
-  const commRate = v => (v.comision_porcentaje != null ? v.comision_porcentaje : 10) / 100;
   const ventasPagadas   = aprobadas.filter(v => v.comision_pagada);
   const ventasPorCobrar = aprobadas.filter(v => !v.comision_pagada);
   const totalPorCobrar  = ventasPorCobrar.reduce((s,v) => s + Number(v.monto) * commRate(v), 0) + comisionApartados;
