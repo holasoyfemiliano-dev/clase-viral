@@ -1453,9 +1453,16 @@ async function renderOverview() {
       const r = (v.comision_porcentaje != null ? v.comision_porcentaje : 10) / 100;
       return s + Number(v.monto) * r;
     }, 0);
-    // Sumar comisiones de apartados (pago_parcial aprobados) de este mes
+    // Sumar comisiones de apartados aprobados de este mes, excluyendo leads que ya tienen venta aprobada
+    const emailsConVentaMes = new Set(aprobadas.map(v => (v.registro_email||'').toLowerCase()));
     const apartadosMes = (pagosActv||[]).filter(p => {
-      try { const d = JSON.parse(p.detalle||'{}'); return d.aprobado === true && new Date(p.ts) >= inicioMes; } catch(e) { return false; }
+      try {
+        const d = JSON.parse(p.detalle||'{}');
+        if (d.aprobado !== true) return false;
+        if (new Date(p.ts) < inicioMes) return false;
+        if (emailsConVentaMes.has((p.lead_email||'').toLowerCase())) return false;
+        return true;
+      } catch(e) { return false; }
     });
     const comisionesApartadosMes = apartadosMes.reduce((s,p) => {
       try { return s + Number(JSON.parse(p.detalle||'{}').monto || 0) * 0.10; } catch(e) { return s; }
@@ -2658,7 +2665,7 @@ async function loadVentasStats() {
       fetchSB('/rest/v1/clase_viral_registros?select=email,categoria&variante=neq.pago_proximity_creators'),
       fetchSB('/rest/v1/lead_estados?select=estado,vendedor,registro_email'),
       fetchSB('/rest/v1/ventas?select=monto,aprobado,tipo,registro_email&aprobado=eq.true'),
-      fetchSB('/rest/v1/vendedor_actividad?select=detalle&accion=eq.pago_parcial'),
+      fetchSB('/rest/v1/vendedor_actividad?select=lead_email,detalle&accion=eq.pago_parcial'),
     ]);
 
     const seguimientos = (leadsEstado||[]).filter(r => r.estado === 'seguimiento').length;
@@ -2670,9 +2677,16 @@ async function loadVentasStats() {
     const totalComisiones = ventasAprobadas.reduce((acc, v) => {
       return acc + (Number(v.monto||0) * 0.10);
     }, 0);
-    // Sumar 10% de apartados aprobados
+    // Apartados aprobados solo si el lead NO tiene ya una venta completa aprobada (evitar doble conteo)
+    const emailsConVenta = new Set(ventasAprobadas.map(v => (v.registro_email||'').toLowerCase()));
     const comApartados = (pagosVentas||[]).reduce((s, p) => {
-      try { const d = JSON.parse(p.detalle||'{}'); return d.aprobado === true ? s + Number(d.monto||0) * 0.10 : s; } catch(e) { return s; }
+      try {
+        const d = JSON.parse(p.detalle||'{}');
+        if (d.aprobado !== true) return s;
+        const emailKey = (p.lead_email||'').toLowerCase();
+        if (emailsConVenta.has(emailKey)) return s; // ya cuenta en la venta completa
+        return s + Number(d.monto||0) * 0.10;
+      } catch(e) { return s; }
     }, 0);
     document.getElementById('vs-comisiones').textContent = '$' + (totalComisiones + comApartados).toLocaleString('es-MX', {maximumFractionDigits:0});
 
