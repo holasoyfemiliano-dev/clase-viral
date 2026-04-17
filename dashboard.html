@@ -775,7 +775,7 @@
       <div id="aprobAlert"></div>
       <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
         <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:0.85rem;font-weight:700;">Ventas pendientes de aprobación</span>
+          <span style="font-size:0.85rem;font-weight:700;">Aprobaciones de ventas</span>
           <button class="btn btn-outline btn-sm" onclick="loadAprobaciones()">↺ Actualizar</button>
         </div>
         <div class="table-wrap">
@@ -4922,7 +4922,10 @@ function renderAprobaciones(ventas, regDateMap) {
            onmouseout="this.style.color='var(--muted)';this.style.borderColor='transparent'">🗑</button>`;
     return `<tr>
       <td style="color:var(--muted)">${i+1}</td>
-      <td class="bold">${esc(v.nombre_lead || v.registro_email || '—')}</td>
+      <td class="bold">
+        <div>${esc(v.nombre_lead || v.registro_email || '—')}</div>
+        ${v.registro_email && v.nombre_lead ? `<div style="font-size:0.72rem;color:var(--muted);font-weight:400;">${esc(v.registro_email)}</div>` : ''}
+      </td>
       <td style="color:var(--text)">${esc(v.vendedor || '—')}</td>
       <td style="color:var(--green);font-weight:700">$${Number(v.monto||0).toLocaleString('es-MX')}</td>
       <td style="font-size:0.8rem;color:var(--text)">${TIPO_LABEL[v.tipo] || v.tipo}</td>
