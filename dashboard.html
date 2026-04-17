@@ -354,6 +354,26 @@
 <!-- BEHAVIOR TOOLTIP -->
 <div id="bhv-tooltip"></div>
 
+<!-- Modal: Pagar comisión con comprobante -->
+<div id="comisionModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:none;align-items:center;justify-content:center;" onclick="if(event.target===this)closeComisionModal()">
+  <div style="background:#0e0e14;border:1px solid rgba(255,214,0,0.25);border-radius:14px;padding:28px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+    <div style="font-size:1rem;font-weight:700;margin-bottom:6px;color:#fbbf24;">💰 Pagar comisión</div>
+    <div id="comisionModalInfo" style="font-size:0.82rem;color:var(--muted);margin-bottom:20px;"></div>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:8px;">Comprobante de pago (opcional)</label>
+      <div id="comisionUploadArea" onclick="document.getElementById('comisionFile').click()" style="border:2px dashed rgba(255,214,0,0.25);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onmouseenter="this.style.borderColor='rgba(255,214,0,0.5)'" onmouseleave="this.style.borderColor='rgba(255,214,0,0.25)'">
+        <div style="font-size:1.5rem;margin-bottom:6px;">📎</div>
+        <div style="font-size:0.82rem;color:var(--muted);" id="comisionUploadLabel">Subir imagen o PDF del comprobante</div>
+      </div>
+      <input type="file" id="comisionFile" accept="image/*,application/pdf" style="display:none" onchange="onComisionFileChange(this)">
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeComisionModal()" style="flex:1;padding:10px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:var(--muted);cursor:pointer;font-size:0.88rem;">Cancelar</button>
+      <button id="comisionModalBtn" onclick="confirmarPagoComision()" style="flex:2;padding:10px;background:linear-gradient(135deg,rgba(251,191,36,0.9),rgba(217,156,20,0.9));border:none;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;color:#000;">✓ Confirmar pago</button>
+    </div>
+  </div>
+</div>
+
 <!-- LOGIN -->
 <div id="dashLogin">
   <div class="dash-login-box">
@@ -808,15 +828,15 @@
           <div style="padding:12px 20px 4px;font-size:0.75rem;font-weight:700;color:#fbbf24;text-transform:uppercase;letter-spacing:0.08em;">Por pagar</div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Vendedor</th><th>Ventas</th><th>Monto generado</th><th>Comisión</th><th>Acción</th></tr></thead>
+              <thead><tr><th>Vendedor</th><th>Aprobaciones</th><th>Monto generado</th><th>Comisión</th><th>Acción</th></tr></thead>
               <tbody id="comisionesPorPagarBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
             </table>
           </div>
           <div style="padding:12px 20px 4px;border-top:1px solid var(--border);font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;">Pagadas · Historial</div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Vendedor</th><th>Ventas</th><th>Monto generado</th><th>Comisión</th><th>Fecha de pago</th><th>Acción</th></tr></thead>
-              <tbody id="comisionesPagadasBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+              <thead><tr><th>Vendedor</th><th>Aprobaciones</th><th>Monto generado</th><th>Comisión</th><th>Fecha de pago</th><th>Comprobante</th><th>Acción</th></tr></thead>
+              <tbody id="comisionesPagadasBody"><tr><td colspan="7"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
             </table>
           </div>
         </div>
@@ -1302,6 +1322,7 @@ function saveToStorage(cfg) {
 ────────────────────────────────────── */
 // SB_URL kept as reference but all calls go through /api/sb-proxy
 const SB_URL = 'https://xpsvkhoeedinuvwrumvu.supabase.co';
+const SB_SERVICE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3ZraG9lZWRpbnV2d3J1bXZ1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDkzNDUzNiwiZXhwIjoyMDkwNTEwNTM2fQ.w9ij07UJ50lGwu8FcqM81tPmrU2Z7Uft7HnoAEUcBzI';
 
 async function fetchFromSupabase() {
   try {
@@ -4093,20 +4114,20 @@ async function loadComisiones() {
   const porPagarEl = document.getElementById('comisionesPorPagarBody');
   const pagadasEl  = document.getElementById('comisionesPagadasBody');
   if (porPagarEl) porPagarEl.innerHTML = '<tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
-  if (pagadasEl)  pagadasEl.innerHTML  = '<tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
+  if (pagadasEl)  pagadasEl.innerHTML  = '<tr><td colspan="7"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
   try {
-    const ventas = await fetchSB('/rest/v1/ventas?select=id,vendedor,monto,tipo,comision_porcentaje,comision_pagada,comision_pagada_at&aprobado=eq.true&order=created_at.desc');
+    const ventas = await fetchSB('/rest/v1/ventas?select=id,vendedor,nombre_lead,registro_email,monto,tipo,comision_porcentaje,comision_pagada,comision_pagada_at,comision_comprobante_url&aprobado=eq.true&order=created_at.desc');
     if (!ventas || !ventas.length) {
       if (porPagarEl) porPagarEl.innerHTML = '<tr><td colspan="5"><div class="empty">Sin ventas aprobadas aún.</div></td></tr>';
-      if (pagadasEl)  pagadasEl.innerHTML  = '<tr><td colspan="5"><div class="empty">Sin comisiones pagadas aún.</div></td></tr>';
+      if (pagadasEl)  pagadasEl.innerHTML  = '<tr><td colspan="7"><div class="empty">Sin comisiones pagadas aún.</div></td></tr>';
       return;
     }
 
-    const fmtMXN = n => '$' + Number(n||0).toLocaleString('es-MX', {maximumFractionDigits:0});
+    const fmtMXN  = n => '$' + Number(n||0).toLocaleString('es-MX', {maximumFractionDigits:0});
     const fmtDate = d => d ? new Date(d).toLocaleDateString('es-MX') : '—';
-    const getRate = v => (v.comision_porcentaje != null ? v.comision_porcentaje : (v.tipo === 'compro_evento' ? 5 : 10)) / 100;
+    const getRate = v => (v.comision_porcentaje != null ? v.comision_porcentaje : 10) / 100;
 
-    // Group by vendedor, then split por pagar vs pagadas
+    // Group by vendedor → porPagar / pagadas
     const grupos = {};
     ventas.forEach(v => {
       const vend = v.vendedor || 'Sin vendedor';
@@ -4115,87 +4136,198 @@ async function loadComisiones() {
       else grupos[vend].porPagar.push(v);
     });
 
-    // Render "Por pagar"
-    const ppRows = Object.entries(grupos)
-      .map(([vend, g]) => {
-        if (!g.porPagar.length) return '';
-        const totalMonto = g.porPagar.reduce((s,v) => s + Number(v.monto||0), 0);
-        const totalCom   = g.porPagar.reduce((s,v) => s + Number(v.monto||0) * getRate(v), 0);
-        const ids = g.porPagar.map(v => v.id).join(',');
-        return `<tr>
-          <td class="bold">${esc(vend)}</td>
-          <td style="color:var(--muted)">${g.porPagar.length} venta${g.porPagar.length>1?'s':''}</td>
+    // ── Por pagar ──
+    const ppRows = Object.entries(grupos).flatMap(([vend, g]) => {
+      if (!g.porPagar.length) return [];
+      const totalMonto = g.porPagar.reduce((s,v) => s + Number(v.monto||0), 0);
+      const totalCom   = g.porPagar.reduce((s,v) => s + Number(v.monto||0) * getRate(v), 0);
+      const ids        = g.porPagar.map(v => v.id).join(',');
+      const rowId      = 'com-pp-' + vend.replace(/\s+/g,'_');
+      const detalle    = g.porPagar.map(v =>
+        `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <span style="font-weight:600;font-size:0.82rem;">${esc(v.nombre_lead||v.registro_email||'—')}</span>
+          <span style="color:var(--green);font-weight:700;font-size:0.82rem;">${fmtMXN(v.monto)}</span>
+          <span style="color:#fbbf24;font-size:0.78rem;">→ ${fmtMXN(Number(v.monto)*getRate(v))}</span>
+          <span style="font-size:0.72rem;color:var(--muted);">${v.tipo==='compro_evento'?'Evento':'Seguimiento'}</span>
+        </div>`
+      ).join('');
+      return [`<tr style="cursor:pointer;" onclick="toggleCollapse('${rowId}','chev-${rowId}')">
+          <td class="bold" style="display:flex;align-items:center;gap:8px;">
+            <span id="chev-${rowId}" style="font-size:0.75rem;color:var(--muted);transition:transform 0.2s;">▶</span>
+            ${esc(vend)}
+          </td>
+          <td style="color:var(--muted)">${g.porPagar.length} aprobación${g.porPagar.length>1?'es':''}</td>
           <td style="color:var(--text)">${fmtMXN(totalMonto)}</td>
           <td style="color:#fbbf24;font-weight:700;font-size:1rem">${fmtMXN(totalCom)}</td>
-          <td>
-            <button onclick="pagarComision('${esc(vend)}','${esc(ids)}')"
+          <td onclick="event.stopPropagation()">
+            <button onclick="openComisionModal('${esc(vend)}','${esc(ids)}',${totalCom})"
               style="background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.4);border-radius:5px;color:#fbbf24;font-size:0.78rem;padding:5px 14px;cursor:pointer;font-weight:700;"
               onmouseover="this.style.background='rgba(251,191,36,0.22)'" onmouseout="this.style.background='rgba(251,191,36,0.12)'">
-              ✓ Pagado
+              💳 Pagar
             </button>
           </td>
-        </tr>`;
-      }).filter(Boolean).join('');
+        </tr>`,
+        `<tr><td colspan="5" style="padding:0;">
+          <div id="${rowId}" style="display:none;padding:10px 20px 14px;background:rgba(251,191,36,0.04);border-bottom:1px solid var(--border);">
+            <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Aprobaciones incluidas</div>
+            ${detalle}
+          </div>
+        </td></tr>`];
+    });
 
-    if (porPagarEl) porPagarEl.innerHTML = ppRows || '<tr><td colspan="5"><div class="empty"><span class="empty-icon">✅</span>Todas las comisiones están al día.</div></td></tr>';
+    if (porPagarEl) porPagarEl.innerHTML = ppRows.join('') || '<tr><td colspan="5"><div class="empty"><span class="empty-icon">✅</span>Todas las comisiones están al día.</div></td></tr>';
 
-    // Render "Pagadas" — group paid ventas by vendedor + fecha (same pagada_at day = one row)
+    // ── Pagadas — group por vendedor + día ──
     const pagGroups = {};
     ventas.filter(v => v.comision_pagada).forEach(v => {
       const vend = v.vendedor || 'Sin vendedor';
       const day  = (v.comision_pagada_at || '').split('T')[0] || 'sin-fecha';
       const key  = vend + '|' + day;
-      if (!pagGroups[key]) pagGroups[key] = { vend, day, ventas: [] };
+      if (!pagGroups[key]) pagGroups[key] = { vend, day, ventas: [], compUrl: v.comision_comprobante_url || '' };
       pagGroups[key].ventas.push(v);
+      if (!pagGroups[key].compUrl && v.comision_comprobante_url) pagGroups[key].compUrl = v.comision_comprobante_url;
     });
 
-    const pagRows = Object.values(pagGroups)
-      .sort((a,b) => b.day.localeCompare(a.day))
-      .map(g => {
-        const totalMonto = g.ventas.reduce((s,v) => s + Number(v.monto||0), 0);
-        const totalCom   = g.ventas.reduce((s,v) => s + Number(v.monto||0) * getRate(v), 0);
-        const ids = g.ventas.map(v => v.id).join(',');
-        return `<tr>
-          <td class="bold">${esc(g.vend)}</td>
-          <td style="color:var(--muted)">${g.ventas.length} venta${g.ventas.length>1?'s':''}</td>
+    const pagRows = Object.values(pagGroups).sort((a,b) => b.day.localeCompare(a.day)).flatMap(g => {
+      const totalMonto = g.ventas.reduce((s,v) => s + Number(v.monto||0), 0);
+      const totalCom   = g.ventas.reduce((s,v) => s + Number(v.monto||0) * getRate(v), 0);
+      const ids        = g.ventas.map(v => v.id).join(',');
+      const rowId      = 'com-pag-' + g.vend.replace(/\s+/g,'_') + '-' + g.day;
+      const compCell   = g.compUrl
+        ? `<a href="${esc(g.compUrl)}" target="_blank" style="color:var(--gold);font-size:0.82rem;">Ver →</a>`
+        : `<label title="Subir comprobante" style="cursor:pointer;color:var(--muted);font-size:0.78rem;text-decoration:underline;">
+             Subir
+             <input type="file" accept="image/*,application/pdf" style="display:none" onchange="subirComprobanteComisionPagada('${esc(ids)}',this.files[0],this)">
+           </label>`;
+      const detalle = g.ventas.map(v =>
+        `<div style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;gap:12px;font-size:0.8rem;">
+          <span style="font-weight:600;">${esc(v.nombre_lead||v.registro_email||'—')}</span>
+          <span style="color:var(--green);font-weight:700;">${fmtMXN(v.monto)}</span>
+          <span style="color:#22c55e;">${fmtMXN(Number(v.monto)*getRate(v))}</span>
+        </div>`
+      ).join('');
+      return [`<tr style="cursor:pointer;" onclick="toggleCollapse('${rowId}','chev-${rowId}')">
+          <td class="bold" style="display:flex;align-items:center;gap:8px;">
+            <span id="chev-${rowId}" style="font-size:0.75rem;color:var(--muted);transition:transform 0.2s;">▶</span>
+            ${esc(g.vend)}
+          </td>
+          <td style="color:var(--muted)">${g.ventas.length} aprobación${g.ventas.length>1?'es':''}</td>
           <td style="color:var(--text)">${fmtMXN(totalMonto)}</td>
           <td style="color:#22c55e;font-weight:700">${fmtMXN(totalCom)}</td>
           <td style="color:var(--muted);font-size:0.82rem">${fmtDate(g.day)}</td>
-          <td>
+          <td onclick="event.stopPropagation()">${compCell}</td>
+          <td onclick="event.stopPropagation()">
             <button onclick="revertirComision('${esc(g.vend)}','${esc(ids)}')"
               style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:5px;color:#ef4444;font-size:0.75rem;padding:4px 10px;cursor:pointer;"
-              onmouseover="this.style.background='rgba(239,68,68,0.18)'" onmouseout="this.style.background='rgba(239,68,68,0.08)'"
-              title="Regresar a Por pagar">
+              onmouseover="this.style.background='rgba(239,68,68,0.18)'" onmouseout="this.style.background='rgba(239,68,68,0.08)'">
               ↩ Revertir
             </button>
           </td>
-        </tr>`;
-      }).join('');
+        </tr>`,
+        `<tr><td colspan="7" style="padding:0;">
+          <div id="${rowId}" style="display:none;padding:10px 20px 14px;background:rgba(34,197,94,0.03);border-bottom:1px solid var(--border);">
+            <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Ventas incluidas</div>
+            ${detalle}
+          </div>
+        </td></tr>`];
+    });
 
-    if (pagadasEl) pagadasEl.innerHTML = pagRows || '<tr><td colspan="5"><div class="empty"><span class="empty-icon">📭</span>Sin comisiones pagadas aún.</div></td></tr>';
+    if (pagadasEl) pagadasEl.innerHTML = pagRows.join('') || '<tr><td colspan="7"><div class="empty"><span class="empty-icon">📭</span>Sin comisiones pagadas aún.</div></td></tr>';
 
   } catch(e) {
+    console.error('loadComisiones:', e);
     if (porPagarEl) porPagarEl.innerHTML = '<tr><td colspan="5"><div class="empty">Error al cargar.</div></td></tr>';
-    if (pagadasEl)  pagadasEl.innerHTML  = '<tr><td colspan="5"><div class="empty">Error al cargar.</div></td></tr>';
+    if (pagadasEl)  pagadasEl.innerHTML  = '<tr><td colspan="7"><div class="empty">Error al cargar.</div></td></tr>';
+  }
+}
+
+// ── Modal de pago de comisión ──
+let _comisionModalData = null;
+
+function openComisionModal(vend, idsStr, totalCom) {
+  _comisionModalData = { vend, idsStr, totalCom };
+  document.getElementById('comisionModalInfo').textContent =
+    `Vendedor: ${vend} · Comisión: $${Number(totalCom).toLocaleString('es-MX', {maximumFractionDigits:0})}`;
+  document.getElementById('comisionUploadLabel').textContent = 'Subir imagen o PDF del comprobante';
+  document.getElementById('comisionFile').value = '';
+  const modal = document.getElementById('comisionModal');
+  modal.style.display = 'flex';
+}
+
+function closeComisionModal() {
+  document.getElementById('comisionModal').style.display = 'none';
+  _comisionModalData = null;
+}
+
+function onComisionFileChange(input) {
+  const label = document.getElementById('comisionUploadLabel');
+  label.textContent = input.files[0] ? `✓ ${input.files[0].name}` : 'Subir imagen o PDF del comprobante';
+}
+
+async function confirmarPagoComision() {
+  if (!_comisionModalData) return;
+  const { vend, idsStr, totalCom } = _comisionModalData;
+  const ids  = idsStr.split(',').filter(Boolean);
+  const file = document.getElementById('comisionFile').files[0];
+  const btn  = document.getElementById('comisionModalBtn');
+  btn.textContent = 'Guardando…'; btn.disabled = true;
+  try {
+    let comprobanteUrl = null;
+    if (file) {
+      const ext  = file.name.split('.').pop().toLowerCase();
+      const path = `comisiones/${vend.replace(/\s+/g,'_')}_${Date.now()}.${ext}`;
+      const upRes = await fetch(`${SB_URL}/storage/v1/object/comprobantes/${path}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${SB_SERVICE}`, 'Content-Type': file.type },
+        body: file
+      });
+      if (upRes.ok) {
+        comprobanteUrl = `${SB_URL}/storage/v1/object/public/comprobantes/${path}`;
+      }
+    }
+    const now = new Date().toISOString();
+    const payload = { comision_pagada: true, comision_pagada_at: now };
+    if (comprobanteUrl) payload.comision_comprobante_url = comprobanteUrl;
+    await fetchSB(`/rest/v1/ventas?id=in.(${ids.join(',')})`, {
+      method: 'PATCH', rawResponse: true,
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify(payload)
+    });
+    closeComisionModal();
+    loadComisiones();
+  } catch(e) {
+    alert('Error: ' + e.message);
+  } finally {
+    btn.textContent = '✓ Confirmar pago'; btn.disabled = false;
+  }
+}
+
+async function subirComprobanteComisionPagada(idsStr, file, input) {
+  if (!file) return;
+  const ids = idsStr.split(',').filter(Boolean);
+  try {
+    const ext  = file.name.split('.').pop().toLowerCase();
+    const path = `comisiones/comp_${Date.now()}.${ext}`;
+    const upRes = await fetch(`${SB_URL}/storage/v1/object/comprobantes/${path}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${SB_SERVICE}`, 'Content-Type': file.type },
+      body: file
+    });
+    if (!upRes.ok) throw new Error('Upload failed');
+    const url = `${SB_URL}/storage/v1/object/public/comprobantes/${path}`;
+    await fetchSB(`/rest/v1/ventas?id=in.(${ids.join(',')})`, {
+      method: 'PATCH', rawResponse: true,
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ comision_comprobante_url: url })
+    });
+    loadComisiones();
+  } catch(e) {
+    alert('Error al subir: ' + e.message);
   }
 }
 
 async function pagarComision(vendedor, idsStr) {
-  const ids = idsStr.split(',').filter(Boolean);
-  if (!ids.length) return;
-  if (!confirm(`¿Marcar comisión de ${vendedor} como pagada?\nEsto registrará la fecha de pago de hoy.`)) return;
-  try {
-    const now = new Date().toISOString();
-    await fetchSB(`/rest/v1/ventas?id=in.(${ids.join(',')})`, {
-      method: 'PATCH',
-      rawResponse: true,
-      headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ comision_pagada: true, comision_pagada_at: now })
-    });
-    loadComisiones();
-  } catch(e) {
-    alert('Error al registrar pago: ' + e.message);
-  }
+  openComisionModal(vendedor, idsStr, 0);
 }
 
 async function revertirComision(vendedor, idsStr) {
@@ -4204,10 +4336,9 @@ async function revertirComision(vendedor, idsStr) {
   if (!confirm(`¿Revertir el pago de comisión de ${vendedor}?\nVolverá a aparecer en "Por pagar".`)) return;
   try {
     await fetchSB(`/rest/v1/ventas?id=in.(${ids.join(',')})`, {
-      method: 'PATCH',
-      rawResponse: true,
+      method: 'PATCH', rawResponse: true,
       headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ comision_pagada: false, comision_pagada_at: null })
+      body: JSON.stringify({ comision_pagada: false, comision_pagada_at: null, comision_comprobante_url: null })
     });
     loadComisiones();
   } catch(e) {
