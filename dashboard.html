@@ -749,7 +749,23 @@
       <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:24px;" id="ventas-stats-row">
         <div class="stat-card nav-card" style="border-color:rgba(249,115,22,0.3)" onclick="navTo('ventas','ventasLeadsBody','seguimiento')"><div class="s-label">Seguimientos</div><div class="s-value" id="vs-seguimientos" style="color:var(--orange)">—</div><div class="s-sub">En proceso</div></div>
         <div class="stat-card green nav-card" onclick="navTo('ventas','aprobBody')"><div class="s-label">Ventas</div><div class="s-value" id="vs-ventas">—</div><div class="s-sub">Aprobadas</div></div>
-        <div class="stat-card nav-card" style="border-color:rgba(255,229,0,0.3)" onclick="navTo('ventas','comisionesPorPagarBody')"><div class="s-label">Comisiones</div><div class="s-value" id="vs-comisiones" style="color:var(--gold);font-size:1.4rem">$—</div><div class="s-sub" id="vs-comisiones-sub">Este mes</div></div>
+        <div class="stat-card nav-card" style="border-color:rgba(255,229,0,0.3)" onclick="navTo('ventas','comisionesPorPagarBody')">
+          <div class="s-label">Comisiones</div>
+          <div style="display:flex;flex-direction:column;gap:4px;margin-top:6px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:0.68rem;color:#fbbf24;font-weight:700;text-transform:uppercase;">Por pagar</span>
+              <span id="vs-com-pendiente" style="font-size:1rem;font-weight:700;color:#fbbf24;font-family:'Bebas Neue',sans-serif;">$—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:0.68rem;color:#22c55e;font-weight:700;text-transform:uppercase;">Pagadas</span>
+              <span id="vs-com-pagadas" style="font-size:1rem;font-weight:700;color:#22c55e;font-family:'Bebas Neue',sans-serif;">$—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,0.08);padding-top:4px;margin-top:2px;">
+              <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;">Este mes</span>
+              <span id="vs-com-mes" style="font-size:0.85rem;font-weight:600;color:var(--muted);font-family:'Bebas Neue',sans-serif;">$—</span>
+            </div>
+          </div>
+        </div>
         <div class="stat-card"><div class="s-label">Top Nicho · Ventas</div><div class="s-value" id="vs-nicho" style="font-size:1rem;color:var(--text)">—</div><div class="s-sub">Por compradores</div></div>
         <div class="stat-card" style="border-color:rgba(59,130,246,0.3)"><div class="s-label">Top Nicho · Conf.</div><div class="s-value" id="vs-nicho-conf" style="font-size:1rem;color:#3b82f6">—</div><div class="s-sub">Por confirmados</div></div>
       </div>
@@ -2702,8 +2718,8 @@ async function loadVentasStats() {
     const [leads, leadsEstado, ventas, pagosVentas] = await Promise.all([
       fetchSB('/rest/v1/clase_viral_registros?select=email,categoria&variante=neq.pago_proximity_creators'),
       fetchSB('/rest/v1/lead_estados?select=estado,vendedor,registro_email'),
-      fetchSB('/rest/v1/ventas?select=monto,aprobado,tipo,registro_email&aprobado=eq.true'),
-      fetchSB('/rest/v1/vendedor_actividad?select=lead_email,detalle&accion=eq.pago_parcial'),
+      fetchSB('/rest/v1/ventas?select=monto,aprobado,tipo,registro_email,comision_pagada,created_at&aprobado=eq.true'),
+      fetchSB('/rest/v1/vendedor_actividad?select=lead_email,detalle,comision_pagada,ts&accion=eq.pago_parcial'),
     ]);
 
     const seguimientos = (leadsEstado||[]).filter(r => r.estado === 'seguimiento').length;
@@ -2712,21 +2728,36 @@ async function loadVentasStats() {
     const ventasAprobadas = (ventas||[]);
     document.getElementById('vs-ventas').textContent = ventasAprobadas.length || '—';
 
-    const totalComisiones = ventasAprobadas.reduce((acc, v) => {
-      return acc + (Number(v.monto||0) * 0.10);
-    }, 0);
-    // Apartados aprobados solo si el lead NO tiene ya una venta completa aprobada (evitar doble conteo)
+    const fmtCom = n => '$' + Number(n||0).toLocaleString('es-MX', {maximumFractionDigits:0});
+    const ahora = new Date();
+    const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
     const emailsConVenta = new Set(ventasAprobadas.map(v => (v.registro_email||'').toLowerCase()));
-    const comApartados = (pagosVentas||[]).reduce((s, p) => {
+
+    // Ventas: pendientes vs pagadas
+    const comVentasPend  = ventasAprobadas.filter(v => !v.comision_pagada).reduce((s,v) => s + Number(v.monto||0)*0.10, 0);
+    const comVentasPag   = ventasAprobadas.filter(v =>  v.comision_pagada).reduce((s,v) => s + Number(v.monto||0)*0.10, 0);
+    const comVentasMes   = ventasAprobadas.filter(v => !v.comision_pagada && v.created_at && new Date(v.created_at) >= inicioMes)
+                                          .reduce((s,v) => s + Number(v.monto||0)*0.10, 0);
+
+    // Apartados: evitar doble conteo con venta completa
+    let apPend = 0, apPag = 0, apMes = 0;
+    (pagosVentas||[]).forEach(p => {
       try {
         const d = JSON.parse(p.detalle||'{}');
-        if (d.aprobado !== true) return s;
-        const emailKey = (p.lead_email||'').toLowerCase();
-        if (emailsConVenta.has(emailKey)) return s; // ya cuenta en la venta completa
-        return s + Number(d.monto||0) * 0.10;
-      } catch(e) { return s; }
-    }, 0);
-    document.getElementById('vs-comisiones').textContent = '$' + (totalComisiones + comApartados).toLocaleString('es-MX', {maximumFractionDigits:0});
+        if (d.aprobado !== true) return;
+        if (emailsConVenta.has((p.lead_email||'').toLowerCase())) return;
+        const monto = Number(d.monto||0) * 0.10;
+        if (p.comision_pagada) { apPag += monto; }
+        else {
+          apPend += monto;
+          if (p.ts && new Date(p.ts) >= inicioMes) apMes += monto;
+        }
+      } catch(e) {}
+    });
+
+    document.getElementById('vs-com-pendiente').textContent = fmtCom(comVentasPend + apPend);
+    document.getElementById('vs-com-pagadas').textContent   = fmtCom(comVentasPag  + apPag);
+    document.getElementById('vs-com-mes').textContent       = fmtCom(comVentasMes  + apMes);
 
     // Top nicho — basado en compradores (ventas aprobadas cruzadas con su categoría)
     const emailCategoria = {};
