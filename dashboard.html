@@ -720,148 +720,16 @@
     <div class="panel" id="tab-ventas">
 
       <!-- ── Resumen rápido ── -->
-      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px;" id="ventas-stats-row">
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:24px;" id="ventas-stats-row">
         <div class="stat-card nav-card" style="border-color:rgba(249,115,22,0.3)" onclick="navTo('ventas','ventasLeadsBody','seguimiento')"><div class="s-label">Seguimientos</div><div class="s-value" id="vs-seguimientos" style="color:var(--orange)">—</div><div class="s-sub">En proceso</div></div>
         <div class="stat-card green nav-card" onclick="navTo('ventas','aprobBody')"><div class="s-label">Ventas</div><div class="s-value" id="vs-ventas">—</div><div class="s-sub">Aprobadas</div></div>
         <div class="stat-card nav-card" style="border-color:rgba(255,229,0,0.3)" onclick="navTo('ventas','comisionesPorPagarBody')"><div class="s-label">Comisiones</div><div class="s-value" id="vs-comisiones" style="color:var(--gold);font-size:1.4rem">$—</div><div class="s-sub" id="vs-comisiones-sub">Este mes</div></div>
         <div class="stat-card"><div class="s-label">Top Nicho · Ventas</div><div class="s-value" id="vs-nicho" style="font-size:1rem;color:var(--text)">—</div><div class="s-sub">Por compradores</div></div>
-        <div class="stat-card" style="border-color:rgba(59,130,246,0.3)"><div class="s-label">Top Nicho · Confirmados</div><div class="s-value" id="vs-nicho-conf" style="font-size:1rem;color:#3b82f6">—</div><div class="s-sub">Por confirmados</div></div>
+        <div class="stat-card" style="border-color:rgba(59,130,246,0.3)"><div class="s-label">Top Nicho · Conf.</div><div class="s-value" id="vs-nicho-conf" style="font-size:1rem;color:#3b82f6">—</div><div class="s-sub">Por confirmados</div></div>
       </div>
 
-      <!-- ── Apartados pendientes de aprobación ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#60a5fa;margin-bottom:12px;margin-top:4px;">📞 Apartados pendientes de aprobación</div>
-      <div id="apartadosPendAlert"></div>
-      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
-        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:0.85rem;font-weight:700;">Pagos parciales con comprobante · pendientes de verificar</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>Lead</th><th>Vendedor</th><th>Monto</th><th>Nota</th><th>Comprobante</th><th>Fecha</th><th>Acción</th></tr></thead>
-            <tbody id="apartadosPendBody"><tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ── Seguimientos aprobados ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#22c55e;margin-bottom:12px;margin-top:4px;">✅ Seguimientos aprobados</div>
-      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
-        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:0.85rem;font-weight:700;">Pagos parciales aprobados · cuentan en facturación</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>Lead</th><th>Vendedor</th><th>Monto</th><th>Nota</th><th>Comprobante</th><th>Fecha</th><th>Acción</th></tr></thead>
-            <tbody id="apartadosAprobBody"><tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ── Comisiones ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fbbf24;margin-bottom:12px;margin-top:4px;">💰 Comisiones</div>
-      <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px;">
-        <div style="padding:14px 20px;border-bottom:1px solid var(--border);">
-          <span style="font-size:0.85rem;font-weight:700;color:#fbbf24;">Por pagar</span>
-          <span style="font-size:0.75rem;color:var(--muted);margin-left:8px;">Ventas aprobadas · comisión pendiente</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Vendedor</th><th>Ventas</th><th>Monto generado</th><th>Comisión</th><th>Acción</th></tr></thead>
-            <tbody id="comisionesPorPagarBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
-        <div style="padding:14px 20px;border-bottom:1px solid var(--border);">
-          <span style="font-size:0.85rem;font-weight:700;color:var(--muted);">Pagadas</span>
-          <span style="font-size:0.75rem;color:var(--muted);margin-left:8px;">Historial de comisiones liquidadas</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Vendedor</th><th>Ventas</th><th>Monto generado</th><th>Comisión</th><th>Fecha de pago</th><th>Acción</th></tr></thead>
-            <tbody id="comisionesPagadasBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ── Equipo de Vendedores ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;">Equipo de Vendedores</div>
-      <div id="vendAlert"></div>
-      <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px;">
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>Nombre</th><th>Contraseña</th><th>Leads</th><th>Ventas</th><th>Comisión</th><th>Última actividad</th><th>Estado</th><th>Acción</th></tr></thead>
-            <tbody id="vendBody"><tr><td colspan="9"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card" id="vendReporteCard" style="display:none;margin-bottom:12px;">
-        <div class="card-title">Actividad del equipo</div>
-        <div id="vendReporteBody"></div>
-      </div>
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title">Crear nuevo vendedor</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;">
-          <div class="field-group" style="margin:0;"><label>Nombre</label><input type="text" id="newVendNombre" placeholder="Ej: Ana García"></div>
-          <div class="field-group" style="margin:0;"><label>Contraseña</label><input type="text" id="newVendPass" placeholder="Ej: ana2024"></div>
-          <button class="btn btn-gold" onclick="crearVendedor()">Crear →</button>
-        </div>
-      </div>
-      <div class="card" style="margin-bottom:28px;padding:0;overflow:hidden;">
-        <div onclick="toggleAssignTable()" style="padding:16px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
-          <span style="font-weight:700;font-size:0.9rem;">Asignar leads a vendedores</span>
-          <span id="assignTableChevron" style="font-size:0.9rem;color:var(--muted);transition:transform 0.2s;">▼</span>
-        </div>
-        <div id="assignTableBody" style="display:none;padding:16px 20px 20px;">
-          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
-            <input type="text" class="search-input" id="assignSearch" placeholder="🔍 Buscar lead…" oninput="renderAssignTable()">
-            <select id="assignFilterVend" class="search-input" style="min-width:160px;" onchange="renderAssignTable()">
-              <option value="">Todos los leads</option>
-            </select>
-            <button class="btn btn-outline btn-sm" onclick="autoAsignar11()" title="Asignar automáticamente 1:1 entre los 2 primeros vendedores activos a los leads sin asignar">
-              ⚡ Auto 1:1
-            </button>
-          </div>
-          <div class="card" style="padding:0;overflow:hidden;margin-bottom:0;">
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Registro</th><th>Estado</th><th>Vendedor</th></tr></thead>
-                <tbody id="assignBody"><tr><td colspan="6"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Leads ── -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Leads</div>
-        <input type="text" class="search-input" id="ventasSearch" placeholder="🔍 Buscar…" oninput="renderVentasLeads()" style="max-width:220px;">
-      </div>
-      <div id="ventasAlert"></div>
-      <div id="ventasLeadsBody" style="margin-bottom:28px;"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></div>
-
-      <!-- ── Interesados ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;margin-top:28px;">🔥 Interesados · Abrieron página de pago</div>
-      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
-        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-          <span style="font-weight:700;font-size:0.88rem;">Personas que llegaron a la página de pago</span>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <input type="text" class="search-input" id="intSearch" placeholder="🔍 Buscar…" oninput="renderInteresados()">
-            <button class="btn btn-gold btn-sm" onclick="distribuirLeads()" title="Reparte equitativamente entre Karen, Diego y Lucas">⚡ Distribuir leads</button>
-            <button class="btn btn-outline btn-sm" onclick="loadInteresados()">↺ Actualizar</button>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Asignado a</th><th>Fecha</th></tr></thead>
-            <tbody id="interesadosBody"><tr><td colspan="6"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ── Aprobaciones de ventas ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:12px;margin-top:28px;">Aprobaciones de ventas</div>
+      <!-- ── Aprobaciones de ventas (PRIMERO) ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#f97316;margin-bottom:12px;">🔔 Aprobaciones de ventas</div>
       <div id="aprobAlert"></div>
       <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
         <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
@@ -873,6 +741,134 @@
             <thead><tr><th>#</th><th>Lead</th><th>Vendedor</th><th>Monto</th><th>Tipo</th><th>Comisión</th><th>Comprobante</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr></thead>
             <tbody id="aprobBody"><tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- ── Apartados pendientes ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#60a5fa;margin-bottom:12px;">📞 Pagos parciales · Pendientes de verificar</div>
+      <div id="apartadosPendAlert"></div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Lead</th><th>Vendedor</th><th>Monto</th><th>Nota</th><th>Comprobante</th><th>Fecha</th><th>Acción</th></tr></thead>
+            <tbody id="apartadosPendBody"><tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Seguimientos aprobados ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#22c55e;margin-bottom:12px;">✅ Seguimientos aprobados · Aún deben</div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Lead</th><th>Vendedor</th><th>Monto</th><th>Nota</th><th>Comprobante</th><th>Fecha</th><th>Acción</th></tr></thead>
+            <tbody id="apartadosAprobBody"><tr><td colspan="8"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Leads ── -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Leads</div>
+        <input type="text" class="search-input" id="ventasSearch" placeholder="🔍 Buscar…" oninput="renderVentasLeads()" style="max-width:220px;">
+      </div>
+      <div id="ventasAlert"></div>
+      <div id="ventasLeadsBody" style="margin-bottom:28px;"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></div>
+
+      <!-- ── Interesados (colapsable) ── -->
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+        <div onclick="toggleCollapse('interesados-body','interesados-chev')" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
+          <span style="font-weight:700;font-size:0.88rem;">🔥 Interesados · Abrieron página de pago</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="display:flex;gap:8px;" onclick="event.stopPropagation()">
+              <input type="text" class="search-input" id="intSearch" placeholder="🔍 Buscar…" oninput="renderInteresados()" style="max-width:160px;">
+              <button class="btn btn-gold btn-sm" onclick="distribuirLeads()" title="Reparte equitativamente">⚡ Distribuir</button>
+              <button class="btn btn-outline btn-sm" onclick="loadInteresados()">↺</button>
+            </div>
+            <span id="interesados-chev" style="font-size:0.9rem;color:var(--muted);transition:transform 0.2s;">▼</span>
+          </div>
+        </div>
+        <div id="interesados-body">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Asignado a</th><th>Fecha</th></tr></thead>
+              <tbody id="interesadosBody"><tr><td colspan="6"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Comisiones (colapsable) ── -->
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+        <div onclick="toggleCollapse('comisiones-body','comisiones-chev')" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
+          <span style="font-weight:700;font-size:0.88rem;color:#fbbf24;">💰 Comisiones</span>
+          <span id="comisiones-chev" style="font-size:0.9rem;color:var(--muted);transition:transform 0.2s;">▼</span>
+        </div>
+        <div id="comisiones-body" style="display:none;">
+          <div style="padding:12px 20px 4px;font-size:0.75rem;font-weight:700;color:#fbbf24;text-transform:uppercase;letter-spacing:0.08em;">Por pagar</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Vendedor</th><th>Ventas</th><th>Monto generado</th><th>Comisión</th><th>Acción</th></tr></thead>
+              <tbody id="comisionesPorPagarBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+            </table>
+          </div>
+          <div style="padding:12px 20px 4px;border-top:1px solid var(--border);font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;">Pagadas · Historial</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Vendedor</th><th>Ventas</th><th>Monto generado</th><th>Comisión</th><th>Fecha de pago</th><th>Acción</th></tr></thead>
+              <tbody id="comisionesPagadasBody"><tr><td colspan="5"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Equipo de Vendedores (colapsable) ── -->
+      <div id="vendAlert"></div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+        <div onclick="toggleCollapse('equipo-body','equipo-chev')" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
+          <span style="font-weight:700;font-size:0.88rem;">👥 Equipo de Vendedores</span>
+          <span id="equipo-chev" style="font-size:0.9rem;color:var(--muted);transition:transform 0.2s;">▼</span>
+        </div>
+        <div id="equipo-body" style="display:none;">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Nombre</th><th>Contraseña</th><th>Leads</th><th>Ventas</th><th>Comisión</th><th>Última actividad</th><th>Estado</th><th>Acción</th></tr></thead>
+              <tbody id="vendBody"><tr><td colspan="9"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+            </table>
+          </div>
+          <div id="vendReporteCard" style="display:none;padding:16px 20px;border-top:1px solid var(--border);">
+            <div class="card-title">Actividad del equipo</div>
+            <div id="vendReporteBody"></div>
+          </div>
+          <div style="padding:16px 20px;border-top:1px solid var(--border);">
+            <div style="font-size:0.78rem;font-weight:700;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.08em;">Crear vendedor</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;">
+              <div class="field-group" style="margin:0;"><label>Nombre</label><input type="text" id="newVendNombre" placeholder="Ej: Ana García"></div>
+              <div class="field-group" style="margin:0;"><label>Contraseña</label><input type="text" id="newVendPass" placeholder="Ej: ana2024"></div>
+              <button class="btn btn-gold" onclick="crearVendedor()">Crear →</button>
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--border);">
+            <div onclick="toggleAssignTable()" style="padding:14px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
+              <span style="font-size:0.82rem;font-weight:600;">Asignar leads a vendedores</span>
+              <span id="assignTableChevron" style="font-size:0.9rem;color:var(--muted);transition:transform 0.2s;">▼</span>
+            </div>
+            <div id="assignTableBody" style="display:none;padding:0 20px 20px;">
+              <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+                <input type="text" class="search-input" id="assignSearch" placeholder="🔍 Buscar lead…" oninput="renderAssignTable()">
+                <select id="assignFilterVend" class="search-input" style="min-width:160px;" onchange="renderAssignTable()">
+                  <option value="">Todos los leads</option>
+                </select>
+                <button class="btn btn-outline btn-sm" onclick="autoAsignar11()" title="Asignar automáticamente 1:1">⚡ Auto 1:1</button>
+              </div>
+              <div class="table-wrap" style="margin:0;">
+                <table>
+                  <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>Registro</th><th>Estado</th><th>Vendedor</th></tr></thead>
+                  <tbody id="assignBody"><tr><td colspan="6"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -4408,6 +4404,15 @@ function renderVendedorReporte(actividad, vends) {
     </table>
   </div>
   <div style="font-size:0.72rem;color:var(--muted);margin-top:10px;">Eficiencia = confirmaciones ÷ (WA abiertos + números copiados). ⚠️ Solo mira = tuvo sesiones pero no hizo ninguna acción real.</div>`;
+}
+
+function toggleCollapse(bodyId, chevId) {
+  const body = document.getElementById(bodyId);
+  const chev = document.getElementById(chevId);
+  if (!body) return;
+  const open = body.style.display === 'none';
+  body.style.display = open ? '' : 'none';
+  if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
 }
 
 function toggleAssignTable() {
