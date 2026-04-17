@@ -4562,7 +4562,7 @@ function fetchSB(path, optsOrMethod = {}, legacyBody = null) {
 /* ──────────────────────────────────────
    APROBACIONES
 ────────────────────────────────────── */
-const COMMISSION_RATES = { compro_evento: 0.05, seguimiento_exitoso: 0.10 };
+const COMMISSION_RATES = { compro_evento: 0.10, seguimiento_exitoso: 0.10 };
 
 async function loadAprobaciones() {
   const bodyEl = document.getElementById('aprobBody');
@@ -4592,7 +4592,7 @@ async function loadAprobaciones() {
 
 function renderAprobaciones(ventas, regDateMap) {
   regDateMap = regDateMap || {};
-  const TIPO_LABEL = { compro_evento: 'Evento (5%)', seguimiento_exitoso: 'Seguimiento (10%)' };
+  const TIPO_LABEL = { compro_evento: 'Evento (10%)', seguimiento_exitoso: 'Seguimiento (10%)' };
 
   // For miembros tab: only pending/unresolved, sorted by registration date asc (oldest first)
   const pending = ventas
