@@ -1026,14 +1026,27 @@
         </div>
       </div>
 
-      <!-- Transcript upload -->
-      <div style="margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <label style="padding:9px 18px;border-radius:6px;border:1px solid rgba(168,85,247,0.4);background:rgba(168,85,247,0.08);color:#c084fc;font-size:0.85rem;font-weight:600;cursor:pointer;white-space:nowrap;">
-          📄 Subir transcripción .vtt
-          <input type="file" id="vttFileInput" accept=".vtt,.txt" style="display:none;" onchange="uploadVTT(this)">
-        </label>
+      <!-- Sincronizar clase -->
+      <div style="margin-bottom:20px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);border-radius:10px;padding:16px 20px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#a855f7;margin-bottom:12px;">📡 Sincronizar clase con Zoom</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <button onclick="loadZoomMeetings()" id="zm-load-btn"
+            style="padding:8px 16px;border-radius:6px;border:1px solid rgba(168,85,247,0.4);background:rgba(168,85,247,0.1);color:#c084fc;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;">
+            🔍 Ver clases recientes
+          </button>
+          <select id="zm-meeting-select" style="display:none;flex:1;min-width:220px;padding:8px 12px;background:var(--card);border:1px solid rgba(168,85,247,0.3);border-radius:6px;color:var(--text);font-size:0.82rem;">
+            <option value="">Selecciona una clase…</option>
+          </select>
+          <button onclick="syncSelectedMeeting()" id="zm-sync-btn" style="display:none;padding:8px 16px;border-radius:6px;border:1px solid rgba(34,197,94,0.4);background:rgba(34,197,94,0.1);color:#22c55e;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;">
+            ⚡ Sincronizar asistencia
+          </button>
+          <label style="padding:8px 16px;border-radius:6px;border:1px solid rgba(168,85,247,0.3);background:transparent;color:#a855f7;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;">
+            📄 Subir .vtt
+            <input type="file" id="vttFileInput" accept=".vtt,.txt" style="display:none;" onchange="uploadVTT(this)">
+          </label>
+        </div>
         <input type="hidden" id="zoomMeetingId" value="">
-        <div id="zoomSyncResult" style="display:none;font-size:0.82rem;padding:8px 12px;border-radius:6px;"></div>
+        <div id="zoomSyncResult" style="display:none;font-size:0.82rem;padding:8px 12px;border-radius:6px;margin-top:10px;"></div>
       </div>
 
       <!-- Secondary stats -->
@@ -2243,6 +2256,70 @@ async function syncZoom() {
   } finally {
     btn.textContent = 'Sincronizar →'; btn.disabled = false;
   }
+}
+
+async function loadZoomMeetings() {
+  const btn = document.getElementById('zm-load-btn');
+  const sel = document.getElementById('zm-meeting-select');
+  const syncBtn = document.getElementById('zm-sync-btn');
+  btn.textContent = '⏳ Cargando…'; btn.disabled = true;
+  try {
+    const res = await fetch('/api/zoom-list', {
+      headers: { 'Authorization': `Bearer ${DASHBOARD_SECRET}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error al obtener clases');
+    const meetings = data.meetings || [];
+    sel.innerHTML = '<option value="">Selecciona una clase…</option>';
+    meetings.forEach(m => {
+      const fecha = m.start_time ? new Date(m.start_time).toLocaleDateString('es-MX', { weekday:'short', day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = `${fecha} — ${m.topic} (${m.participants || 0} asistentes)`;
+      sel.appendChild(opt);
+    });
+    sel.style.display = 'block';
+    syncBtn.style.display = 'block';
+    btn.textContent = '🔄 Recargar';
+  } catch(e) {
+    alert('Error al obtener clases de Zoom: ' + e.message);
+    btn.textContent = '🔍 Ver clases recientes';
+  }
+  btn.disabled = false;
+}
+
+async function syncSelectedMeeting() {
+  const sel = document.getElementById('zm-meeting-select');
+  const meetingId = sel.value;
+  if (!meetingId) { alert('Selecciona una clase primero'); return; }
+
+  const btn = document.getElementById('zm-sync-btn');
+  const resultEl = document.getElementById('zoomSyncResult');
+  btn.textContent = '⏳ Sincronizando…'; btn.disabled = true;
+  resultEl.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/zoom-sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DASHBOARD_SECRET}` },
+      body: JSON.stringify({ meetingId })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      resultEl.style.cssText = 'display:block;font-size:0.82rem;padding:8px 12px;border-radius:6px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;margin-top:10px;';
+      resultEl.innerHTML = `✅ <strong>${data.synced} asistentes</strong> sincronizados · <strong>${data.matched}</strong> cruzados con leads registrados`;
+      document.getElementById('zoomMeetingId').value = meetingId;
+      loadZoomStats();
+      loadCachedAnalysisEvento();
+    } else {
+      resultEl.style.cssText = 'display:block;font-size:0.82rem;padding:8px 12px;border-radius:6px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;margin-top:10px;';
+      resultEl.innerHTML = `❌ Error: ${data.error || 'Intenta de nuevo'}`;
+    }
+  } catch(e) {
+    resultEl.style.cssText = 'display:block;font-size:0.82rem;padding:8px 12px;border-radius:6px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;margin-top:10px;';
+    resultEl.textContent = '❌ Error de conexión.';
+  }
+  btn.textContent = '⚡ Sincronizar asistencia'; btn.disabled = false;
 }
 
 async function loadZoomStats() {
