@@ -69,9 +69,6 @@ module.exports = async function handler(req, res) {
   const { meetingId } = req.body;
   if (!meetingId) return res.status(400).json({ error: 'meetingId requerido' });
 
-  const ZOOM_ACCOUNT_ID  = process.env.ZOOM_ACCOUNT_ID;
-  const ZOOM_CLIENT_ID   = process.env.ZOOM_CLIENT_ID;
-  const ZOOM_CLIENT_SECRET = process.env.ZOOM_CLIENT_SECRET;
   const SB_URL     = process.env.SB_URL;
   const SB_SERVICE = process.env.SB_SERVICE;
 
