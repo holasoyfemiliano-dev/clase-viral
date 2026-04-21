@@ -2290,10 +2290,47 @@ async function loadZoomMeetings() {
     syncBtn.style.display = 'block';
     btn.textContent = '🔄 Recargar';
   } catch(e) {
-    alert('Error al obtener clases de Zoom: ' + e.message);
+    // Show manual ID fallback instead of alert
+    const resultEl = document.getElementById('zoomSyncResult');
+    resultEl.style.cssText = 'display:block;font-size:0.82rem;padding:10px 12px;border-radius:6px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#f87171;margin-top:10px;';
+    resultEl.innerHTML = `⚠️ No se pudo cargar la lista automática (falta scope en la app de Zoom).<br>
+      <span style="color:var(--text-muted)">Ingresa el ID de la reunión manualmente:</span><br>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+        <input id="zm-manual-id" type="text" placeholder="ej. 89295646404"
+          style="flex:1;padding:6px 10px;border-radius:5px;border:1px solid rgba(168,85,247,0.3);background:var(--card);color:var(--text);font-size:0.82rem;">
+        <button onclick="syncManualId()"
+          style="padding:6px 14px;border-radius:5px;border:1px solid rgba(34,197,94,0.4);background:rgba(34,197,94,0.1);color:#22c55e;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;">
+          ⚡ Sincronizar
+        </button>
+      </div>`;
     btn.textContent = '🔍 Ver clases recientes';
   }
   btn.disabled = false;
+}
+
+async function syncManualId() {
+  const input = document.getElementById('zm-manual-id');
+  const meetingId = (input ? input.value : '').trim();
+  if (!meetingId) { alert('Ingresa el ID de la reunión'); return; }
+  const resultEl = document.getElementById('zoomSyncResult');
+  resultEl.innerHTML = '⏳ Sincronizando…';
+  try {
+    const res = await fetch('/api/zoom-sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DASHBOARD_SECRET}` },
+      body: JSON.stringify({ meetingId })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      resultEl.style.cssText = 'display:block;font-size:0.82rem;padding:8px 12px;border-radius:6px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;margin-top:10px;';
+      resultEl.innerHTML = `✅ <strong>${data.synced} asistentes</strong> sincronizados · <strong>${data.matched}</strong> cruzados con leads registrados`;
+    } else {
+      resultEl.style.cssText = 'display:block;font-size:0.82rem;padding:8px 12px;border-radius:6px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#f87171;margin-top:10px;';
+      resultEl.innerHTML = '❌ ' + (data.error || 'Error al sincronizar');
+    }
+  } catch(e) {
+    resultEl.innerHTML = '❌ ' + e.message;
+  }
 }
 
 async function syncSelectedMeeting() {
