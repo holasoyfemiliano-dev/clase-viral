@@ -1575,9 +1575,11 @@ async function renderOverview() {
     // ── Próximo Evento: registros DESDE el último jueves 10pm ──
     const regsProximo = (sbRegs||[]).filter(r => r.ts && new Date(r.ts) >= corteFecha);
     const emailsProximo = new Set(regsProximo.map(r => (r.email||'').toLowerCase()).filter(Boolean));
-    // Confirmados del próximo evento = todos los que tienen estado 'confirmado'
-    // (los vendedores confirman para el próximo evento sin importar cuándo registraron)
-    const confProximoRows = (estados||[]).filter(e => e.estado === 'confirmado');
+    // Confirmados del próximo evento = estado 'confirmado' actualizados desde el corte
+    // (cubre leads viejos recién confirmados por vendedor, excluye confirmados de ciclos anteriores)
+    const confProximoRows = (estados||[]).filter(e =>
+      e.estado === 'confirmado' && e.updated_at && new Date(e.updated_at) >= corteFecha
+    );
     const confirmadosProximo = confProximoRows.length;
 
     // Por vendedor
@@ -2385,7 +2387,8 @@ async function loadLandingTab() {
 }
 
 function getLastThursdayCut() {
-  const MX_OFFSET = -6 * 3600000;
+  const _mxM = new Date().getMonth();
+  const MX_OFFSET = (_mxM >= 3 && _mxM <= 9 ? -5 : -6) * 3600000; // CDT abr-oct, CST nov-mar
   const nowUtc = Date.now();
   const nowMx = new Date(nowUtc + new Date().getTimezoneOffset() * 60000 + MX_OFFSET);
   const day = nowMx.getDay();
@@ -2425,7 +2428,7 @@ async function loadRegistrosTab() {
     // Cross-referenced against real registros — no phantom estados
     const confTotal    = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado) && emailsTodos.has((e.registro_email||'').toLowerCase())).length;
     const asistTotal   = (estados||[]).filter(e => e.estado === 'asistio' && emailsTodos.has((e.registro_email||'').toLowerCase())).length;
-    const confProximo  = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado) && emailsProximo.has((e.registro_email||'').toLowerCase())).length;
+    const confProximo  = (estados||[]).filter(e => e.estado === 'confirmado' && e.updated_at && new Date(e.updated_at) >= corteFecha).length;
     const confAnterior = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado) && emailsAnterior.has((e.registro_email||'').toLowerCase())).length;
     const asistAnterior= (estados||[]).filter(e => e.estado === 'asistio' && emailsAnterior.has((e.registro_email||'').toLowerCase())).length;
     const ventasAnterior = (ventas||[]).filter(v => v.aprobado && v.created_at && new Date(v.created_at) >= corteAnterior && new Date(v.created_at) < corteFecha).length;
