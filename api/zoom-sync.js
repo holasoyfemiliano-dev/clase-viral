@@ -40,12 +40,14 @@ module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const accessToken = await getZoomToken();
-      const meRes = await fetch('https://api.zoom.us/v2/users/me', {
+
+      // S2S OAuth: /users/me may not work — list users and pick first
+      const usersRes = await fetch('https://api.zoom.us/v2/users?page_size=1', {
         headers: { 'Authorization': `Bearer ${accessToken}` }
       });
-      const meData = await meRes.json();
-      const userId = meData.id;
-      if (!userId) return res.status(500).json({ error: 'No se pudo obtener usuario Zoom' });
+      const usersData = await usersRes.json();
+      const userId = (usersData.users && usersData.users[0]) ? usersData.users[0].id : null;
+      if (!userId) return res.status(500).json({ error: 'No se pudo obtener usuario Zoom', detail: usersData });
 
       const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       const to   = new Date().toISOString().split('T')[0];
