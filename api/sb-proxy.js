@@ -104,6 +104,8 @@ module.exports = async function handler(req, res) {
     const text = await sbRes.text();
     res.status(sbRes.status);
     res.setHeader('Content-Type', sbRes.headers.get('content-type') || 'application/json');
+    const contentRange = sbRes.headers.get('content-range');
+    if (contentRange) res.setHeader('Content-Range', contentRange);
     return res.send(text);
   } catch (err) {
     return res.status(502).json({ error: 'Supabase unreachable', detail: err.message });
