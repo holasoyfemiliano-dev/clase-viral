@@ -1,8 +1,16 @@
 {
   "rewrites": [
-    { "source": "/pago", "destination": "/pago.html" }
+    { "source": "/pago", "destination": "/pago.html" },
+    { "source": "/import_sheets", "destination": "/import_sheets.html" }
   ],
   "headers": [
+    {
+      "source": "/(.*\\.html)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Pragma", "value": "no-cache" }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
@@ -40,6 +48,9 @@
   "functions": {
     "api/ghl-contact.js": {
       "maxDuration": 10
+    },
+    "api/sheets-proxy.js": {
+      "maxDuration": 15
     },
     "api/sb-proxy.js": {
       "maxDuration": 10
