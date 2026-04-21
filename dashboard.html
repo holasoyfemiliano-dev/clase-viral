@@ -1320,25 +1320,41 @@
 /* ──────────────────────────────────────
    DASHBOARD LOGIN
 ────────────────────────────────────── */
-const DASH_PASS = 'F12345';
+const DASH_PASS      = 'F12345';       // admin completo
+const DASH_PASS_DIR  = 'ventas2026';   // director de ventas (vista limitada)
+
+// Tabs ocultas para el director de ventas
+const DIR_HIDDEN_TABS = ['landing', 'config'];
 
 function dashLogin() {
-  if (document.getElementById('dashPass').value === DASH_PASS) {
-    sessionStorage.setItem('dashAuth', '1');
-    showDash();
+  const val = document.getElementById('dashPass').value;
+  if (val === DASH_PASS) {
+    sessionStorage.setItem('dashAuth', 'admin');
+    showDash('admin');
+  } else if (val === DASH_PASS_DIR) {
+    sessionStorage.setItem('dashAuth', 'director');
+    showDash('director');
   } else {
     document.getElementById('dlError').style.display = 'block';
   }
 }
 
-function showDash() {
+function showDash(role) {
+  role = role || sessionStorage.getItem('dashAuth') || 'admin';
   document.getElementById('dashLogin').style.display = 'none';
   document.getElementById('dashApp').style.display = '';
   document.getElementById('dashMain').style.display = '';
+  if (role === 'director') {
+    DIR_HIDDEN_TABS.forEach(tab => {
+      const el = document.querySelector(`.tab[data-tab="${tab}"]`);
+      if (el) el.style.display = 'none';
+    });
+  }
 }
 
 (function() {
-  if (sessionStorage.getItem('dashAuth') === '1') showDash();
+  const auth = sessionStorage.getItem('dashAuth');
+  if (auth === 'admin' || auth === 'director') showDash(auth);
 })();
 
 /* ──────────────────────────────────────
