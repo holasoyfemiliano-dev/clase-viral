@@ -615,6 +615,36 @@
           </div>
         </div>
 
+        <!-- Estado de pago de comisiones -->
+        <div id="comisionEstadoSection" style="margin-bottom:20px;"></div>
+
+        <!-- Apartados / Pagos parciales (PRIMERO) -->
+        <div id="apartadosSection" style="margin-bottom:20px;">
+          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#60a5fa;margin-bottom:10px;padding:0 2px;">📞 Apartados</div>
+          <div class="card" style="padding:0;overflow:hidden;">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Lead</th>
+                    <th>Aporte</th>
+                    <th>Tu comisión (10%)</th>
+                    <th>Nota</th>
+                    <th>Comprobante</th>
+                    <th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody id="apartadosBody">
+                  <tr><td colspan="7"><div class="empty" style="padding:20px;"><span class="empty-icon">📞</span>Sin apartados registrados.</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ventas (DESPUÉS de apartados) -->
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:10px;padding:0 2px;">💰 Ventas cerradas</div>
         <div class="card" style="padding:0;overflow:hidden;">
           <div class="table-wrap">
             <table>
@@ -634,34 +664,6 @@
                 <tr><td colspan="8"><div class="empty"><span class="empty-icon">💸</span>Aún no tienes ventas registradas.</div></td></tr>
               </tbody>
             </table>
-          </div>
-        </div>
-
-        <!-- Estado de pago de comisiones -->
-        <div id="comisionEstadoSection" style="margin-top:20px;margin-bottom:20px;"></div>
-
-        <!-- Apartados / Pagos parciales -->
-        <div id="apartadosSection" style="margin-top:20px;">
-          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#60a5fa;margin-bottom:10px;padding:0 2px;">📞 Apartados en seguimiento</div>
-          <div class="card" style="padding:0;overflow:hidden;">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Lead</th>
-                    <th>Aporte</th>
-                    <th>Tu comisión (10%)</th>
-                    <th>Nota</th>
-                    <th>Comprobante</th>
-                    <th>Fecha</th>
-                  </tr>
-                </thead>
-                <tbody id="apartadosBody">
-                  <tr><td colspan="6"><div class="empty" style="padding:20px;"><span class="empty-icon">📞</span>Sin apartados registrados.</div></td></tr>
-                </tbody>
-              </table>
-            </div>
           </div>
         </div>
 
@@ -1942,8 +1944,8 @@ function renderVentas() {
 
   document.getElementById('vs-mes-comision').textContent = '$' + fmt(mesComision + comisionApartadosMes);
   document.getElementById('vs-mes-total').textContent    = '$' + fmt(mesMonto);
-  document.getElementById('vs-mes-count').textContent    = aprobMes.length;
-  document.getElementById('vs-mes-label').textContent    = MESES[ahora.getMonth()] + ' ' + ahora.getFullYear() + ' · aprobadas';
+  document.getElementById('vs-mes-count').textContent    = aprobMes.length + pagosMes.length;
+  document.getElementById('vs-mes-label').textContent    = MESES[ahora.getMonth()] + ' ' + ahora.getFullYear() + ' · ' + aprobMes.length + ' venta' + (aprobMes.length !== 1 ? 's' : '') + (pagosMes.length ? ' + ' + pagosMes.length + ' apartado' + (pagosMes.length !== 1 ? 's' : '') : '');
   document.getElementById('vs-total').textContent    = '$' + fmt(totalAprobado);
   document.getElementById('vs-comision').textContent = '$' + fmt(totalComision + comisionApartados);
   document.getElementById('vs-pendiente').textContent = '$' + fmt(totalPendiente);
@@ -1962,36 +1964,34 @@ function renderVentas() {
       </tr>`).join('')
     : '<tr><td colspan="7"><div class="empty" style="padding:20px;"><span class="empty-icon">📞</span>Sin apartados aprobados aún.</div></td></tr>';
 
-  if (!misVentas.length) {
-    document.getElementById('ventasBody').innerHTML = '<tr><td colspan="8"><div class="empty"><span class="empty-icon">💸</span>Aún no tienes ventas registradas.</div></td></tr>';
-    return;
-  }
-
-  document.getElementById('ventasBody').innerHTML = misVentas.map((v, i) => {
-    const rate = (v.comision_porcentaje != null ? v.comision_porcentaje : 10) / 100;
-    const comision = Number(v.monto) * rate;
-    const pct = Math.round(rate * 100);
-    const tipoLabel = v.tipo === 'compro_evento' ? `Evento (${pct}%)` : `Seguimiento (${pct}%)`;
-    const fecha = v.created_at ? new Date(v.created_at).toLocaleDateString('es-MX') : '—';
-    const badge = v.aprobado
-      ? '<span class="badge badge-approved">Aprobado</span>'
-      : v.rechazado
-        ? '<span class="badge badge-rejected">Rechazado</span>'
-        : '<span class="badge badge-pending">Pendiente</span>';
-    const comp = v.comprobante_url
-      ? `<a href="${esc(v.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.78rem">Ver →</a>`
-      : '<span style="color:var(--red);font-size:0.78rem">Sin subir</span>';
-    return `<tr>
-      <td style="color:var(--muted)">${i+1}</td>
-      <td class="bold">${esc(v.nombre_lead || '—')}</td>
-      <td style="color:var(--green);font-weight:600">$${fmt(v.monto)}</td>
-      <td style="font-size:0.78rem;color:var(--text)">${tipoLabel}</td>
-      <td style="color:var(--gold);font-weight:600">$${fmt(comision)}</td>
-      <td>${comp}</td>
-      <td>${badge}</td>
-      <td style="color:var(--muted);font-size:0.8rem">${fecha}</td>
-    </tr>`;
-  }).join('');
+  document.getElementById('ventasBody').innerHTML = misVentas.length
+    ? misVentas.map((v, i) => {
+        const rate = (v.comision_porcentaje != null ? v.comision_porcentaje : 10) / 100;
+        const comision = Number(v.monto) * rate;
+        const pct = Math.round(rate * 100);
+        const tipoLabel = v.tipo === 'compro_evento' ? `Evento (${pct}%)` : `Seguimiento (${pct}%)`;
+        const fecha = v.created_at ? new Date(v.created_at).toLocaleDateString('es-MX') : '—';
+        const badge = v.aprobado
+          ? '<span class="badge badge-approved">Aprobado</span>'
+          : v.rechazado
+            ? '<span class="badge badge-rejected">Rechazado</span>'
+            : '<span class="badge badge-pending">Pendiente</span>';
+        const comp = v.comprobante_url
+          ? `<a href="${esc(v.comprobante_url)}" target="_blank" style="color:var(--gold);font-size:0.78rem">Ver →</a>`
+          : '<span style="color:var(--red);font-size:0.78rem">Sin subir</span>';
+        const emailLine = v.registro_email ? `<div style="font-size:0.7rem;color:var(--muted);font-weight:400;">${esc(v.registro_email)}</div>` : '';
+        return `<tr>
+          <td style="color:var(--muted)">${i+1}</td>
+          <td class="bold"><div>${esc(v.nombre_lead || '—')}</div>${emailLine}</td>
+          <td style="color:var(--green);font-weight:600">$${fmt(v.monto)}</td>
+          <td style="font-size:0.78rem;color:var(--text)">${tipoLabel}</td>
+          <td style="color:var(--gold);font-weight:600">$${fmt(comision)}</td>
+          <td>${comp}</td>
+          <td>${badge}</td>
+          <td style="color:var(--muted);font-size:0.8rem">${fecha}</td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="8"><div class="empty"><span class="empty-icon">💸</span>Aún no tienes ventas registradas.</div></td></tr>';
 
   // ── Estado de pago de comisiones ──
   const ventasPagadas   = aprobadas.filter(v => v.comision_pagada);
