@@ -1958,7 +1958,6 @@ function renderVentas() {
   const comisionApartadosMes = pagosMes.reduce((s, p) => s + Number(p.monto || 0), 0) * 0.10;
 
   document.getElementById('vs-mes-comision').textContent = '$' + fmt(mesComision + comisionApartadosMes);
-  document.getElementById('vs-mes-total').textContent    = '$' + fmt(mesMonto);
   document.getElementById('vs-mes-count').textContent    = aprobMes.length + pagosMes.length;
   document.getElementById('vs-mes-label').textContent    = MESES[ahora.getMonth()] + ' ' + ahora.getFullYear() + ' · ' + aprobMes.length + ' venta' + (aprobMes.length !== 1 ? 's' : '') + (pagosMes.length ? ' + ' + pagosMes.length + ' apartado' + (pagosMes.length !== 1 ? 's' : '') : '');
   document.getElementById('vs-total').textContent    = '$' + fmt(totalAprobado);
