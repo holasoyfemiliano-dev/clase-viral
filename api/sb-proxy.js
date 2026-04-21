@@ -102,9 +102,19 @@ module.exports = async function handler(req, res) {
   try {
     const sbRes = await fetch(targetUrl, fetchOptions);
     const text = await sbRes.text();
+    const contentRange = sbRes.headers.get('content-range');
+
+    // When count=exact is requested, inject the total count into the JSON response
+    // so the browser doesn't need to read headers (Vercel may strip them)
+    if (forwardHeaders['Prefer'] && forwardHeaders['Prefer'].includes('count=exact') && contentRange) {
+      const total = parseInt((contentRange.split('/')[1] || '').replace('*', '').trim());
+      if (!isNaN(total)) {
+        return res.status(200).json({ _count: total });
+      }
+    }
+
     res.status(sbRes.status);
     res.setHeader('Content-Type', sbRes.headers.get('content-type') || 'application/json');
-    const contentRange = sbRes.headers.get('content-range');
     if (contentRange) res.setHeader('Content-Range', contentRange);
     return res.send(text);
   } catch (err) {

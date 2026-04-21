@@ -1486,18 +1486,14 @@ async function renderOverview() {
   // Use Supabase for accurate A/B view counts (localStorage is device-specific)
   let sbTotalViews = 0, totalCVR = 0;
   try {
-    // Use count=exact to get real total beyond the 1000-row default limit
-    const bhvRes = await fetchSB('/rest/v1/page_behavior?select=id&limit=1', {
-      rawResponse: true,
+    // Use count=exact — proxy injects total as { _count: N } in body
+    const bhvData = await fetchSB('/rest/v1/page_behavior?select=id&limit=1', {
       headers: { 'Prefer': 'count=exact' }
     });
-    const contentRange = bhvRes.headers.get('content-range'); // e.g. "0-0/1537"
-    if (contentRange) {
-      const total = parseInt(contentRange.split('/')[1]);
-      sbTotalViews = isNaN(total) ? 0 : total;
+    if (bhvData && bhvData._count !== undefined) {
+      sbTotalViews = bhvData._count;
     } else {
-      const data = await bhvRes.json().catch(() => []);
-      sbTotalViews = (data||[]).length;
+      sbTotalViews = Array.isArray(bhvData) ? bhvData.length : 0;
     }
   } catch(e) {}
   const sbRegsLocal = getRegistrations();
