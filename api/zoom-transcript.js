@@ -74,17 +74,13 @@ module.exports = async function handler(req, res) {
         `https://api.zoom.us/v2/meetings/${meetingId}/recordings`,
         { headers: { 'Authorization': `Bearer ${accessToken}` } }
       );
-      recData = await r.json();
-      if (!r.ok) {
-        return res.status(500).json({
-          error: 'No se encontraron grabaciones/transcripciones para este meeting.',
-          detail: recData
-        });
-      }
+      const d = await r.json();
+      if (r.ok) recData = d;
+      // If recordings fail (missing scope), continue — retention still works from asistencias
     }
 
-    const startTime = recData.start_time || reportData.start_time;
-    const recordingFiles = recData.recording_files || [];
+    const startTime = (recData && recData.start_time) || reportData.start_time;
+    const recordingFiles = (recData && recData.recording_files) || [];
 
     // 4. Get asistencias from Supabase (needed regardless of transcript)
     const asistRes = await fetch(
