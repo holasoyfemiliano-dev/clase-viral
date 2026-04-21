@@ -1463,7 +1463,7 @@ async function renderOverview() {
   try {
     const [ventas, estados, miembros, sbRegs, interesados, pagosActv] = await Promise.all([
       fetchSB('/rest/v1/ventas?select=monto,tipo,aprobado,comision_porcentaje,comision_pagada,registro_email,created_at&order=created_at.desc'),
-      fetchSB('/rest/v1/lead_estados?select=estado,registro_email,updated_at'),
+      fetchSB('/rest/v1/lead_estados?select=estado,registro_email,vendedor,updated_at'),
       fetchSB('/rest/v1/miembros?select=id,monto_pagado,fecha_ingreso'),
       fetchSB('/rest/v1/clase_viral_registros?select=id,email,ts&variante=neq.pago_proximity_creators&order=ts.desc'),
       fetchSB('/rest/v1/proximity_creators_interesados?select=id,created_at'),
@@ -1556,9 +1556,17 @@ async function renderOverview() {
     const regsProximo = (sbRegs||[]).filter(r => r.ts && new Date(r.ts) >= corteFecha);
     const emailsProximo = new Set(regsProximo.map(r => (r.email||'').toLowerCase()).filter(Boolean));
     // Confirmados del próximo evento = estado 'confirmado' Y registrado desde el corte
-    const confirmadosProximo = (estados||[]).filter(e =>
-      e.estado === 'confirmado' && emailsProximo.has((e.email||'').toLowerCase())
-    ).length;
+    const confProximoRows = (estados||[]).filter(e =>
+      e.estado === 'confirmado' && emailsProximo.has((e.registro_email||'').toLowerCase())
+    );
+    const confirmadosProximo = confProximoRows.length;
+
+    // Por vendedor
+    const confPorVend = {};
+    confProximoRows.forEach(e => {
+      const v = e.vendedor || 'Sin asignar';
+      confPorVend[v] = (confPorVend[v] || 0) + 1;
+    });
 
     // Fecha del próximo jueves para mostrar en el label
     const proxJueves = (() => {
@@ -1574,7 +1582,8 @@ async function renderOverview() {
     document.getElementById('ov-prox-regs').textContent = regsProximo.length;
     document.getElementById('ov-prox-regs-sub').textContent = 'desde el ' + corteFecha.toLocaleDateString('es-MX', {day:'numeric',month:'short'}) + ' (último jue 10pm)';
     document.getElementById('ov-tasa-conf').textContent = confirmadosProximo + ' / ' + regsProximo.length;
-    document.getElementById('ov-tasa-conf-sub').textContent = confirmadosProximo + ' confirmados de ' + regsProximo.length + ' registrados';
+    const vendBreakdown = Object.entries(confPorVend).sort((a,b)=>b[1]-a[1]).map(([v,n])=>`${v}: ${n}`).join(' · ');
+    document.getElementById('ov-tasa-conf-sub').textContent = confirmadosProximo + ' confirmados de ' + regsProximo.length + ' registrados' + (vendBreakdown ? ' · ' + vendBreakdown : '');
 
     // ── Evento Anterior: asistencia real de Zoom ──
     let asistentes = 0;
