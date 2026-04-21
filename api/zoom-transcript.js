@@ -124,9 +124,8 @@ module.exports = async function handler(req, res) {
     // 7. Find critical moments (>=10% drop in a 5-min window)
     const criticalMoments = findCriticalMoments(retention, transcriptByMinute);
 
-    // 8. Cache in Supabase (upsert by meeting_id)
-    const payload = {
-      meeting_id: String(meetingId),
+    // 8. Cache in Supabase — PATCH if row exists, INSERT otherwise
+    const updatePayload = {
       start_time: startTime || null,
       total_participants: asistencias.length,
       retention_data: retention,
@@ -134,12 +133,18 @@ module.exports = async function handler(req, res) {
       transcript_segments: transcriptByMinute,
       updated_at: new Date().toISOString()
     };
-
-    await fetch(`${SB_URL}/rest/v1/clase_analisis`, {
-      method: 'POST',
-      headers: { ...sbHeaders, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify(payload)
-    });
+    const patchRes = await fetch(
+      `${SB_URL}/rest/v1/clase_analisis?meeting_id=eq.${encodeURIComponent(String(meetingId))}`,
+      { method: 'PATCH', headers: { ...sbHeaders, 'Prefer': 'return=representation' }, body: JSON.stringify(updatePayload) }
+    );
+    const patched = await patchRes.json();
+    if (!Array.isArray(patched) || patched.length === 0) {
+      await fetch(`${SB_URL}/rest/v1/clase_analisis`, {
+        method: 'POST',
+        headers: { ...sbHeaders, 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ meeting_id: String(meetingId), ...updatePayload })
+      });
+    }
 
     return res.status(200).json({
       meetingId,
