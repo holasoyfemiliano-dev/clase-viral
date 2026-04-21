@@ -787,6 +787,13 @@
      JAVASCRIPT
 ═══════════════════════════════════ -->
 <script>
+// Force fresh load if URL has no version param (busts stale browser cache)
+(function() {
+  const V = '20260420';
+  if (new URLSearchParams(location.search).get('v') !== V) {
+    location.replace(location.pathname + '?v=' + V);
+  }
+})();
 /* ─────────────────────────────────────
    CONFIG
 ───────────────────────────────────── */

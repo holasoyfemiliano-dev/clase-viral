@@ -949,7 +949,7 @@
       <div id="aprobAlertMiembros"></div>
       <div class="card" style="padding:0;overflow:hidden;margin-bottom:28px;">
         <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:0.85rem;font-weight:700;">Ventas pendientes de aprobación</span>
+          <span style="font-size:0.85rem;font-weight:700;">Aprobaciones de ventas</span>
           <button class="btn btn-outline btn-sm" onclick="loadAprobaciones()">↺ Actualizar</button>
         </div>
         <div class="table-wrap">
@@ -1297,6 +1297,13 @@
      JAVASCRIPT
 ════════════════════════════════════════ -->
 <script>
+// Force fresh load if URL has no version param (busts stale browser cache)
+(function() {
+  const V = '20260420';
+  if (new URLSearchParams(location.search).get('v') !== V) {
+    location.replace(location.pathname + '?v=' + V);
+  }
+})();
 /* ──────────────────────────────────────
    DASHBOARD LOGIN
 ────────────────────────────────────── */
