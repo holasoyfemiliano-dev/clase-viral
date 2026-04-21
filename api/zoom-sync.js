@@ -1,32 +1,27 @@
-// Vercel Serverless Function — Zoom Attendance Sync
-// POST /api/zoom-sync  { meetingId: "123456789" }
+// Vercel Serverless Function — Zoom Attendance Sync + List
+// GET  /api/zoom-sync          → list recent past meetings
+// POST /api/zoom-sync  { meetingId: "123456789" }  → sync attendance
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Auth check — only dashboard can call this
+  // Auth check
   const authHeader = (req.headers['authorization'] || '').trim();
   const secret = (process.env.DASHBOARD_SECRET || 'proximity-dash-2026').trim();
   if (authHeader !== `Bearer ${secret}`) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const { meetingId } = req.body;
-  if (!meetingId) return res.status(400).json({ error: 'meetingId requerido' });
-
-  const ZOOM_ACCOUNT_ID  = process.env.ZOOM_ACCOUNT_ID;
-  const ZOOM_CLIENT_ID   = process.env.ZOOM_CLIENT_ID;
+  const ZOOM_ACCOUNT_ID    = process.env.ZOOM_ACCOUNT_ID;
+  const ZOOM_CLIENT_ID     = process.env.ZOOM_CLIENT_ID;
   const ZOOM_CLIENT_SECRET = process.env.ZOOM_CLIENT_SECRET;
-  const SB_URL           = process.env.SB_URL;
-  const SB_SERVICE       = process.env.SB_SERVICE;
 
-  try {
-    // 1. Get Zoom access token (Server-to-Server OAuth)
-    const tokenRes = await fetch(
+  // Helper: get Zoom access token
+  async function getZoomToken() {
+    const r = await fetch(
       `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${ZOOM_ACCOUNT_ID}`,
       {
         method: 'POST',
@@ -36,11 +31,52 @@ module.exports = async function handler(req, res) {
         }
       }
     );
-    const tokenData = await tokenRes.json();
-    if (!tokenData.access_token) {
-      return res.status(500).json({ error: 'Error al autenticar con Zoom', detail: tokenData });
+    const d = await r.json();
+    if (!d.access_token) throw new Error('Zoom auth failed: ' + JSON.stringify(d));
+    return d.access_token;
+  }
+
+  // ── GET: list recent past meetings ──
+  if (req.method === 'GET') {
+    try {
+      const accessToken = await getZoomToken();
+      const meRes = await fetch('https://api.zoom.us/v2/users/me', {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      });
+      const meData = await meRes.json();
+      const userId = meData.id;
+      if (!userId) return res.status(500).json({ error: 'No se pudo obtener usuario Zoom' });
+
+      const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const to   = new Date().toISOString().split('T')[0];
+      const listRes = await fetch(
+        `https://api.zoom.us/v2/report/users/${userId}/meetings?type=past&from=${from}&to=${to}&page_size=20`,
+        { headers: { 'Authorization': `Bearer ${accessToken}` } }
+      );
+      const listData = await listRes.json();
+      const meetings = (listData.meetings || []).map(m => ({
+        id: m.id, topic: m.topic, start_time: m.start_time,
+        duration: m.duration, participants: m.participants_count
+      }));
+      return res.status(200).json({ meetings });
+    } catch(err) {
+      return res.status(500).json({ error: err.message });
     }
-    const accessToken = tokenData.access_token;
+  }
+
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  const { meetingId } = req.body;
+  if (!meetingId) return res.status(400).json({ error: 'meetingId requerido' });
+
+  const ZOOM_ACCOUNT_ID  = process.env.ZOOM_ACCOUNT_ID;
+  const ZOOM_CLIENT_ID   = process.env.ZOOM_CLIENT_ID;
+  const ZOOM_CLIENT_SECRET = process.env.ZOOM_CLIENT_SECRET;
+  const SB_URL     = process.env.SB_URL;
+  const SB_SERVICE = process.env.SB_SERVICE;
+
+  try {
+    const accessToken = await getZoomToken();
 
     // 2. Fetch participants from Zoom Reports API
     let allParticipants = [];

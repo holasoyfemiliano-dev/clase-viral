@@ -55,9 +55,6 @@
     "api/sb-proxy.js": {
       "maxDuration": 10
     },
-    "api/zoom-list.js": {
-      "maxDuration": 15
-    },
     "api/zoom-sync.js": {
       "maxDuration": 30
     },

@@ -2264,7 +2264,7 @@ async function loadZoomMeetings() {
   const syncBtn = document.getElementById('zm-sync-btn');
   btn.textContent = '⏳ Cargando…'; btn.disabled = true;
   try {
-    const res = await fetch('/api/zoom-list', {
+    const res = await fetch('/api/zoom-sync', {
       headers: { 'Authorization': `Bearer ${DASHBOARD_SECRET}` }
     });
     const data = await res.json();
