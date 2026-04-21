@@ -579,7 +579,7 @@
       <div class="panel" id="tab-ventas">
 
         <!-- Este mes (principal) -->
-        <div style="background:linear-gradient(135deg,rgba(255,229,0,0.12),rgba(255,229,0,0.03));border:1px solid rgba(255,229,0,0.4);border-radius:12px;padding:20px 24px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+        <div style="background:linear-gradient(135deg,rgba(255,229,0,0.12),rgba(255,229,0,0.03));border:1px solid rgba(255,229,0,0.4);border-radius:12px;padding:20px 24px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;" id="ventasHeader">
           <div>
             <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:4px;">💰 Comisión este mes</div>
             <div style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:var(--gold);line-height:1;" id="vs-mes-comision">$0</div>
@@ -1096,15 +1096,29 @@ function renderVendInteresados() {
 async function loadData() {
   document.getElementById('leadsContainer').innerHTML = '<div class="card" style="padding:40px;text-align:center;color:var(--muted)"><span style="font-size:2rem;display:block;margin-bottom:10px">⏳</span>Cargando leads…</div>';
 
-  const [leads, estados, ventas, contactActivity, pagosData, ventasAprobadasAll, vendedoresData] = await Promise.all([
-    sbGet('/rest/v1/clase_viral_registros?select=*&order=ts.desc'),
-    sbGet('/rest/v1/lead_estados?select=*'),
-    sbGet(`/rest/v1/ventas?select=*&vendedor=eq.${encodeURIComponent(currentVendedor)}&order=created_at.desc`),
-    sbGet(`/rest/v1/vendedor_actividad?select=lead_email,accion&vendedor=eq.${encodeURIComponent(currentVendedor)}&accion=in.(wa_click,phone_copy)&limit=2000`),
-    sbGet(`/rest/v1/vendedor_actividad?select=id,lead_email,detalle,ts,vendedor&accion=eq.pago_parcial&order=ts.asc`),
-    sbGet('/rest/v1/ventas?select=registro_email&aprobado=eq.true'),
-    sbGet('/rest/v1/vendedores?select=nombre&activo=eq.true&order=nombre'),
-  ]);
+  let leads, estados, ventas, contactActivity, pagosData, ventasAprobadasAll, vendedoresData;
+  try {
+    [leads, estados, ventas, contactActivity, pagosData, ventasAprobadasAll, vendedoresData] = await Promise.all([
+      sbGet('/rest/v1/clase_viral_registros?select=*&order=ts.desc'),
+      sbGet('/rest/v1/lead_estados?select=*'),
+      sbGet(`/rest/v1/ventas?select=*&vendedor=eq.${encodeURIComponent(currentVendedor)}&order=created_at.desc`),
+      sbGet(`/rest/v1/vendedor_actividad?select=lead_email,accion&vendedor=eq.${encodeURIComponent(currentVendedor)}&accion=in.(wa_click,phone_copy)&limit=2000`),
+      sbGet(`/rest/v1/vendedor_actividad?select=id,lead_email,detalle,ts,vendedor&accion=eq.pago_parcial&order=ts.asc`),
+      sbGet('/rest/v1/ventas?select=registro_email&aprobado=eq.true'),
+      sbGet('/rest/v1/vendedores?select=nombre&activo=eq.true&order=nombre'),
+    ]);
+  } catch(err) {
+    document.getElementById('leadsContainer').innerHTML = `<div class="card" style="padding:32px;text-align:center;color:#ef4444;">
+      <div style="font-size:1.5rem;margin-bottom:8px;">⚠️</div>
+      <div style="font-weight:700;margin-bottom:6px;">Error al cargar datos</div>
+      <div style="font-size:0.8rem;color:var(--muted);margin-bottom:16px;">${err.message}</div>
+      <button onclick="loadData()" style="padding:8px 20px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);border-radius:6px;color:#fbbf24;cursor:pointer;font-size:0.85rem;">↺ Reintentar</button>
+    </div>`;
+    return;
+  }
+  leads = leads || []; estados = estados || []; ventas = ventas || [];
+  contactActivity = contactActivity || []; pagosData = pagosData || [];
+  ventasAprobadasAll = ventasAprobadasAll || []; vendedoresData = vendedoresData || [];
 
   estadosMap = {};
   estados.forEach(e => { estadosMap[e.registro_email] = e; });
@@ -1907,6 +1921,7 @@ async function onNotasVendedorChange(email, value) {
    VENTAS PANEL
 ───────────────────────────────────── */
 function renderVentas() {
+  if (!misVentas) misVentas = [];
   const ahora = new Date();
   const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
   const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -2150,6 +2165,7 @@ function showTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
   if (name === 'perfil') loadPerfil();
+  if (name === 'ventas') renderVentas();
 }
 
 function switchTab(name) { showTab(name); }
