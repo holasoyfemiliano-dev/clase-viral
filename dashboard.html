@@ -3400,23 +3400,29 @@ function setAnalisisFilter(f) {
 async function loadAnalisis() {
   document.getElementById('analisisBody').innerHTML = '<tr><td colspan="10"><div class="empty"><span class="empty-icon">⏳</span>Cargando…</div></td></tr>';
   try {
-    const rows = await fetchSB('/rest/v1/page_behavior?select=*&order=updated_at.desc');
+    // Fetch count + latest 1000 rows for table display in parallel
+    const [countData, rows] = await Promise.all([
+      fetchSB('/rest/v1/page_behavior?select=id&limit=1', { headers: { 'Prefer': 'count=exact' } }),
+      fetchSB('/rest/v1/page_behavior?select=*&order=updated_at.desc'),
+    ]);
     analisisData = rows || [];
-    updateAnalisisStats();
+    const realTotal = (countData && countData._count !== undefined) ? countData._count : analisisData.length;
+    updateAnalisisStats(realTotal);
     renderAnalisis();
   } catch(e) {
     document.getElementById('analisisBody').innerHTML = '<tr><td colspan="10"><div class="empty">Error cargando datos.</div></td></tr>';
   }
 }
 
-function updateAnalisisStats() {
+function updateAnalisisStats(realTotal) {
   const total = analisisData.length;
+  const displayTotal = realTotal !== undefined ? realTotal : total;
   const regs  = analisisData.filter(b => b.registered).length;
-  const convPct = total > 0 ? Math.round(regs / total * 100) : 0;
+  const convPct = displayTotal > 0 ? Math.round(regs / displayTotal * 100) : 0;
   const avgScroll = total > 0 ? Math.round(analisisData.reduce((s,b) => s + (b.scroll_depth||0), 0) / total) : 0;
   const avgTime   = total > 0 ? Math.round(analisisData.reduce((s,b) => s + (b.time_on_page||0), 0) / total) : 0;
 
-  document.getElementById('bhv-total').textContent  = total;
+  document.getElementById('bhv-total').textContent  = displayTotal;
   document.getElementById('bhv-conv').textContent   = `${regs} (${convPct}%)`;
   document.getElementById('bhv-scroll').textContent = avgScroll + '%';
   document.getElementById('bhv-time').textContent   = avgTime + 's';
