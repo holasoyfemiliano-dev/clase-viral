@@ -41,13 +41,8 @@ module.exports = async function handler(req, res) {
     try {
       const accessToken = await getZoomToken();
 
-      // S2S OAuth: /users/me may not work — list users and pick first
-      const usersRes = await fetch('https://api.zoom.us/v2/users?page_size=1', {
-        headers: { 'Authorization': `Bearer ${accessToken}` }
-      });
-      const usersData = await usersRes.json();
-      const userId = (usersData.users && usersData.users[0]) ? usersData.users[0].id : null;
-      if (!userId) return res.status(500).json({ error: 'No se pudo obtener usuario Zoom', detail: usersData });
+      // Use the ZOOM_USER_ID env var if set, otherwise fall back to 'me'
+      const userId = process.env.ZOOM_USER_ID || 'me';
 
       const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       const to   = new Date().toISOString().split('T')[0];
@@ -56,7 +51,8 @@ module.exports = async function handler(req, res) {
         { headers: { 'Authorization': `Bearer ${accessToken}` } }
       );
       const listData = await listRes.json();
-      const meetings = (listData.meetings || []).map(m => ({
+      if (!listData.meetings) return res.status(500).json({ error: 'No se pudo listar reuniones', detail: listData });
+      const meetings = listData.meetings.map(m => ({
         id: m.id, topic: m.topic, start_time: m.start_time,
         duration: m.duration, participants: m.participants_count
       }));
