@@ -480,7 +480,7 @@
             <button class="filter-btn" id="fb-todos" onclick="setFilter('todos')">Todos</button>
             <button class="filter-btn" id="fb-interesados" onclick="setFilter('interesados')" style="color:#f97316;border-color:rgba(249,115,22,0.3);">🔥 Interesados</button>
             <button class="filter-btn" id="fb-seguimiento" onclick="setFilter('seguimiento')" style="color:#60a5fa;border-color:rgba(96,165,250,0.3);">📞 Seguimiento</button>
-            <button class="filter-btn active" id="fb-semana" onclick="setFilter('semana')">Esta semana</button>
+            <button class="filter-btn active" id="fb-semana" onclick="setFilter('semana')">📅 Recientes (2 sem.)</button>
             <button class="filter-btn" id="fb-mis-leads" onclick="setFilter('mis-leads')" style="color:#a78bfa;border-color:rgba(167,139,250,0.4);">⭐ Mis Leads</button>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -1191,22 +1191,31 @@ function setFilter(f) {
   renderLeads();
 }
 
-// Regresa el último jueves a las 7PM hora México (inicio del ciclo actual)
-function lastThursday7PM() {
-  const MX = -6 * 3600000;
+// Corte de ciclo = último MIÉRCOLES a las 7PM hora México
+function lastWednesdayCut() {
   const now = new Date();
-  const mxNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + MX);
-  let days = (mxNow.getDay() - 4 + 7) % 7; // días desde el último jueves
-  if (days === 0 && mxNow.getHours() < 19) days = 7; // jueves pero antes de 7PM → retroceder una semana
-  const t = new Date(mxNow);
-  t.setDate(mxNow.getDate() - days);
-  t.setHours(19, 0, 0, 0);
-  return new Date(t.getTime() - now.getTimezoneOffset() * 60000 - MX);
+  const mxM = now.getMonth();
+  const MX_OFF = (mxM >= 3 && mxM <= 9 ? -5 : -6) * 3600000;
+  const mxNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + MX_OFF);
+  let back = (mxNow.getDay() - 3 + 7) % 7; // días desde el último miércoles
+  if (back === 0 && mxNow.getHours() < 19) back = 7;
+  const c = new Date(mxNow);
+  c.setDate(mxNow.getDate() - back);
+  c.setHours(19, 0, 0, 0);
+  return new Date(c.getTime() - now.getTimezoneOffset() * 60000 - MX_OFF);
 }
 
 function isThisWeek(ts) {
   if (!ts) return false;
-  return new Date(ts) >= lastThursday7PM();
+  return new Date(ts) >= lastWednesdayCut();
+}
+
+function isLastWeek(ts) {
+  if (!ts) return false;
+  const cut = lastWednesdayCut();
+  const prev = new Date(cut.getTime() - 7 * 86400000);
+  const d = new Date(ts);
+  return d >= prev && d < cut;
 }
 
 /* ─────────────────────────────────────
@@ -1705,7 +1714,7 @@ function renderLeads() {
   }
 
   let leads = allLeads;
-  if (currentFilter === 'semana') leads = leads.filter(l => isThisWeek(l.ts));
+  if (currentFilter === 'semana') leads = leads.filter(l => isThisWeek(l.ts) || isLastWeek(l.ts));
   if (currentFilter === 'mis-leads') leads = leads.filter(l => {
     const eMap = estadosMap[l.email] || {};
     const vendInteresado = (vendInteresadosCache || []).find(v => v.email === l.email);
@@ -1764,24 +1773,48 @@ function renderLeads() {
       </div>`;
     }).join('');
   } else {
-    // Flat list for "esta semana"
+    // Flat list — for "semana" show two sections: semana pasada + esta semana
     if (!leads.length) {
       container.innerHTML = '<div class="card" style="padding:0;overflow:hidden;"><div class="empty"><span class="empty-icon">📭</span>No hay leads esta semana.</div></div>';
       return;
     }
-    container.innerHTML = `<div class="card" style="padding:0;overflow:hidden;">
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Vendedor</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>
-          <tbody>${leads.slice().sort((a,b) => {
-            const DONE = ['confirmado','asistio','no_asistio','compro_evento','seguimiento_exitoso','no_asistira'];
-            const aD = DONE.includes((estadosMap[a.email]||{}).estado||'por_confirmar');
-            const bD = DONE.includes((estadosMap[b.email]||{}).estado||'por_confirmar');
-            return aD === bD ? 0 : aD ? 1 : -1;
-          }).map((l,i) => leadRow(l,i)).join('')}</tbody>
-        </table>
-      </div>
-    </div>`;
+
+    const DONE = ['confirmado','asistio','no_asistio','compro_evento','seguimiento_exitoso','no_asistira'];
+    const sortFn = (a, b) => {
+      const aD = DONE.includes((estadosMap[a.email]||{}).estado||'por_confirmar');
+      const bD = DONE.includes((estadosMap[b.email]||{}).estado||'por_confirmar');
+      return aD === bD ? 0 : aD ? 1 : -1;
+    };
+
+    function tableHtml(rows) {
+      return `<div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Nombre</th><th>Email</th><th>WhatsApp</th><th>Registro</th><th>Vendedor</th><th>Estado</th><th>Estado de contacto</th><th>Datos del lead</th><th>Mis notas</th></tr></thead>
+            <tbody>${rows.slice().sort(sortFn).map((l,i) => leadRow(l,i)).join('')}</tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    if (currentFilter === 'semana') {
+      const semPas  = leads.filter(l => isLastWeek(l.ts));
+      const semAct  = leads.filter(l => isThisWeek(l.ts));
+      let html = '';
+      if (semPas.length) {
+        html += `<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-bottom:8px;padding-left:4px;">
+          📋 Semana pasada — ${semPas.length} leads (pendientes de confirmar para el siguiente evento)
+        </div>` + tableHtml(semPas);
+      }
+      if (semAct.length) {
+        html += `<div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#60a5fa;margin-bottom:8px;padding-left:4px;${semPas.length ? 'margin-top:8px;' : ''}">
+          🆕 Esta semana — ${semAct.length} leads (nuevos desde el miércoles 7pm)
+        </div>` + tableHtml(semAct);
+      }
+      container.innerHTML = html;
+    } else {
+      container.innerHTML = tableHtml(leads);
+    }
   }
 }
 
