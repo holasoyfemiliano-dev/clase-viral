@@ -1434,14 +1434,13 @@ function nextThursday7PM() {
   const mxOff = (month >= 3 && month <= 9) ? -5 : -6;
   const mxNow = new Date(utcMs + mxOff * 3600000);
 
-  // Corte: miércoles a las 8PM. A partir de ese momento ya se muestra el jueves siguiente.
-  let daysToWed = (3 - mxNow.getDay() + 7) % 7;
-  if (daysToWed === 0 && mxNow.getHours() >= 20) daysToWed = 7; // ya pasaron las 8PM del miércoles
+  // Flip al siguiente jueves a las 6PM del jueves (1hr antes del evento de 7PM)
+  let daysToThu = (4 - mxNow.getDay() + 7) % 7;
+  if (daysToThu === 0 && mxNow.getHours() >= 18) daysToThu = 7; // jueves pasadas 6pm → siguiente
 
-  // El jueves a mostrar = ese miércoles + 1 día
   const target = new Date(mxNow);
-  target.setDate(mxNow.getDate() + daysToWed + 1);
-  target.setHours(19, 0, 0, 0);
+  target.setDate(mxNow.getDate() + daysToThu);
+  target.setHours(19, 0, 0, 0); // 7PM hora MX = hora del evento
   return new Date(target.getTime() - mxOff * 3600000 - now.getTimezoneOffset() * 60000);
 }
 

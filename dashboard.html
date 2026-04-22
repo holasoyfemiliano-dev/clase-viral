@@ -1759,14 +1759,22 @@ async function renderOverview() {
     // Time references for weekly/daily filters
     const hoy = new Date(); hoy.setHours(0,0,0,0);
     const hoyISO = hoy.toISOString();
-    // Corte semanal = último jueves 7 PM
-    const corteSem = (() => {
-      const d = new Date(); const day = d.getDay();
-      const back = day >= 4 ? day - 4 : day + 3;
-      const c = new Date(d); c.setDate(d.getDate() - back); c.setHours(19,0,0,0);
-      if (back === 0 && d < c) c.setDate(c.getDate() - 7);
-      return c;
-    })();
+
+    // Corte "Esta semana" = último MIÉRCOLES a las 7PM (día antes del evento)
+    function lastWednesdayCut() {
+      const _mxM = new Date().getMonth();
+      const MX_OFF = (_mxM >= 3 && _mxM <= 9 ? -5 : -6) * 3600000;
+      const utcMs = Date.now() + new Date().getTimezoneOffset() * 60000;
+      const mxNow = new Date(utcMs + MX_OFF);
+      let back = (mxNow.getDay() - 3 + 7) % 7; // días desde último miércoles (3=mié)
+      if (back === 0 && mxNow.getHours() < 19) back = 7; // miércoles antes de 7pm → semana anterior
+      const c = new Date(mxNow);
+      c.setDate(mxNow.getDate() - back);
+      c.setHours(19, 0, 0, 0);
+      return new Date(c.getTime() - new Date().getTimezoneOffset() * 60000 - MX_OFF);
+    }
+    const corteSem = lastWednesdayCut();                              // Esta semana: desde el mié 7pm
+    const cortePrev = new Date(corteSem.getTime() - 7 * 86400000);  // Semana pasada: 7 días antes
     const corteSemISO = corteSem.toISOString();
 
     const [vends, actividad, actividadHoy, ventasVend, leadsVend] = await Promise.all([
@@ -1777,15 +1785,16 @@ async function renderOverview() {
       fetchSB('/rest/v1/lead_estados?select=vendedor,asignado_a,estado,updated_at'),
     ]);
 
-    // ── Confirmados: hoy y semana (incluye pendiente_confirmar para capturar trabajo en progreso) ──
+    // ── Confirmados: hoy / esta semana (desde mié 7pm) / semana pasada (mié anterior → mié actual) ──
     const CONF_ESTADOS = new Set(['confirmado','pendiente_confirmar','asistio','seguimiento_exitoso','compro_evento']);
-    const confHoy = {}, confSemana = {};
+    const confHoy = {}, confSemana = {}, confSemPasada = {};
     (leadsVend||[]).forEach(e => {
       const name = e.vendedor;
       if (!name || !CONF_ESTADOS.has(e.estado)) return;
       const upd = new Date(e.updated_at);
-      if (upd >= hoy) confHoy[name] = (confHoy[name]||0) + 1;
-      if (upd >= corteSem) confSemana[name] = (confSemana[name]||0) + 1; // semana incluye hoy
+      if (upd >= hoy)     confHoy[name]      = (confHoy[name]||0) + 1;
+      if (upd >= corteSem) confSemana[name]  = (confSemana[name]||0) + 1;
+      else if (upd >= cortePrev) confSemPasada[name] = (confSemPasada[name]||0) + 1;
     });
 
     // ── Per-vendor time: today (completed + currently active session) ──
@@ -1855,8 +1864,9 @@ async function renderOverview() {
           const avatarHtml = v.foto_url
             ? `<img src="${esc(v.foto_url)}" alt="${esc(displayName)}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,214,0,0.4);flex-shrink:0;" onerror="vendAvFallback(this,'${initials}')">`
             : `<div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgba(26,111,255,0.4),rgba(255,214,0,0.3));border:2px solid rgba(255,214,0,0.3);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;flex-shrink:0;">${initials}</div>`;
-          const cHoy    = confHoy[v.nombre]    || 0;
-          const cSemana = confSemana[v.nombre] || 0;
+          const cHoy      = confHoy[v.nombre]      || 0;
+          const cSemana   = confSemana[v.nombre]   || 0;
+          const cSemPas   = confSemPasada[v.nombre] || 0;
           return `
           <div style="background:rgba(255,255,255,0.04);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;">
 
@@ -1876,17 +1886,22 @@ async function renderOverview() {
               </div>
             </div>
 
-            <!-- Confirmados: hoy / semana -->
-            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:10px;">
-              <div style="background:rgba(168,85,247,0.09);border:1px solid rgba(168,85,247,0.22);border-radius:8px;padding:8px 4px;text-align:center;" title="Confirmados desde las 12am de hoy">
-                <div style="font-size:0.58rem;font-weight:700;color:rgba(168,85,247,0.7);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Hoy</div>
-                <div style="font-size:1.6rem;font-weight:800;color:#c084fc;line-height:1;">${cHoy}</div>
-                <div style="font-size:0.6rem;color:var(--muted);margin-top:1px;">desde 12am</div>
+            <!-- Confirmados: sem. pasada / esta semana / hoy -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:10px;">
+              <div style="background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.25);border-radius:8px;padding:7px 3px;text-align:center;" title="Leads confirmados del ciclo anterior (antes del miércoles 7pm)">
+                <div style="font-size:0.52rem;font-weight:700;color:rgba(148,163,184,0.8);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">Sem. pasada</div>
+                <div style="font-size:1.4rem;font-weight:800;color:#94a3b8;line-height:1;">${cSemPas}</div>
+                <div style="font-size:0.55rem;color:var(--muted);margin-top:1px;">pendientes</div>
               </div>
-              <div style="background:rgba(26,111,255,0.09);border:1px solid rgba(26,111,255,0.22);border-radius:8px;padding:8px 4px;text-align:center;" title="Confirmados + pendientes de confirmar este ciclo (desde el último jueves)">
-                <div style="font-size:0.58rem;font-weight:700;color:rgba(26,111,255,0.7);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Semana</div>
-                <div style="font-size:1.6rem;font-weight:800;color:#60a5fa;line-height:1;">${cSemana}</div>
-                <div style="font-size:0.6rem;color:var(--muted);margin-top:1px;">este ciclo</div>
+              <div style="background:rgba(26,111,255,0.09);border:1px solid rgba(26,111,255,0.22);border-radius:8px;padding:7px 3px;text-align:center;" title="Leads de esta semana (desde el miércoles 7pm)">
+                <div style="font-size:0.52rem;font-weight:700;color:rgba(26,111,255,0.8);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">Esta semana</div>
+                <div style="font-size:1.4rem;font-weight:800;color:#60a5fa;line-height:1;">${cSemana}</div>
+                <div style="font-size:0.55rem;color:var(--muted);margin-top:1px;">desde mié 7pm</div>
+              </div>
+              <div style="background:rgba(168,85,247,0.09);border:1px solid rgba(168,85,247,0.22);border-radius:8px;padding:7px 3px;text-align:center;" title="Confirmados desde las 12am de hoy">
+                <div style="font-size:0.52rem;font-weight:700;color:rgba(168,85,247,0.8);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">Hoy</div>
+                <div style="font-size:1.4rem;font-weight:800;color:#c084fc;line-height:1;">${cHoy}</div>
+                <div style="font-size:0.55rem;color:var(--muted);margin-top:1px;">hoy</div>
               </div>
             </div>
 
