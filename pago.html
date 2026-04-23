@@ -515,7 +515,7 @@
   </div><!-- /container -->
 
   <script>
-    const CARD_URL    = 'https://link.fastpaydirect.com/payment-link/69a507833413b55430fd0766';
+    const CARD_URL    = 'https://www.mercadopago.com.mx/checkout/v1/payment/redirect/9158b5bb-2b55-4aea-aa12-6dd917df40e4/payment-option-form/?source=link&preference-id=536980263-c350fac7-6a23-41a6-8b80-0742acac8adb&router-request-id=104f13c9-d197-4d44-9f17-0c42bb3292f8&p=47c1093e96080b8961871279b0525215';
     const ADVISOR_URL = 'https://wa.me/523338200524';
 
     const SB_URL  = 'https://xpsvkhoeedinuvwrumvu.supabase.co';
@@ -597,7 +597,7 @@
       document.getElementById('bankCard').classList.remove('visible');
       document.getElementById('backBtn').classList.remove('visible');
     }
-    function goToCard()    { window.open(ADVISOR_URL, '_blank'); }
+    function goToCard()    { window.location.href = CARD_URL; }
     function goToAdvisor() { window.open(ADVISOR_URL, '_blank'); }
 
     // Fetch live USD→MXN rate
