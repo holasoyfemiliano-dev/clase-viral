@@ -1193,25 +1193,21 @@ function setFilter(f) {
   renderLeads();
 }
 
-// Ciclo semanal: Jueves 7PM → Miércoles 7PM
-// "Esta semana"  = desde el último jueves 7pm (inicio del ciclo actual)
-// "Sem. pasada"  = el jueves anterior 7pm → último jueves 7pm
-// Corte de ciclo = último JUEVES 7PM (hora del evento)
-// Esta semana  → desde el último jueves 7pm
-// Sem. pasada  → desde el jueves anterior 7pm hasta el último jueves 7pm
-// La landing cambia a las 6pm del jueves (1hr antes) para capturar
-// registros de última hora en el ciclo actual (corte sigue siendo 7pm)
+// Corte CRM: MIÉRCOLES 7PM — leads de "Esta semana" pasan a "Sem. pasada"
+// La landing cambia independientemente: JUEVES 6PM (1hr antes del evento)
+// Esta semana  → desde el último miércoles 7pm
+// Sem. pasada  → desde el miércoles anterior 7pm hasta el último miércoles 7pm
 function cycleCut(weeksBack) {
   const now = new Date();
   const mxM = now.getMonth();
   const MX_OFF = (mxM >= 3 && mxM <= 9 ? -5 : -6) * 3600000;
   const mxNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + MX_OFF);
-  let back = (mxNow.getDay() - 4 + 7) % 7; // días desde el último jueves
-  if (back === 0 && mxNow.getHours() < 18) back = 7; // jueves antes de 6pm → ciclo anterior
+  let back = (mxNow.getDay() - 3 + 7) % 7; // días desde el último miércoles (3=mié)
+  if (back === 0 && mxNow.getHours() < 19) back = 7; // miércoles antes de 7pm → ciclo anterior
   back += weeksBack * 7;
   const c = new Date(mxNow);
   c.setDate(mxNow.getDate() - back);
-  c.setHours(18, 0, 0, 0); // 6pm = corte del ciclo (1hr antes del evento)
+  c.setHours(19, 0, 0, 0); // 7PM = corte CRM
   return new Date(c.getTime() - now.getTimezoneOffset() * 60000 - MX_OFF);
 }
 
