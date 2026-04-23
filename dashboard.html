@@ -1777,12 +1777,13 @@ async function renderOverview() {
     const cortePrev = new Date(corteSem.getTime() - 7 * 86400000);  // Semana pasada: 7 días antes
     const corteSemISO = corteSem.toISOString();
 
-    const [vends, actividad, actividadHoy, ventasVend, leadsVend] = await Promise.all([
+    const [vends, actividad, actividadHoy, ventasVend, leadsVend, pagosVend] = await Promise.all([
       fetchSB('/rest/v1/vendedores?select=nombre,activo,last_active,apodo,foto_url&order=nombre'),
-      fetchSB('/rest/v1/vendedor_actividad?select=vendedor,accion,detalle,ts&order=ts.asc&limit=1000'),
+      fetchSB('/rest/v1/vendedor_actividad?select=vendedor,accion,detalle,ts&order=ts.desc&limit=2000'),
       fetchSB(`/rest/v1/vendedor_actividad?select=vendedor,accion,detalle,ts&accion=in.(session_start,session_end)&ts=gte.${encodeURIComponent(hoyISO)}&order=ts.asc`),
       fetchSB('/rest/v1/ventas?select=vendedor,monto,tipo,aprobado,comision_porcentaje'),
       fetchSB('/rest/v1/lead_estados?select=vendedor,asignado_a,estado,updated_at'),
+      fetchSB('/rest/v1/vendedor_actividad?select=vendedor,detalle&accion=eq.pago_parcial'),
     ]);
 
     // ── Confirmados: hoy / esta semana (desde mié 7pm) / semana pasada (mié anterior → mié actual) ──
@@ -1839,6 +1840,15 @@ async function renderOverview() {
         const r = (vv.comision_porcentaje != null ? vv.comision_porcentaje : 10) / 100;
         vd.comisiones += Number(vv.monto||0) * r;
       }
+    });
+    // Sumar apartados aprobados a comisiones del vendedor
+    (pagosVend||[]).forEach(pa => {
+      const vd = byVend[pa.vendedor];
+      if (!vd) return;
+      try {
+        const d = typeof pa.detalle === 'string' ? JSON.parse(pa.detalle) : (pa.detalle || {});
+        if (d.aprobado === true) vd.comisiones += Number(d.monto || 0) * 0.10;
+      } catch(e) {}
     });
     (leadsVend||[]).forEach(le => {
       const name = le.asignado_a || le.vendedor;
