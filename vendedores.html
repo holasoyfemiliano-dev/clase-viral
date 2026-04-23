@@ -1193,14 +1193,22 @@ function setFilter(f) {
   renderLeads();
 }
 
-// Corte de ciclo = último MIÉRCOLES a las 7PM hora México
-function lastWednesdayCut() {
+// Ciclo semanal: Jueves 7PM → Miércoles 7PM
+// "Esta semana"  = desde el último jueves 7pm (inicio del ciclo actual)
+// "Sem. pasada"  = el jueves anterior 7pm → último jueves 7pm
+function cycleCut(weeksBack) {
+  // weeksBack = 0 → inicio del ciclo actual, 1 → ciclo anterior
   const now = new Date();
   const mxM = now.getMonth();
   const MX_OFF = (mxM >= 3 && mxM <= 9 ? -5 : -6) * 3600000;
   const mxNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + MX_OFF);
-  let back = (mxNow.getDay() - 3 + 7) % 7; // días desde el último miércoles
+  // Días desde el último jueves
+  let back = (mxNow.getDay() - 4 + 7) % 7;
+  // Miércoles antes de las 7pm → todavía en el ciclo actual (el jueves no ha llegado)
+  if (mxNow.getDay() === 3 && mxNow.getHours() < 19) back += 7;
+  // Si es jueves antes de 7pm → el ciclo actual empezó el jueves pasado
   if (back === 0 && mxNow.getHours() < 19) back = 7;
+  back += weeksBack * 7;
   const c = new Date(mxNow);
   c.setDate(mxNow.getDate() - back);
   c.setHours(19, 0, 0, 0);
@@ -1209,15 +1217,13 @@ function lastWednesdayCut() {
 
 function isThisWeek(ts) {
   if (!ts) return false;
-  return new Date(ts) >= lastWednesdayCut();
+  return new Date(ts) >= cycleCut(0);
 }
 
 function isLastWeek(ts) {
   if (!ts) return false;
-  const cut = lastWednesdayCut();
-  const prev = new Date(cut.getTime() - 7 * 86400000);
   const d = new Date(ts);
-  return d >= prev && d < cut;
+  return d >= cycleCut(1) && d < cycleCut(0);
 }
 
 /* ─────────────────────────────────────
