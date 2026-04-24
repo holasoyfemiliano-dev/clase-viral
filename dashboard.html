@@ -2316,7 +2316,7 @@ async function loadZoomMeetings() {
     const meetings = data.meetings || [];
     sel.innerHTML = '<option value="">Selecciona una clase…</option>';
     meetings.forEach(m => {
-      const fecha = m.start_time ? new Date(m.start_time).toLocaleDateString('es-MX', { weekday:'short', day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+      const fecha = m.start_time ? new Date(m.start_time).toLocaleDateString('es-MX', { weekday:'short', day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'America/Mexico_City' }) : '—';
       const opt = document.createElement('option');
       opt.value = m.id;
       opt.textContent = `${fecha} — ${m.topic} (${m.participants || 0} asistentes)`;
@@ -3867,7 +3867,7 @@ function renderTranscriptAnalysis(data, container) {
   }
 
   // Summary stats
-  const fecha = startTime ? new Date(startTime).toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—';
+  const fecha = startTime ? new Date(startTime).toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',timeZone:'America/Mexico_City'}) : '—';
   const lastPct = retention.length ? retention[retention.length-1].pct : 0;
   const halfwayPt = retention.find(r => r.pct <= 50);
   const halfwayMin = halfwayPt ? halfwayPt.minute : null;
