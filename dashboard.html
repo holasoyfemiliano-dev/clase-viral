@@ -3250,7 +3250,7 @@ async function loadCachedAnalysisEvento() {
   try {
     const [analisisRows, ventasRows, latestDateRows] = await Promise.all([
       fetchSB('/rest/v1/clase_analisis?select=*&order=updated_at.desc&limit=1'),
-      fetchSB('/rest/v1/ventas?select=id&aprobado=eq.true'),
+      fetchSB('/rest/v1/ventas?select=registro_email&aprobado=eq.true'),
       fetchSB('/rest/v1/asistencias?select=clase_fecha&order=clase_fecha.desc&limit=1'),
     ]);
 
@@ -3263,7 +3263,9 @@ async function loadCachedAnalysisEvento() {
 
     // Top stat cards — always from the latest asistencias snapshot
     const totalAsistentes = (latestAsist||[]).length;
-    const totalVentas = (ventasRows||[]).length;
+    // Only count ventas from people who actually attended this event
+    const emailsAsist = new Set((latestAsist||[]).map(a => (a.email||'').toLowerCase()).filter(Boolean));
+    const totalVentas = (ventasRows||[]).filter(v => emailsAsist.has((v.registro_email||'').toLowerCase())).length;
     if (totalAsistentes > 0) {
       const pctConv = Math.round((totalVentas / totalAsistentes) * 100);
       document.getElementById('yt-conversion').textContent = pctConv + '%';
