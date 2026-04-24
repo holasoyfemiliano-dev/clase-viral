@@ -1629,17 +1629,23 @@ async function renderOverview() {
     const vendBreakdown = Object.entries(confPorVend).sort((a,b)=>b[1]-a[1]).map(([v,n])=>`${v}: ${n}`).join(' · ');
     document.getElementById('ov-tasa-conf-sub').textContent = confirmadosProximo + ' confirmados de ' + regsProximo.length + ' registrados' + (vendBreakdown ? ' · ' + vendBreakdown : '');
 
-    // ── Evento Anterior: asistencia real de Zoom ──
+    // ── Evento Anterior: solo el ciclo mié-mié anterior ──
+    const corteAnterior = new Date(corteFecha.getTime() - 7 * 24 * 3600000);
+    // Registros de ESE ciclo únicamente (no acumulado)
+    const regsAnterior = (sbRegs||[]).filter(r => r.ts && new Date(r.ts) >= corteAnterior && new Date(r.ts) < corteFecha).length;
+
+    // Asistentes: solo el meeting más reciente (no todos los históricos)
     let asistentes = 0;
     try {
-      const asist = await fetchSB('/rest/v1/asistencias?select=email');
-      asistentes = (asist||[]).length;
+      const asist = await fetchSB('/rest/v1/asistencias?select=email,clase_fecha&order=clase_fecha.desc&limit=500');
+      if (Array.isArray(asist) && asist.length > 0) {
+        const latestDate = asist[0].clase_fecha;
+        asistentes = asist.filter(a => a.clase_fecha === latestDate).length;
+      }
     } catch(e) {}
 
-    // Ventas del ciclo anterior (antes del corte)
-    const ventasAnterior = aprobadas.filter(v => v.created_at && new Date(v.created_at) < corteFecha).length;
-    // Registros del ciclo anterior
-    const regsAnterior = totalRegistrados - regsProximo.length;
+    // Ventas del ciclo anterior
+    const ventasAnterior = aprobadas.filter(v => v.created_at && new Date(v.created_at) >= corteAnterior && new Date(v.created_at) < corteFecha).length;
 
     document.getElementById('ov-tasa-asist').textContent = asistentes > 0 ? asistentes + ' / ' + regsAnterior : '—';
     document.getElementById('ov-tasa-asist-sub').textContent = asistentes > 0 ? asistentes + ' asistentes de ' + regsAnterior + ' registrados (evento anterior)' : 'sin datos de Zoom aún';
