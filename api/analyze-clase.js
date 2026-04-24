@@ -83,17 +83,22 @@ Responde SOLO el JSON, sin texto adicional.`;
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 1500 }
+          generationConfig: {
+            maxOutputTokens: 2500,
+            responseMimeType: 'application/json'
+          }
         })
       }
     );
 
     const geminiData = await geminiRes.json();
-    const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    let text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-    // Parse JSON from response
+    // Strip markdown code fences if present
+    text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return res.status(500).json({ error: 'Gemini no devolvió JSON válido', raw: text });
+    if (!jsonMatch) return res.status(500).json({ error: 'Gemini no devolvió JSON válido', raw: text.substring(0, 300) });
 
     const analysis = JSON.parse(jsonMatch[0]);
     return res.status(200).json(analysis);
