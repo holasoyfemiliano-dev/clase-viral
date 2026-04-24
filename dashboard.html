@@ -1577,23 +1577,19 @@ async function renderOverview() {
     document.getElementById('ov-comisiones').textContent = '$' + (comisionesMes + comisionesApartadosMes).toLocaleString('es-MX', {maximumFractionDigits:0});
     document.getElementById('ov-comisiones-sub').textContent = MESES[ahora.getMonth()] + ' · ' + aprobMesPendientes.length + ' ventas pendientes';
 
-    // ── Corte de evento: desde el último jueves a las 10 PM (hora MX) ──
-    function lastThursdayCut() {
-      // México: CDT (UTC-5) abr-oct, CST (UTC-6) nov-mar
-      const _mxM = new Date().getMonth(); // 0=ene
+    // ── Corte CRM: último MIÉRCOLES 7PM hora MX (igual que vendedores) ──
+    function lastWednesdayCutOverview() {
+      const _mxM = new Date().getMonth();
       const MX_OFFSET = (_mxM >= 3 && _mxM <= 9 ? -5 : -6) * 3600000;
-      const nowUtc = Date.now();
-      const nowMx = new Date(nowUtc + new Date().getTimezoneOffset() * 60000 + MX_OFFSET);
-      const day = nowMx.getDay(); // 0=Dom … 4=Jue
-      const daysBack = day >= 4 ? day - 4 : day + 3;
-      const cut = new Date(nowMx);
-      cut.setDate(nowMx.getDate() - daysBack);
-      cut.setHours(22, 0, 0, 0); // 10 PM hora MX (después del evento)
-      if (daysBack === 0 && nowMx < cut) cut.setDate(cut.getDate() - 7);
-      // Convertir de vuelta a UTC para comparar con timestamps de DB
-      return new Date(cut.getTime() - new Date().getTimezoneOffset() * 60000 - MX_OFFSET);
+      const nowMx = new Date(Date.now() + new Date().getTimezoneOffset() * 60000 + MX_OFFSET);
+      let back = (nowMx.getDay() - 3 + 7) % 7; // días desde el último miércoles
+      if (back === 0 && nowMx.getHours() < 19) back = 7; // miércoles antes 7pm → anterior
+      const c = new Date(nowMx);
+      c.setDate(nowMx.getDate() - back);
+      c.setHours(19, 0, 0, 0); // 7PM
+      return new Date(c.getTime() - new Date().getTimezoneOffset() * 60000 - MX_OFFSET);
     }
-    const corteFecha = lastThursdayCut();
+    const corteFecha = lastWednesdayCutOverview();
 
     // ── Próximo Evento: registros DESDE el último jueves 10pm ──
     const regsProximo = (sbRegs||[]).filter(r => r.ts && new Date(r.ts) >= corteFecha);
@@ -2489,17 +2485,16 @@ async function loadLandingTab() {
 }
 
 function getLastThursdayCut() {
+  // Corte CRM: miércoles 7PM hora MX
   const _mxM = new Date().getMonth();
-  const MX_OFFSET = (_mxM >= 3 && _mxM <= 9 ? -5 : -6) * 3600000; // CDT abr-oct, CST nov-mar
-  const nowUtc = Date.now();
-  const nowMx = new Date(nowUtc + new Date().getTimezoneOffset() * 60000 + MX_OFFSET);
-  const day = nowMx.getDay();
-  const daysBack = day >= 4 ? day - 4 : day + 3;
-  const cut = new Date(nowMx);
-  cut.setDate(nowMx.getDate() - daysBack);
-  cut.setHours(22, 0, 0, 0);
-  if (daysBack === 0 && nowMx < cut) cut.setDate(cut.getDate() - 7);
-  return new Date(cut.getTime() - new Date().getTimezoneOffset() * 60000 - MX_OFFSET);
+  const MX_OFFSET = (_mxM >= 3 && _mxM <= 9 ? -5 : -6) * 3600000;
+  const nowMx = new Date(Date.now() + new Date().getTimezoneOffset() * 60000 + MX_OFFSET);
+  let back = (nowMx.getDay() - 3 + 7) % 7;
+  if (back === 0 && nowMx.getHours() < 19) back = 7;
+  const c = new Date(nowMx);
+  c.setDate(nowMx.getDate() - back);
+  c.setHours(19, 0, 0, 0);
+  return new Date(c.getTime() - new Date().getTimezoneOffset() * 60000 - MX_OFFSET);
 }
 
 async function loadRegistrosTab() {
