@@ -3868,7 +3868,9 @@ function renderTranscriptAnalysis(data, container) {
 
   // Summary stats
   const fecha = startTime ? new Date(startTime).toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',timeZone:'America/Mexico_City'}) : '—';
-  const lastPct = retention.length ? retention[retention.length-1].pct : 0;
+  // Use last non-zero point — the algorithm adds one extra 0-count bucket at the end
+  const lastNonZero = [...(retention||[])].reverse().find(r => r.count > 0);
+  const lastPct = lastNonZero ? lastNonZero.pct : (retention.length ? retention[retention.length-1].pct : 0);
   const halfwayPt = retention.find(r => r.pct <= 50);
   const halfwayMin = halfwayPt ? halfwayPt.minute : null;
 
