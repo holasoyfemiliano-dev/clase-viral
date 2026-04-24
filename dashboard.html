@@ -1414,11 +1414,12 @@ function cvr(v, c)   { return v === 0 ? 0 : Math.round((c / v) * 1000) / 10; }
    NEXT THURSDAY
 ────────────────────────────────────── */
 function nextThursday7PM() {
-  const MX = -6 * 3600000;
   const now = new Date();
+  const mxM = now.getMonth();
+  const MX = (mxM >= 3 && mxM <= 9 ? -5 : -6) * 3600000; // CDT abr-oct, CST nov-mar
   const mxNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + MX);
   let days = (4 - mxNow.getDay() + 7) % 7;
-  if (days === 0 && mxNow.getHours() >= 19) days = 7;
+  if (days === 0 && mxNow.getHours() >= 18) days = 7; // jueves pasadas 6pm → siguiente
   const t = new Date(mxNow);
   t.setDate(mxNow.getDate() + days); t.setHours(19, 0, 0, 0);
   return new Date(t.getTime() - now.getTimezoneOffset() * 60000 - MX);
@@ -1610,9 +1611,7 @@ async function renderOverview() {
 
     // Fecha del próximo jueves para mostrar en el label
     const proxJueves = (() => {
-      const d = new Date(corteFecha);
-      d.setDate(d.getDate() + 7);
-      return d.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'short' });
+      return nextThursday7PM().toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'short' });
     })();
     const proxFechaEl = document.getElementById('ov-prox-fecha');
     if (proxFechaEl) proxFechaEl.textContent = '· ' + proxJueves;
@@ -1632,16 +1631,19 @@ async function renderOverview() {
 
     // Asistentes: solo el meeting más reciente (no todos los históricos)
     let asistentes = 0;
+    let emailsAsistentes = new Set();
     try {
       const asist = await fetchSB('/rest/v1/asistencias?select=email,clase_fecha&order=clase_fecha.desc&limit=500');
       if (Array.isArray(asist) && asist.length > 0) {
         const latestDate = asist[0].clase_fecha;
-        asistentes = asist.filter(a => a.clase_fecha === latestDate).length;
+        const lastMeeting = asist.filter(a => a.clase_fecha === latestDate);
+        asistentes = lastMeeting.length;
+        emailsAsistentes = new Set(lastMeeting.map(a => (a.email||'').toLowerCase()).filter(Boolean));
       }
     } catch(e) {}
 
-    // Ventas del ciclo anterior
-    const ventasAnterior = aprobadas.filter(v => v.created_at && new Date(v.created_at) >= corteAnterior && new Date(v.created_at) < corteFecha).length;
+    // Conversiones: ventas de personas que SÍ asistieron al último evento
+    const ventasAnterior = aprobadas.filter(v => emailsAsistentes.has((v.registro_email||'').toLowerCase())).length;
 
     document.getElementById('ov-tasa-asist').textContent = asistentes > 0 ? asistentes + ' / ' + regsAnterior : '—';
     document.getElementById('ov-tasa-asist-sub').textContent = asistentes > 0 ? asistentes + ' asistentes de ' + regsAnterior + ' registrados (evento anterior)' : 'sin datos de Zoom aún';
