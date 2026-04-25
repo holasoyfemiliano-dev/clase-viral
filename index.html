@@ -141,12 +141,14 @@
       position: relative; overflow: hidden;
     }
     .btn-gold {
-      background: var(--gold); color: var(--black);
-      box-shadow: 0 0 0 rgba(255,185,0,0);
+      background: linear-gradient(135deg, #FFD600 0%, #FFA800 100%);
+      color: var(--black);
+      box-shadow: 0 4px 24px rgba(255,180,0,0.35);
+      font-size: 1.05rem;
     }
     .btn-gold:hover {
       transform: scale(1.02);
-      box-shadow: 0 0 28px var(--gold-glow);
+      box-shadow: 0 6px 36px rgba(255,180,0,0.55);
     }
     .btn-gold::after {
       content: ''; position: absolute; inset: 0;
@@ -301,12 +303,12 @@
 
     /* RIGHT — FORM */
     .hero-form-box {
-      background: rgba(255,255,255,0.04);
+      background: rgba(8,18,40,0.88);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--border);
+      border: 1.5px solid rgba(255,229,0,0.45);
       border-radius: 16px; padding: 36px 32px;
-      box-shadow: 0 0 60px rgba(255,229,0,0.06);
+      box-shadow: 0 0 80px rgba(255,229,0,0.18), 0 0 0 1px rgba(255,229,0,0.07), 0 24px 60px rgba(0,0,0,0.5);
       position: relative; z-index: 10;
     }
     .field input, .field select, .field textarea {
@@ -325,16 +327,17 @@
     .field { margin-bottom: 14px; }
     .field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text); margin-bottom: 6px; letter-spacing: 0.04em; text-transform: uppercase; }
     .field input, .field select {
-      width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--border-dim);
+      width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.18);
       border-radius: 6px; padding: 13px 14px; color: var(--white);
       font-size: 0.95rem; font-family: 'Inter', sans-serif; outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
     .field input:focus, .field select:focus {
       border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(255,229,0,0.08);
+      box-shadow: 0 0 0 3px rgba(255,229,0,0.12);
+      background: rgba(255,255,255,0.08);
     }
-    .field input::placeholder { color: #333; }
+    .field input::placeholder { color: rgba(255,255,255,0.22); }
     .phone-wrap { display: flex; gap: 8px; }
     .phone-wrap select {
       cursor: pointer; flex-shrink: 0; width: 124px;
@@ -789,11 +792,13 @@
     }
 
     @keyframes ctaPulseLoop {
-      0%, 100% { box-shadow: 0 4px 20px rgba(255,229,0,0.35), 0 0 0 0 rgba(255,229,0,0.45); }
-      55% { box-shadow: 0 4px 20px rgba(255,229,0,0.35), 0 0 0 10px rgba(255,229,0,0); }
+      0%, 100% { box-shadow: 0 4px 28px rgba(255,180,0,0.5), 0 0 0 0 rgba(255,180,0,0.55); }
+      55% { box-shadow: 0 4px 28px rgba(255,180,0,0.5), 0 0 0 14px rgba(255,180,0,0); }
     }
     .hero-form-box .btn-gold {
-      animation: ctaPulseLoop 2.4s ease-in-out infinite;
+      animation: ctaPulseLoop 2s ease-in-out infinite;
+      padding: 22px 42px;
+      font-size: 1.08rem;
     }
 
     /* ══════════════════════════════════════════
@@ -918,8 +923,8 @@
       <!-- RIGHT — FORM -->
       <div class="hero-form-box">
         <h3 class="form-box-title">RESERVA TU LUGAR GRATIS</h3>
-        <div class="scarcity-badge" id="scarcityBadge" style="display:none;">
-          🔥 <span id="weeklyRegs">0</span> personas se registraron esta semana
+        <div class="scarcity-badge" id="scarcityBadge">
+          🔥 <span id="weeklyRegs">27</span> personas se registraron esta semana
         </div>
         <p class="form-box-sub" id="formDateText">Jueves · 7PM Hora México · 100% Online</p>
 
@@ -967,13 +972,13 @@
             </div>
           </div>
           <button type="submit" class="btn btn-gold btn-full" style="margin-top:10px;">
-            ✅ ¡REGISTRARME AHORA! →
+            ✅ ¡QUIERO MI LUGAR GRATIS! →
           </button>
         </form>
 
         <p class="form-privacy">
-          🔒 Tu información está 100% segura. Sin spam, nunca.<br>
-          Al registrarte recibirás acceso al grupo de WhatsApp de la clase.
+          🚀 Acceso inmediato al grupo de WhatsApp de la clase<br>
+          🔒 Tu información es 100% segura · Sin spam, nunca
         </p>
       </div>
 
@@ -1621,7 +1626,6 @@ document.addEventListener('DOMContentLoaded', function() {
       const weekly = parseInt((weekHdr || '').split('/')[1] || '0');
       if (weekly >= 5) {
         document.getElementById('weeklyRegs').textContent = weekly;
-        document.getElementById('scarcityBadge').style.display = 'flex';
       }
     } catch(e) { /* silent — static fallbacks shown */ }
   })();
