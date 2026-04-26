@@ -2502,10 +2502,11 @@ function getLastThursdayCut() {
 async function loadRegistrosTab() {
   loadBehaviorData().then(() => renderRegistros());
   try {
-    const [regs, estados, ventas] = await Promise.all([
+    const [regs, estados, ventas, asistZoom] = await Promise.all([
       fetchSB('/rest/v1/clase_viral_registros?select=id,email,nombre,phone,ts&variante=neq.pago_proximity_creators&order=ts.desc'),
       fetchSB('/rest/v1/lead_estados?select=estado,registro_email,vendedor,updated_at'),
       fetchSB('/rest/v1/ventas?select=registro_email,monto,aprobado,created_at'),
+      fetchSB('/rest/v1/asistencias?select=email,clase_fecha&order=clase_fecha.desc&limit=500'),
     ]);
 
     const corteFecha = getLastThursdayCut();
@@ -2531,6 +2532,23 @@ async function loadRegistrosTab() {
     const confAnterior = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado) && emailsAnterior.has((e.registro_email||'').toLowerCase())).length;
     const asistAnterior= (estados||[]).filter(e => e.estado === 'asistio' && emailsAnterior.has((e.registro_email||'').toLowerCase())).length;
     const ventasAnterior = (ventas||[]).filter(v => v.aprobado && v.created_at && new Date(v.created_at) >= corteAnterior && new Date(v.created_at) < corteFecha).length;
+
+    // Real Zoom attendance: find the meeting that happened during the previous cycle
+    const zoomAnterior = (() => {
+      if (!Array.isArray(asistZoom) || asistZoom.length === 0) return { count: 0, emails: new Set() };
+      // Group by fecha, find meetings within the previous cycle window (allow up to 3 days after cut)
+      const windowEnd = new Date(corteFecha.getTime() + 3 * 24 * 3600000);
+      const inWindow = asistZoom.filter(a => {
+        const d = new Date(a.clase_fecha);
+        return d >= corteAnterior && d <= windowEnd;
+      });
+      if (inWindow.length === 0) return { count: 0, emails: new Set() };
+      // Use the latest meeting in window
+      const latestDate = inWindow.reduce((max, a) => a.clase_fecha > max ? a.clase_fecha : max, inWindow[0].clase_fecha);
+      const meeting = inWindow.filter(a => a.clase_fecha === latestDate);
+      return { count: meeting.length, emails: new Set(meeting.map(a => (a.email||'').toLowerCase()).filter(Boolean)) };
+    })();
+    const asistZoomAnterior = zoomAnterior.count;
 
     const fmtCut = d => d.toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
     const pct = (a,b) => b > 0 ? Math.round(a/b*100) + '%' : '—';
@@ -2589,17 +2607,17 @@ async function loadRegistrosTab() {
           </div>
           <div class="stat-card green">
             <div class="s-label">Asistieron</div>
-            <div class="s-value" style="font-size:2rem">${asistAnterior}</div>
-            <div class="s-sub">${pct(asistAnterior, regsAnterior.length)} de registrados</div>
+            <div class="s-value" style="font-size:2rem">${asistZoomAnterior || asistAnterior}</div>
+            <div class="s-sub">${asistZoomAnterior ? pct(asistZoomAnterior, regsAnterior.length) + ' de registrados' : pct(asistAnterior, regsAnterior.length) + ' de registrados'}</div>
           </div>
           <div class="stat-card" style="border-color:rgba(255,229,0,0.3)">
             <div class="s-label">Ventas</div>
             <div class="s-value" style="color:var(--gold);font-size:2rem">${ventasAnterior}</div>
-            <div class="s-sub">${pct(ventasAnterior, asistAnterior)} de asistentes</div>
+            <div class="s-sub">${pct(ventasAnterior, asistZoomAnterior || asistAnterior)} de asistentes</div>
           </div>
           <div class="stat-card" style="border-color:rgba(34,197,94,0.3)">
             <div class="s-label">Tasa asistencia</div>
-            <div class="s-value" style="color:#22c55e;font-size:2rem">${pct(asistAnterior, regsAnterior.length)}</div>
+            <div class="s-value" style="color:#22c55e;font-size:2rem">${pct(asistZoomAnterior || asistAnterior, regsAnterior.length)}</div>
             <div class="s-sub">asistentes / registrados</div>
           </div>
         </div>`;
