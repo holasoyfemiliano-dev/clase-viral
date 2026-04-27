@@ -63,7 +63,11 @@ module.exports = async function handler(req, res) {
     // ── ACCOUNT SUMMARY ───────────────────────────────────────────────────
     if (action === 'account_summary') {
       const insightFields = 'spend,impressions,reach,clicks,actions,cost_per_action_type,cpm,cpc,ctr';
-      const url = `${META_API}/${actId}/insights?fields=${insightFields}&date_preset=${date_preset}&access_token=${token}`;
+      const since = params.since, until = params.until;
+      const timeParam = (since && until)
+        ? `time_range=${encodeURIComponent(JSON.stringify({ since, until }))}`
+        : `date_preset=${date_preset}`;
+      const url = `${META_API}/${actId}/insights?fields=${insightFields}&${timeParam}&access_token=${token}`;
       const r = await fetch(url);
       const data = await r.json();
       if (!r.ok || data.error) return res.status(400).json({ error: data.error?.message || 'Error Meta API' });

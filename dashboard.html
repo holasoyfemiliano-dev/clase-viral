@@ -585,18 +585,11 @@
         </div>
       </div>
 
-      <!-- Economics: Gasto + CPL/CAC/ROAS/Ingresos -->
+      <!-- Economics: CPL/CAC/ROAS/Ingresos (auto desde Meta Ads) -->
       <div class="card" style="padding:14px 16px;margin-bottom:8px;">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
-          <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);white-space:nowrap;">💸 Gasto en Ads</div>
-          <div style="display:flex;gap:6px;align-items:center;">
-            <span style="font-size:0.85rem;color:var(--muted);">$</span>
-            <input type="number" id="ea-gasto-input" placeholder="ej. 5000" min="0" step="100"
-              style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:5px;padding:5px 9px;color:var(--white);font-size:0.85rem;font-family:inherit;width:110px;outline:none;" oninput="updateEconomicsLive()">
-            <button onclick="saveGastoAds()"
-              style="background:var(--blue);color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;">Guardar</button>
-            <span id="ea-gasto-status" style="font-size:0.72rem;color:var(--muted);"></span>
-          </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+          <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">💸 Costos &amp; Retorno del Evento</div>
+          <div style="font-size:0.68rem;color:var(--muted);">Gasto: <span id="ea-gasto-display" style="color:var(--white);font-weight:700;">cargando…</span> <span style="opacity:0.5;">· Meta Ads del ciclo</span></div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
           <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px;text-align:center;">
@@ -1568,14 +1561,13 @@ async function renderOverview() {
 
   // ── Business metrics from Supabase ──
   try {
-    const [ventas, estados, miembros, sbRegs, interesados, pagosActv, analisisRecent] = await Promise.all([
+    const [ventas, estados, miembros, sbRegs, interesados, pagosActv] = await Promise.all([
       fetchSB('/rest/v1/ventas?select=monto,tipo,aprobado,comision_porcentaje,comision_pagada,registro_email,created_at&order=created_at.desc'),
       fetchSB('/rest/v1/lead_estados?select=estado,registro_email,vendedor,updated_at'),
       fetchSB('/rest/v1/miembros?select=id,monto_pagado,fecha_ingreso'),
       fetchSB('/rest/v1/clase_viral_registros?select=id,email,ts&variante=neq.pago_proximity_creators&order=ts.desc'),
       fetchSB('/rest/v1/proximity_creators_interesados?select=id,created_at'),
       fetchSB('/rest/v1/vendedor_actividad?select=lead_email,detalle,ts,comision_pagada&accion=eq.pago_parcial'),
-      fetchSB('/rest/v1/clase_analisis?select=id,ai_analysis&order=updated_at.desc&limit=1'),
     ]);
 
     const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -1721,10 +1713,6 @@ async function renderOverview() {
     // Ingresos brutos del evento anterior
     const ingresosBrutos = aprobadas.filter(v => emailsAsistentes.has((v.registro_email||'').toLowerCase())).reduce((s,v) => s + Number(v.monto||0), 0);
 
-    // Gasto ads del evento (guardado en clase_analisis.ai_analysis.gasto_ads)
-    const analisisRow = (analisisRecent||[])[0];
-    const gastoAds = Number(analisisRow?.ai_analysis?.gasto_ads || 0);
-    window._eaAnalisisId = analisisRow?.id || null;
     window._eaRegs = regsAnterior;
     window._eaVtas = ventasAnterior;
     window._eaIngresos = ingresosBrutos;
@@ -1748,13 +1736,22 @@ async function renderOverview() {
     document.getElementById('ea-p-vtas').textContent = _pct(ventasAnterior, asistentes) + ' de asist.';
     document.getElementById('ea-ingresos').textContent = _fmt$(ingresosBrutos);
 
-    // ── Render economics ──
-    if (gastoAds > 0) {
-      const gastoInput = document.getElementById('ea-gasto-input');
-      if (gastoInput && !gastoInput.value) gastoInput.value = gastoAds;
-    }
-    window._eaGasto = gastoAds;
-    updateEconomicsLive();
+    // ── Gasto del ciclo desde Meta Ads ──
+    try {
+      const since = corteAnterior.toISOString().slice(0,10);
+      const until = new Date(corteFecha.getTime() - 1000).toISOString().slice(0,10);
+      const metaCiclo = await fetch(`/api/meta-ads?action=account_summary&since=${since}&until=${until}`, {
+        headers: { 'Authorization': `Bearer ${DASHBOARD_SECRET}` }
+      });
+      if (metaCiclo.ok) {
+        const md = await metaCiclo.json();
+        const gasto = parseFloat(md.spend || 0);
+        window._eaGasto = gasto;
+        updateEconomicsLive(gasto);
+      } else {
+        updateEconomicsLive(0);
+      }
+    } catch(e) { updateEconomicsLive(0); }
 
     // compat
     document.getElementById('ov-tasa-asist').textContent = asistentes + ' / ' + regsAnterior;
@@ -2284,65 +2281,36 @@ let filteredRegs = [];
 
 let behaviorMap = {}; // email → behavior row
 
-// ── Evento Anterior: live economics calculator ──
-function updateEconomicsLive() {
-  const gastoInput = document.getElementById('ea-gasto-input');
-  const gasto = gastoInput ? Number(gastoInput.value) || (window._eaGasto || 0) : (window._eaGasto || 0);
+// ── Evento Anterior: economics calculator ──
+function updateEconomicsLive(gasto) {
+  const g       = gasto !== undefined ? gasto : (window._eaGasto || 0);
   const regs    = window._eaRegs    || 0;
   const vtas    = window._eaVtas    || 0;
   const ingresos = window._eaIngresos || 0;
   const fmt$ = n => '$' + Math.round(n).toLocaleString('es-MX');
 
-  const cplEl    = document.getElementById('ea-cpl');
-  const cacEl    = document.getElementById('ea-cac');
-  const roasEl   = document.getElementById('ea-roas');
+  const gastoDisplay = document.getElementById('ea-gasto-display');
+  if (gastoDisplay) gastoDisplay.textContent = g > 0 ? fmt$(g) : '—';
+
+  const cplEl  = document.getElementById('ea-cpl');
+  const cacEl  = document.getElementById('ea-cac');
+  const roasEl = document.getElementById('ea-roas');
 
   if (cplEl) {
-    if (gasto > 0 && regs > 0) { cplEl.textContent = fmt$(gasto / regs); cplEl.style.color = '#ef4444'; }
+    if (g > 0 && regs > 0) { cplEl.textContent = fmt$(g / regs); cplEl.style.color = '#ef4444'; }
     else cplEl.textContent = '$—';
   }
   if (cacEl) {
-    if (gasto > 0 && vtas > 0) { cacEl.textContent = fmt$(gasto / vtas); cacEl.style.color = '#f97316'; }
-    else if (gasto > 0) { cacEl.textContent = '∞'; cacEl.style.color = '#f97316'; }
+    if (g > 0 && vtas > 0) { cacEl.textContent = fmt$(g / vtas); cacEl.style.color = '#f97316'; }
+    else if (g > 0) { cacEl.textContent = '∞'; cacEl.style.color = '#f97316'; }
     else cacEl.textContent = '$—';
   }
   if (roasEl) {
-    if (gasto > 0) {
-      const roas = ingresos / gasto;
+    if (g > 0) {
+      const roas = ingresos / g;
       roasEl.textContent = roas.toFixed(1) + 'x';
       roasEl.style.color = roas >= 2 ? '#22c55e' : roas >= 1 ? '#eab308' : '#ef4444';
     } else roasEl.textContent = '—';
-  }
-}
-
-async function saveGastoAds() {
-  const gastoInput = document.getElementById('ea-gasto-input');
-  const statusEl   = document.getElementById('ea-gasto-status');
-  if (!gastoInput) return;
-  const gasto = Number(gastoInput.value);
-  if (!gasto && gasto !== 0) { if (statusEl) statusEl.textContent = 'Ingresa un valor'; return; }
-  if (statusEl) statusEl.textContent = 'Guardando…';
-
-  const id = window._eaAnalisisId;
-  if (!id) { if (statusEl) statusEl.textContent = 'Sin evento registrado'; return; }
-
-  try {
-    // Fetch current ai_analysis to merge
-    const rows = await fetchSB(`/rest/v1/clase_analisis?id=eq.${id}&select=ai_analysis`);
-    const current = rows?.[0]?.ai_analysis || {};
-    const merged = Object.assign({}, typeof current === 'object' ? current : {}, { gasto_ads: gasto });
-
-    await fetchSB(`/rest/v1/clase_analisis?id=eq.${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ ai_analysis: merged })
-    });
-
-    window._eaGasto = gasto;
-    updateEconomicsLive();
-    if (statusEl) { statusEl.textContent = '✓ Guardado'; statusEl.style.color = '#22c55e'; setTimeout(() => { statusEl.textContent = ''; }, 3000); }
-  } catch(e) {
-    if (statusEl) { statusEl.textContent = 'Error: ' + e.message; statusEl.style.color = '#ef4444'; }
   }
 }
 
