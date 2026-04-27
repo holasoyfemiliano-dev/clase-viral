@@ -2531,24 +2531,31 @@ async function loadRegistrosTab() {
     const confProximo  = (estados||[]).filter(e => e.estado === 'confirmado' && e.updated_at && new Date(e.updated_at) >= corteFecha).length;
     const confAnterior = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado) && emailsAnterior.has((e.registro_email||'').toLowerCase())).length;
     const asistAnterior= (estados||[]).filter(e => e.estado === 'asistio' && emailsAnterior.has((e.registro_email||'').toLowerCase())).length;
-    const ventasAnterior = (ventas||[]).filter(v => v.aprobado && v.created_at && new Date(v.created_at) >= corteAnterior && new Date(v.created_at) < corteFecha).length;
+    // ── Evento anterior: anclar al día exacto del último Zoom ──────────────────
+    // Find most recent meeting in asistencias
+    const lastEventDate = Array.isArray(asistZoom) && asistZoom.length > 0
+      ? asistZoom.reduce((max, a) => a.clase_fecha > max ? a.clase_fecha : max, asistZoom[0].clase_fecha)
+      : null;
+    const lastEventRows  = lastEventDate ? asistZoom.filter(a => a.clase_fecha === lastEventDate) : [];
+    const asistZoomAnterior = lastEventRows.length;
 
-    // Real Zoom attendance: find the meeting that happened during the previous cycle
-    const zoomAnterior = (() => {
-      if (!Array.isArray(asistZoom) || asistZoom.length === 0) return { count: 0, emails: new Set() };
-      // Group by fecha, find meetings within the previous cycle window (allow up to 3 days after cut)
-      const windowEnd = new Date(corteFecha.getTime() + 3 * 24 * 3600000);
-      const inWindow = asistZoom.filter(a => {
-        const d = new Date(a.clase_fecha);
-        return d >= corteAnterior && d <= windowEnd;
-      });
-      if (inWindow.length === 0) return { count: 0, emails: new Set() };
-      // Use the latest meeting in window
-      const latestDate = inWindow.reduce((max, a) => a.clase_fecha > max ? a.clase_fecha : max, inWindow[0].clase_fecha);
-      const meeting = inWindow.filter(a => a.clase_fecha === latestDate);
-      return { count: meeting.length, emails: new Set(meeting.map(a => (a.email||'').toLowerCase()).filter(Boolean)) };
-    })();
-    const asistZoomAnterior = zoomAnterior.count;
+    // Registration window for that event: 7 days before the meeting date
+    const lastEventEnd   = lastEventDate ? new Date(lastEventDate + 'T23:59:59Z') : null;
+    const lastEventStart = lastEventEnd   ? new Date(lastEventEnd.getTime() - 8 * 24 * 3600000) : null;
+    const regsAnterior   = lastEventStart
+      ? (regs||[]).filter(r => r.ts && new Date(r.ts) >= lastEventStart && new Date(r.ts) <= lastEventEnd)
+      : [];
+    const emailsAnterior = new Set(regsAnterior.map(r => (r.email||'').toLowerCase()).filter(Boolean));
+    const confAnterior   = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado) && emailsAnterior.has((e.registro_email||'').toLowerCase())).length;
+
+    // Ventas: only sales within 2 days before / 2 days after the event
+    const ventasAnterior = lastEventEnd ? (ventas||[]).filter(v => {
+      if (!v.aprobado || !v.created_at) return false;
+      const d = new Date(v.created_at);
+      const rangeStart = new Date(lastEventEnd.getTime() - 2 * 24 * 3600000);
+      const rangeEnd   = new Date(lastEventEnd.getTime() + 2 * 24 * 3600000);
+      return d >= rangeStart && d <= rangeEnd;
+    }).length : 0;
 
     const fmtCut = d => d.toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
     const pct = (a,b) => b > 0 ? Math.round(a/b*100) + '%' : '—';
@@ -2592,7 +2599,7 @@ async function loadRegistrosTab() {
 
         <!-- Evento anterior -->
         <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;">
-          📆 Evento anterior <span style="font-weight:400;text-transform:none;font-size:0.68rem;color:rgba(255,255,255,0.3);margin-left:6px;">${fmtCut(corteAnterior)} — ${fmtCut(corteFecha)}</span>
+          📆 Evento anterior <span style="font-weight:400;text-transform:none;font-size:0.68rem;color:rgba(255,255,255,0.3);margin-left:6px;">${lastEventDate ? new Date(lastEventDate).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'}) : '—'}</span>
         </div>
         <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:24px;">
           <div class="stat-card" style="border-color:rgba(168,85,247,0.3)">
@@ -2607,17 +2614,17 @@ async function loadRegistrosTab() {
           </div>
           <div class="stat-card green">
             <div class="s-label">Asistieron</div>
-            <div class="s-value" style="font-size:2rem">${asistZoomAnterior || asistAnterior}</div>
-            <div class="s-sub">${asistZoomAnterior ? pct(asistZoomAnterior, regsAnterior.length) + ' de registrados' : pct(asistAnterior, regsAnterior.length) + ' de registrados'}</div>
+            <div class="s-value" style="font-size:2rem">${asistZoomAnterior || '—'}</div>
+            <div class="s-sub">${pct(asistZoomAnterior, regsAnterior.length)} de registrados</div>
           </div>
           <div class="stat-card" style="border-color:rgba(255,229,0,0.3)">
             <div class="s-label">Ventas</div>
             <div class="s-value" style="color:var(--gold);font-size:2rem">${ventasAnterior}</div>
-            <div class="s-sub">${pct(ventasAnterior, asistZoomAnterior || asistAnterior)} de asistentes</div>
+            <div class="s-sub">${pct(ventasAnterior, asistZoomAnterior)} de asistentes</div>
           </div>
           <div class="stat-card" style="border-color:rgba(34,197,94,0.3)">
             <div class="s-label">Tasa asistencia</div>
-            <div class="s-value" style="color:#22c55e;font-size:2rem">${pct(asistZoomAnterior || asistAnterior, regsAnterior.length)}</div>
+            <div class="s-value" style="color:#22c55e;font-size:2rem">${pct(asistZoomAnterior, regsAnterior.length)}</div>
             <div class="s-sub">asistentes / registrados</div>
           </div>
         </div>`;
