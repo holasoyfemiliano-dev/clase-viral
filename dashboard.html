@@ -2514,7 +2514,6 @@ async function loadRegistrosTab() {
     const corteAnterior = new Date(corteFecha.getTime() - 7 * 24 * 3600000);
 
     const regsProximo   = (regs||[]).filter(r => r.ts && new Date(r.ts) >= corteFecha);
-    const regsAnterior  = (regs||[]).filter(r => r.ts && new Date(r.ts) >= corteAnterior && new Date(r.ts) < corteFecha);
     const total = (regs||[]).length;
 
     const estadosMap = {};
@@ -2523,14 +2522,12 @@ async function loadRegistrosTab() {
     // Canonical set: only emails that exist in clase_viral_registros
     const emailsTodos    = new Set((regs||[]).map(r => r.email?.toLowerCase()).filter(Boolean));
     const emailsProximo  = new Set(regsProximo.map(r => r.email?.toLowerCase()).filter(Boolean));
-    const emailsAnterior = new Set(regsAnterior.map(r => r.email?.toLowerCase()).filter(Boolean));
 
     // Cross-referenced against real registros — no phantom estados
     const confTotal    = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado) && emailsTodos.has((e.registro_email||'').toLowerCase())).length;
     const asistTotal   = (estados||[]).filter(e => e.estado === 'asistio' && emailsTodos.has((e.registro_email||'').toLowerCase())).length;
     const confProximo  = (estados||[]).filter(e => e.estado === 'confirmado' && e.updated_at && new Date(e.updated_at) >= corteFecha).length;
-    const confAnterior = (estados||[]).filter(e => ['confirmado','asistio'].includes(e.estado) && emailsAnterior.has((e.registro_email||'').toLowerCase())).length;
-    const asistAnterior= (estados||[]).filter(e => e.estado === 'asistio' && emailsAnterior.has((e.registro_email||'').toLowerCase())).length;
+
     // ── Evento anterior: anclar al día exacto del último Zoom ──────────────────
     // Find most recent meeting in asistencias
     const lastEventDate = Array.isArray(asistZoom) && asistZoom.length > 0
