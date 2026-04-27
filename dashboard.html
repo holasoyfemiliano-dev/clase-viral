@@ -2487,15 +2487,15 @@ async function loadLandingTab() {
 }
 
 function getLastThursdayCut() {
-  // Corte CRM: miércoles 7PM hora MX
+  // Corte CRM: jueves 10PM hora MX (después del evento)
   const _mxM = new Date().getMonth();
   const MX_OFFSET = (_mxM >= 3 && _mxM <= 9 ? -5 : -6) * 3600000;
   const nowMx = new Date(Date.now() + new Date().getTimezoneOffset() * 60000 + MX_OFFSET);
-  let back = (nowMx.getDay() - 3 + 7) % 7;
-  if (back === 0 && nowMx.getHours() < 19) back = 7;
+  let back = (nowMx.getDay() - 4 + 7) % 7; // días desde último jueves
+  if (back === 0 && nowMx.getHours() < 22) back = 7; // jueves antes de 10PM → jueves anterior
   const c = new Date(nowMx);
   c.setDate(nowMx.getDate() - back);
-  c.setHours(19, 0, 0, 0);
+  c.setHours(22, 0, 0, 0);
   return new Date(c.getTime() - new Date().getTimezoneOffset() * 60000 - MX_OFFSET);
 }
 
