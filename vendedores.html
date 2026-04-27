@@ -2011,7 +2011,7 @@ function renderVentas() {
   // 3 sub-valores del mes
   setEl('vs-mes-total', '$' + fmt(mesTotalComision));
   // pagada del mes = ventas de este mes que sí están pagadas
-  const mesPagada = aprobMes.filter(v => v.comision_pagada).reduce((s,v) => s + Number(v.monto) * commRate(v), 0);
+  const mesPagada = aprobMes.filter(v => v.comision_pagada).reduce((s,v) => s + Number(v.monto) * commRate(v), 0) + comisionApartadosMes;
   setEl('vs-mes-pagada', '$' + fmt(mesPagada));
   setEl('vs-mes-restante', '$' + fmt(mesTotalComision - mesPagada));
   setEl('vs-total',        '$' + fmt(totalAprobado));
