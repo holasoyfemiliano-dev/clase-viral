@@ -2168,7 +2168,7 @@ function onFileSelect(input) {
         const mimeType = file.type || 'image/jpeg';
         const expectedMonto = parseFloat(document.getElementById('ventaMonto')?.value) || 0;
 
-        const res = await fetch('/api/analyze-comprobante', {
+        const res = await fetch('/api/analyze-clase?action=comprobante', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DASH_SECRET}` },
           body: JSON.stringify({ imageBase64: base64, mimeType, expectedMonto, context: 'reporte de venta de vendedor' })
