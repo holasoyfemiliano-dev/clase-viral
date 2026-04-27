@@ -581,26 +581,38 @@
       <!-- ═══════════ VENTAS ═══════════ -->
       <div class="panel" id="tab-ventas">
 
-        <!-- Este mes (principal) -->
-        <div style="background:linear-gradient(135deg,rgba(255,229,0,0.12),rgba(255,229,0,0.03));border:1px solid rgba(255,229,0,0.4);border-radius:12px;padding:20px 24px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;" id="ventasHeader">
-          <div>
-            <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:4px;">💰 Comisión este mes</div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:var(--gold);line-height:1;" id="vs-mes-comision">$0</div>
-            <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;" id="vs-mes-label">tu comisión · aprobada</div>
+        <!-- Este mes (principal) — 3 valores -->
+        <div style="background:linear-gradient(135deg,rgba(255,229,0,0.12),rgba(255,229,0,0.03));border:1px solid rgba(255,229,0,0.4);border-radius:12px;padding:20px 24px;margin-bottom:14px;" id="ventasHeader">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:16px;">
+            <div>
+              <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:4px;">💰 Comisión este mes</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:var(--gold);line-height:1;" id="vs-mes-comision">$0</div>
+              <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;" id="vs-mes-label">cargando…</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Ventas este mes</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--white);" id="vs-mes-count">0</div>
+            </div>
           </div>
-          <div>
-            <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Ventas este mes</div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--white);" id="vs-mes-count">0</div>
+          <!-- 3 sub-valores -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,229,0,0.2);border-radius:8px;padding:12px 14px;">
+              <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px;">Total del mes</div>
+              <div style="font-size:1.4rem;font-weight:800;color:var(--gold);" id="vs-mes-total">$0</div>
+            </div>
+            <div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:12px 14px;">
+              <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#22c55e;margin-bottom:4px;">✅ Pagada</div>
+              <div style="font-size:1.4rem;font-weight:800;color:#22c55e;" id="vs-mes-pagada">$0</div>
+            </div>
+            <div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.3);border-radius:8px;padding:12px 14px;">
+              <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fbbf24;margin-bottom:4px;">⏳ Restante</div>
+              <div style="font-size:1.4rem;font-weight:800;color:#fbbf24;" id="vs-mes-restante">$0</div>
+            </div>
           </div>
         </div>
 
-        <!-- Histórico -->
+        <!-- Histórico — sin columna Comisión -->
         <div class="ventas-summary">
-          <div class="vs-item">
-            <div class="vs-label">Comisión</div>
-            <div class="vs-value green" id="vs-comision">$0</div>
-            <div class="vs-sub">comisión total aprobada</div>
-          </div>
           <div class="vs-item">
             <div class="vs-label">Pendiente Aprobación</div>
             <div class="vs-value white" id="vs-pendiente">$0</div>
@@ -775,6 +787,8 @@
       <div class="upload-preview" id="uploadPreview" style="display:none">
         <img id="previewImg" src="" alt="Comprobante">
       </div>
+      <!-- AI verification result -->
+      <div id="comprobanteAiResult" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:0.82rem;line-height:1.5;"></div>
     </div>
 
     <div class="modal-actions">
@@ -800,6 +814,7 @@
 ───────────────────────────────────── */
 const SB_URL = 'https://xpsvkhoeedinuvwrumvu.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhwc3ZraG9lZWRpbnV2d3J1bXZ1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDkzNDUzNiwiZXhwIjoyMDkwNTEwNTM2fQ.w9ij07UJ50lGwu8FcqM81tPmrU2Z7Uft7HnoAEUcBzI';
+const DASH_SECRET = 'proximity-dash-2026';
 
 let VENDEDORES_PASS = {}; // loaded from Supabase
 
@@ -1989,9 +2004,16 @@ function renderVentas() {
   const comisionApartadosMes = pagosMes.reduce((s, p) => s + Number(p.monto || 0), 0) * 0.10;
 
   const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  setEl('vs-mes-comision', '$' + fmt(mesComision + comisionApartadosMes));
+  const mesTotalComision = mesComision + comisionApartadosMes;
+  setEl('vs-mes-comision', '$' + fmt(mesTotalComision));
   setEl('vs-mes-count',    aprobMes.length + pagosMes.length);
   setEl('vs-mes-label',    MESES[ahora.getMonth()] + ' ' + ahora.getFullYear() + ' · ' + aprobMes.length + ' venta' + (aprobMes.length !== 1 ? 's' : '') + (pagosMes.length ? ' + ' + pagosMes.length + ' apartado' + (pagosMes.length !== 1 ? 's' : '') : ''));
+  // 3 sub-valores del mes
+  setEl('vs-mes-total', '$' + fmt(mesTotalComision));
+  // pagada del mes = ventas de este mes que sí están pagadas
+  const mesPagada = aprobMes.filter(v => v.comision_pagada).reduce((s,v) => s + Number(v.monto) * commRate(v), 0);
+  setEl('vs-mes-pagada', '$' + fmt(mesPagada));
+  setEl('vs-mes-restante', '$' + fmt(mesTotalComision - mesPagada));
   setEl('vs-total',        '$' + fmt(totalAprobado));
   setEl('vs-comision',     '$' + fmt(totalComision + comisionApartados));
   setEl('vs-pendiente',    '$' + fmt(totalPendiente));
@@ -2041,7 +2063,8 @@ function renderVentas() {
   // ── Estado de pago de comisiones ──
   const ventasPagadas   = aprobadas.filter(v => v.comision_pagada);
   const ventasPorCobrar = aprobadas.filter(v => !v.comision_pagada);
-  const totalPorCobrar  = ventasPorCobrar.reduce((s,v) => s + Number(v.monto) * commRate(v), 0) + comisionApartados;
+  // No se suman apartados al "por cobrar" — se rastrean separado
+  const totalPorCobrar  = ventasPorCobrar.reduce((s,v) => s + Number(v.monto) * commRate(v), 0);
   const totalCobrado    = ventasPagadas.reduce((s,v) => s + Number(v.monto) * commRate(v), 0);
   const comprobantes    = [...new Set(ventasPagadas.map(v => v.comision_comprobante_url).filter(Boolean))];
 
@@ -2117,16 +2140,77 @@ document.getElementById('ventaMonto').addEventListener('input', function() {
 function onFileSelect(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.type.startsWith('image/')) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      document.getElementById('previewImg').src = e.target.result;
+
+  const aiResult = document.getElementById('comprobanteAiResult');
+  if (aiResult) { aiResult.style.display = 'none'; aiResult.innerHTML = ''; }
+
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const dataUrl = e.target.result;
+
+    if (file.type.startsWith('image/')) {
+      document.getElementById('previewImg').src = dataUrl;
       document.getElementById('uploadPreview').style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-  } else {
-    document.getElementById('uploadPreview').style.display = 'none';
-  }
+    } else {
+      document.getElementById('uploadPreview').style.display = 'none';
+    }
+
+    // AI analysis
+    if (aiResult) {
+      aiResult.style.display = 'block';
+      aiResult.style.background = 'rgba(255,255,255,0.04)';
+      aiResult.style.border = '1px solid rgba(255,255,255,0.1)';
+      aiResult.style.color = 'var(--muted)';
+      aiResult.innerHTML = '🔍 Verificando comprobante con IA…';
+
+      try {
+        const base64 = dataUrl.split(',')[1];
+        const mimeType = file.type || 'image/jpeg';
+        const expectedMonto = parseFloat(document.getElementById('ventaMonto')?.value) || 0;
+
+        const res = await fetch('/api/analyze-comprobante', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DASH_SECRET}` },
+          body: JSON.stringify({ imageBase64: base64, mimeType, expectedMonto, context: 'reporte de venta de vendedor' })
+        });
+        const data = await res.json();
+
+        if (data.error && !data.monto_detectado) {
+          aiResult.style.background = 'rgba(239,68,68,0.08)';
+          aiResult.style.border = '1px solid rgba(239,68,68,0.25)';
+          aiResult.style.color = '#ef4444';
+          aiResult.innerHTML = `⚠️ No se pudo leer el comprobante: ${data.error}`;
+          return;
+        }
+
+        const montoFmt = n => '$' + Number(n).toLocaleString('es-MX', { maximumFractionDigits: 0 });
+        const match = data.match && data.monto_detectado > 0;
+        const color = match ? '#22c55e' : '#f97316';
+        const bg = match ? 'rgba(34,197,94,0.08)' : 'rgba(249,115,22,0.08)';
+        const border = match ? 'rgba(34,197,94,0.25)' : 'rgba(249,115,22,0.25)';
+        const icon = match ? '✅' : '⚠️';
+        const statusText = match
+          ? `Monto confirmado: <strong style="color:#22c55e">${montoFmt(data.monto_detectado)}</strong> — coincide con el reporte`
+          : `Monto detectado: <strong style="color:#f97316">${data.monto_detectado > 0 ? montoFmt(data.monto_detectado) : 'no legible'}</strong>${expectedMonto ? ` · Esperado: <strong>${montoFmt(expectedMonto)}</strong>` : ''}`;
+
+        const extras = [
+          data.fecha ? `📅 ${data.fecha}` : '',
+          data.emisor ? `👤 De: ${data.emisor}` : '',
+          data.receptor ? `🏦 Para: ${data.receptor}` : '',
+          data.concepto ? `📝 ${data.concepto}` : ''
+        ].filter(Boolean).join(' · ');
+
+        aiResult.style.background = bg;
+        aiResult.style.border = `1px solid ${border}`;
+        aiResult.style.color = color;
+        aiResult.innerHTML = `${icon} ${statusText}${extras ? `<div style="margin-top:4px;font-size:0.76rem;color:var(--muted)">${extras}</div>` : ''}${data.observaciones ? `<div style="margin-top:3px;font-size:0.74rem;opacity:0.7">${data.observaciones}</div>` : ''}`;
+      } catch(e) {
+        aiResult.innerHTML = '⚠️ Error al verificar: ' + e.message;
+        aiResult.style.color = 'var(--muted)';
+      }
+    }
+  };
+  reader.readAsDataURL(file);
   document.querySelector('.upload-text').innerHTML = `<strong style="color:var(--green)">✓ ${esc(file.name)}</strong>`;
 }
 
