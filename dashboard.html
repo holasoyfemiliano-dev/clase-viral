@@ -550,20 +550,83 @@
         </div>
       </div>
 
-      <!-- ── EVENTO ANTERIOR (Asistencia real del último evento) ── -->
-      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">Evento Anterior</div>
-      <div class="stats-row" style="grid-template-columns:repeat(2,1fr);margin-bottom:8px;">
-        <div class="stat-card" style="border-color:rgba(34,197,94,0.25);">
-          <div class="s-label">Asistencia Real</div>
-          <div class="s-value" id="ov-tasa-asist" style="color:var(--green);font-size:1.5rem;">—</div>
-          <div class="s-sub" id="ov-tasa-asist-sub">asistentes según Zoom</div>
+      <!-- ── EVENTO ANTERIOR — funnel completo ── -->
+      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">
+        Evento Anterior
+        <span id="ea-fecha-label" style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.68rem;margin-left:8px;"></span>
+      </div>
+
+      <!-- Funnel pipeline -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px;">
+        <div class="stat-card" style="border-color:rgba(168,85,247,0.35);text-align:center;padding:12px 6px;">
+          <div class="s-label" style="font-size:0.62rem;margin-bottom:6px;">Registrados</div>
+          <div id="ea-n-regs" style="font-size:1.7rem;font-weight:800;color:#a855f7;line-height:1;">—</div>
+          <div style="font-size:0.65rem;color:var(--muted);margin-top:4px;">del ciclo</div>
         </div>
-        <div class="stat-card" style="border-color:rgba(255,214,0,0.25);">
-          <div class="s-label">Conversión</div>
-          <div class="s-value" id="ov-tasa-conv" style="color:var(--gold);font-size:1.5rem;">—</div>
-          <div class="s-sub" id="ov-tasa-conv-sub">ventas / asistentes</div>
+        <div class="stat-card" style="border-color:rgba(59,130,246,0.35);text-align:center;padding:12px 6px;">
+          <div class="s-label" style="font-size:0.62rem;margin-bottom:6px;">Confirmados</div>
+          <div id="ea-n-conf" style="font-size:1.7rem;font-weight:800;color:#3b82f6;line-height:1;">—</div>
+          <div id="ea-p-conf" style="font-size:0.65rem;color:var(--muted);margin-top:4px;">— de regs</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(34,197,94,0.35);text-align:center;padding:12px 6px;">
+          <div class="s-label" style="font-size:0.62rem;margin-bottom:6px;">Asistentes</div>
+          <div id="ea-n-asist" style="font-size:1.7rem;font-weight:800;color:#22c55e;line-height:1;">—</div>
+          <div id="ea-p-asist" style="font-size:0.65rem;color:var(--muted);margin-top:4px;">— de regs</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(249,115,22,0.35);text-align:center;padding:12px 6px;">
+          <div class="s-label" style="font-size:0.62rem;margin-bottom:6px;">Interesados</div>
+          <div id="ea-n-int" style="font-size:1.7rem;font-weight:800;color:#f97316;line-height:1;">—</div>
+          <div id="ea-p-int" style="font-size:0.65rem;color:var(--muted);margin-top:4px;">— de asist.</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(255,214,0,0.35);text-align:center;padding:12px 6px;">
+          <div class="s-label" style="font-size:0.62rem;margin-bottom:6px;">Ventas</div>
+          <div id="ea-n-vtas" style="font-size:1.7rem;font-weight:800;color:var(--gold);line-height:1;">—</div>
+          <div id="ea-p-vtas" style="font-size:0.65rem;color:var(--muted);margin-top:4px;">— de asist.</div>
         </div>
       </div>
+
+      <!-- Economics: Gasto + CPL/CAC/ROAS/Ingresos -->
+      <div class="card" style="padding:14px 16px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+          <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);white-space:nowrap;">💸 Gasto en Ads</div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span style="font-size:0.85rem;color:var(--muted);">$</span>
+            <input type="number" id="ea-gasto-input" placeholder="ej. 5000" min="0" step="100"
+              style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:5px;padding:5px 9px;color:var(--white);font-size:0.85rem;font-family:inherit;width:110px;outline:none;" oninput="updateEconomicsLive()">
+            <button onclick="saveGastoAds()"
+              style="background:var(--blue);color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;">Guardar</button>
+            <span id="ea-gasto-status" style="font-size:0.72rem;color:var(--muted);"></span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+          <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px;">CPL</div>
+            <div id="ea-cpl" style="font-size:1.3rem;font-weight:800;color:#ef4444;">$—</div>
+            <div style="font-size:0.62rem;color:var(--muted);margin-top:2px;">por registro</div>
+          </div>
+          <div style="background:rgba(249,115,22,0.07);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px;">CAC</div>
+            <div id="ea-cac" style="font-size:1.3rem;font-weight:800;color:#f97316;">$—</div>
+            <div style="font-size:0.62rem;color:var(--muted);margin-top:2px;">por cliente</div>
+          </div>
+          <div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px;">ROAS</div>
+            <div id="ea-roas" style="font-size:1.3rem;font-weight:800;color:#22c55e;">—</div>
+            <div style="font-size:0.62rem;color:var(--muted);margin-top:2px;">retorno × inv.</div>
+          </div>
+          <div style="background:rgba(255,214,0,0.07);border:1px solid rgba(255,214,0,0.2);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px;">Ingresos</div>
+            <div id="ea-ingresos" style="font-size:1.3rem;font-weight:800;color:var(--gold);">$—</div>
+            <div style="font-size:0.62rem;color:var(--muted);margin-top:2px;">evento anterior</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- hidden compat elements for JS that still references these -->
+      <span id="ov-tasa-asist" style="display:none;"></span>
+      <span id="ov-tasa-asist-sub" style="display:none;"></span>
+      <span id="ov-tasa-conv" style="display:none;"></span>
+      <span id="ov-tasa-conv-sub" style="display:none;"></span>
 
       <!-- ── EMBUDO DE VENTAS ── -->
       <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;margin-top:24px;">🔥 Embudo de ventas</div>
@@ -1505,13 +1568,14 @@ async function renderOverview() {
 
   // ── Business metrics from Supabase ──
   try {
-    const [ventas, estados, miembros, sbRegs, interesados, pagosActv] = await Promise.all([
+    const [ventas, estados, miembros, sbRegs, interesados, pagosActv, analisisRecent] = await Promise.all([
       fetchSB('/rest/v1/ventas?select=monto,tipo,aprobado,comision_porcentaje,comision_pagada,registro_email,created_at&order=created_at.desc'),
       fetchSB('/rest/v1/lead_estados?select=estado,registro_email,vendedor,updated_at'),
       fetchSB('/rest/v1/miembros?select=id,monto_pagado,fecha_ingreso'),
       fetchSB('/rest/v1/clase_viral_registros?select=id,email,ts&variante=neq.pago_proximity_creators&order=ts.desc'),
       fetchSB('/rest/v1/proximity_creators_interesados?select=id,created_at'),
       fetchSB('/rest/v1/vendedor_actividad?select=lead_email,detalle,ts,comision_pagada&accion=eq.pago_parcial'),
+      fetchSB('/rest/v1/clase_analisis?select=id,ai_analysis&order=updated_at.desc&limit=1'),
     ]);
 
     const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -1626,29 +1690,75 @@ async function renderOverview() {
 
     // ── Evento Anterior: solo el ciclo mié-mié anterior ──
     const corteAnterior = new Date(corteFecha.getTime() - 7 * 24 * 3600000);
-    // Registros de ESE ciclo únicamente (no acumulado)
-    const regsAnterior = (sbRegs||[]).filter(r => r.ts && new Date(r.ts) >= corteAnterior && new Date(r.ts) < corteFecha).length;
+    const regsAnteriorList = (sbRegs||[]).filter(r => r.ts && new Date(r.ts) >= corteAnterior && new Date(r.ts) < corteFecha);
+    const regsAnterior = regsAnteriorList.length;
+    const emailsAnteriorSet = new Set(regsAnteriorList.map(r => (r.email||'').toLowerCase()).filter(Boolean));
+
+    // Confirmados del ciclo anterior = cualquier estado distinto de pendiente/inválido para esos registros
+    const CONF_EST = new Set(['confirmado','asistio','referido_confirmado','compro_evento','no_asistio','interesado','seguimiento','seguimiento_exitoso']);
+    const confirmadosAnterior = (estados||[]).filter(e => CONF_EST.has(e.estado) && emailsAnteriorSet.has((e.registro_email||'').toLowerCase())).length;
 
     // Asistentes: solo el meeting más reciente (no todos los históricos)
     let asistentes = 0;
     let emailsAsistentes = new Set();
+    let latestEventDate = '';
     try {
       const asist = await fetchSB('/rest/v1/asistencias?select=email,clase_fecha&order=clase_fecha.desc&limit=500');
       if (Array.isArray(asist) && asist.length > 0) {
-        const latestDate = asist[0].clase_fecha;
-        const lastMeeting = asist.filter(a => a.clase_fecha === latestDate);
+        latestEventDate = asist[0].clase_fecha;
+        const lastMeeting = asist.filter(a => a.clase_fecha === latestEventDate);
         asistentes = lastMeeting.length;
         emailsAsistentes = new Set(lastMeeting.map(a => (a.email||'').toLowerCase()).filter(Boolean));
       }
     } catch(e) {}
 
+    // Interesados del evento: levantaron la mano (lead_estados = interesado) Y asistieron al Zoom
+    const interesadosAnterior = (estados||[]).filter(e => e.estado === 'interesado' && emailsAsistentes.has((e.registro_email||'').toLowerCase())).length;
+
     // Conversiones: ventas de personas que SÍ asistieron al último evento
     const ventasAnterior = aprobadas.filter(v => emailsAsistentes.has((v.registro_email||'').toLowerCase())).length;
 
-    document.getElementById('ov-tasa-asist').textContent = asistentes > 0 ? asistentes + ' / ' + regsAnterior : '—';
-    document.getElementById('ov-tasa-asist-sub').textContent = asistentes > 0 ? asistentes + ' asistentes de ' + regsAnterior + ' registrados (evento anterior)' : 'sin datos de Zoom aún';
-    document.getElementById('ov-tasa-conv').textContent = asistentes > 0 ? ventasAnterior + ' / ' + asistentes : '—';
-    document.getElementById('ov-tasa-conv-sub').textContent = asistentes > 0 ? ventasAnterior + ' ventas de ' + asistentes + ' asistentes' : 'ventas / asistentes';
+    // Ingresos brutos del evento anterior
+    const ingresosBrutos = aprobadas.filter(v => emailsAsistentes.has((v.registro_email||'').toLowerCase())).reduce((s,v) => s + Number(v.monto||0), 0);
+
+    // Gasto ads del evento (guardado en clase_analisis.ai_analysis.gasto_ads)
+    const analisisRow = (analisisRecent||[])[0];
+    const gastoAds = Number(analisisRow?.ai_analysis?.gasto_ads || 0);
+    window._eaAnalisisId = analisisRow?.id || null;
+    window._eaRegs = regsAnterior;
+    window._eaVtas = ventasAnterior;
+    window._eaIngresos = ingresosBrutos;
+
+    // ── Render funnel ──
+    const _pct = (n, d) => d > 0 ? Math.round(n / d * 100) + '%' : '—';
+    const _fmt$ = n => '$' + Math.round(n).toLocaleString('es-MX');
+    if (latestEventDate) {
+      const dl = new Date(latestEventDate + 'T12:00:00').toLocaleDateString('es-MX', { weekday:'short', day:'numeric', month:'short' });
+      const el = document.getElementById('ea-fecha-label');
+      if (el) el.textContent = '· ' + dl;
+    }
+    document.getElementById('ea-n-regs').textContent = regsAnterior || '—';
+    document.getElementById('ea-n-conf').textContent = confirmadosAnterior || '—';
+    document.getElementById('ea-p-conf').textContent = _pct(confirmadosAnterior, regsAnterior) + ' de regs';
+    document.getElementById('ea-n-asist').textContent = asistentes || '—';
+    document.getElementById('ea-p-asist').textContent = _pct(asistentes, regsAnterior) + ' de regs';
+    document.getElementById('ea-n-int').textContent = interesadosAnterior || '—';
+    document.getElementById('ea-p-int').textContent = _pct(interesadosAnterior, asistentes) + ' de asist.';
+    document.getElementById('ea-n-vtas').textContent = ventasAnterior || '—';
+    document.getElementById('ea-p-vtas').textContent = _pct(ventasAnterior, asistentes) + ' de asist.';
+    document.getElementById('ea-ingresos').textContent = _fmt$(ingresosBrutos);
+
+    // ── Render economics ──
+    if (gastoAds > 0) {
+      const gastoInput = document.getElementById('ea-gasto-input');
+      if (gastoInput && !gastoInput.value) gastoInput.value = gastoAds;
+    }
+    window._eaGasto = gastoAds;
+    updateEconomicsLive();
+
+    // compat
+    document.getElementById('ov-tasa-asist').textContent = asistentes + ' / ' + regsAnterior;
+    document.getElementById('ov-tasa-conv').textContent = ventasAnterior + ' / ' + asistentes;
 
     // ── Predicciones con tasa fija de asistencia 30% ──
     {
@@ -1759,6 +1869,7 @@ async function renderOverview() {
   } catch(e) { /* silent fail — tables may not exist yet */ }
 
   // Vendor mini-summary
+
   try {
     // Time references for weekly/daily filters
     const hoy = new Date(); hoy.setHours(0,0,0,0);
@@ -2172,6 +2283,68 @@ function showOptimizationToast(variant, oldTitle, newTitle) {
 let filteredRegs = [];
 
 let behaviorMap = {}; // email → behavior row
+
+// ── Evento Anterior: live economics calculator ──
+function updateEconomicsLive() {
+  const gastoInput = document.getElementById('ea-gasto-input');
+  const gasto = gastoInput ? Number(gastoInput.value) || (window._eaGasto || 0) : (window._eaGasto || 0);
+  const regs    = window._eaRegs    || 0;
+  const vtas    = window._eaVtas    || 0;
+  const ingresos = window._eaIngresos || 0;
+  const fmt$ = n => '$' + Math.round(n).toLocaleString('es-MX');
+
+  const cplEl    = document.getElementById('ea-cpl');
+  const cacEl    = document.getElementById('ea-cac');
+  const roasEl   = document.getElementById('ea-roas');
+
+  if (cplEl) {
+    if (gasto > 0 && regs > 0) { cplEl.textContent = fmt$(gasto / regs); cplEl.style.color = '#ef4444'; }
+    else cplEl.textContent = '$—';
+  }
+  if (cacEl) {
+    if (gasto > 0 && vtas > 0) { cacEl.textContent = fmt$(gasto / vtas); cacEl.style.color = '#f97316'; }
+    else if (gasto > 0) { cacEl.textContent = '∞'; cacEl.style.color = '#f97316'; }
+    else cacEl.textContent = '$—';
+  }
+  if (roasEl) {
+    if (gasto > 0) {
+      const roas = ingresos / gasto;
+      roasEl.textContent = roas.toFixed(1) + 'x';
+      roasEl.style.color = roas >= 2 ? '#22c55e' : roas >= 1 ? '#eab308' : '#ef4444';
+    } else roasEl.textContent = '—';
+  }
+}
+
+async function saveGastoAds() {
+  const gastoInput = document.getElementById('ea-gasto-input');
+  const statusEl   = document.getElementById('ea-gasto-status');
+  if (!gastoInput) return;
+  const gasto = Number(gastoInput.value);
+  if (!gasto && gasto !== 0) { if (statusEl) statusEl.textContent = 'Ingresa un valor'; return; }
+  if (statusEl) statusEl.textContent = 'Guardando…';
+
+  const id = window._eaAnalisisId;
+  if (!id) { if (statusEl) statusEl.textContent = 'Sin evento registrado'; return; }
+
+  try {
+    // Fetch current ai_analysis to merge
+    const rows = await fetchSB(`/rest/v1/clase_analisis?id=eq.${id}&select=ai_analysis`);
+    const current = rows?.[0]?.ai_analysis || {};
+    const merged = Object.assign({}, typeof current === 'object' ? current : {}, { gasto_ads: gasto });
+
+    await fetchSB(`/rest/v1/clase_analisis?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ ai_analysis: merged })
+    });
+
+    window._eaGasto = gasto;
+    updateEconomicsLive();
+    if (statusEl) { statusEl.textContent = '✓ Guardado'; statusEl.style.color = '#22c55e'; setTimeout(() => { statusEl.textContent = ''; }, 3000); }
+  } catch(e) {
+    if (statusEl) { statusEl.textContent = 'Error: ' + e.message; statusEl.style.color = '#ef4444'; }
+  }
+}
 
 async function loadBehaviorData() {
   try {
