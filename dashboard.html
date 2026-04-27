@@ -2302,14 +2302,21 @@ function updateEconomicsLive(gasto) {
   }
   if (cacEl) {
     if (g > 0 && vtas > 0) { cacEl.textContent = fmt$(g / vtas); cacEl.style.color = '#f97316'; }
-    else if (g > 0) { cacEl.textContent = '∞'; cacEl.style.color = '#f97316'; }
-    else cacEl.textContent = '$—';
+    else if (g > 0) {
+      cacEl.textContent = 'Sin ventas';
+      cacEl.style.color = 'var(--muted)';
+      cacEl.style.fontSize = '0.9rem';
+    } else cacEl.textContent = '$—';
   }
   if (roasEl) {
-    if (g > 0) {
+    if (g > 0 && ingresos > 0) {
       const roas = ingresos / g;
       roasEl.textContent = roas.toFixed(1) + 'x';
       roasEl.style.color = roas >= 2 ? '#22c55e' : roas >= 1 ? '#eab308' : '#ef4444';
+    } else if (g > 0) {
+      roasEl.textContent = 'Sin ventas';
+      roasEl.style.color = 'var(--muted)';
+      roasEl.style.fontSize = '0.9rem';
     } else roasEl.textContent = '—';
   }
 }
