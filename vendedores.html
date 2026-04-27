@@ -2065,7 +2065,7 @@ function renderVentas() {
   const ventasPorCobrar = aprobadas.filter(v => !v.comision_pagada);
   // No se suman apartados al "por cobrar" — se rastrean separado
   const totalPorCobrar  = ventasPorCobrar.reduce((s,v) => s + Number(v.monto) * commRate(v), 0);
-  const totalCobrado    = ventasPagadas.reduce((s,v) => s + Number(v.monto) * commRate(v), 0);
+  const totalCobrado    = ventasPagadas.reduce((s,v) => s + Number(v.monto) * commRate(v), 0) + comisionApartados;
   const comprobantes    = [...new Set(ventasPagadas.map(v => v.comision_comprobante_url).filter(Boolean))];
 
   const secEl = document.getElementById('comisionEstadoSection');
