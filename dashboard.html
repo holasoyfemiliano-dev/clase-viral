@@ -1889,13 +1889,14 @@ async function renderOverview() {
     const cortePrev = new Date(corteSem.getTime() - 7 * 86400000);  // Semana pasada: 7 días antes
     const corteSemISO = corteSem.toISOString();
 
-    const [vends, actividad, actividadHoy, ventasVend, leadsVend, pagosVend] = await Promise.all([
+    const [vends, actividad, actividadHoy, ventasVend, leadsVend, pagosVend, dailyReports] = await Promise.all([
       fetchSB('/rest/v1/vendedores?select=nombre,activo,last_active,apodo,foto_url&order=nombre'),
       fetchSB('/rest/v1/vendedor_actividad?select=vendedor,accion,detalle,ts&order=ts.desc&limit=2000'),
       fetchSB(`/rest/v1/vendedor_actividad?select=vendedor,accion,detalle,ts&accion=in.(session_start,session_end)&ts=gte.${encodeURIComponent(hoyISO)}&order=ts.asc`),
       fetchSB('/rest/v1/ventas?select=vendedor,monto,tipo,aprobado,comision_porcentaje'),
       fetchSB('/rest/v1/lead_estados?select=vendedor,asignado_a,estado,updated_at'),
       fetchSB('/rest/v1/vendedor_actividad?select=vendedor,detalle&accion=eq.pago_parcial'),
+      fetchSB('/rest/v1/vendedor_actividad?select=vendedor,detalle,ts&accion=eq.daily_report&order=ts.desc&limit=300'),
     ]);
 
     // ── Confirmados: hoy / esta semana (desde mié 7pm) / semana pasada (mié anterior → mié actual) ──
@@ -1908,6 +1909,19 @@ async function renderOverview() {
       if (upd >= hoy)     confHoy[name]      = (confHoy[name]||0) + 1;
       if (upd >= corteSem) confSemana[name]  = (confSemana[name]||0) + 1;
       else if (upd >= cortePrev) confSemPasada[name] = (confSemPasada[name]||0) + 1;
+    });
+
+    // ── Daily reports map: vendedor → { 'YYYY-MM-DD' → {marcaciones,llamadas,confirmados,referidos} } ──
+    const dailyMap = {};
+    (dailyReports || []).forEach(r => {
+      try {
+        const d = typeof r.detalle === 'string' ? JSON.parse(r.detalle) : (r.detalle || {});
+        if (!d.fecha || !r.vendedor) return;
+        if (!dailyMap[r.vendedor]) dailyMap[r.vendedor] = {};
+        if (!dailyMap[r.vendedor][d.fecha]) {
+          dailyMap[r.vendedor][d.fecha] = { marcaciones: d.marcaciones || 0, llamadas: d.llamadas || 0, confirmados: d.confirmados || 0, referidos: d.referidos || 0 };
+        }
+      } catch(e) {}
     });
 
     // ── Per-vendor time: today (completed + currently active session) ──
@@ -2008,24 +2022,34 @@ async function renderOverview() {
               </div>
             </div>
 
-            <!-- Confirmados: sem. pasada / esta semana / hoy -->
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:10px;">
-              <div style="background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.25);border-radius:8px;padding:7px 3px;text-align:center;" title="Leads confirmados del ciclo anterior (antes del miércoles 7pm)">
-                <div style="font-size:0.52rem;font-weight:700;color:rgba(148,163,184,0.8);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">Sem. pasada</div>
-                <div style="font-size:1.4rem;font-weight:800;color:#94a3b8;line-height:1;">${cSemPas}</div>
-                <div style="font-size:0.55rem;color:var(--muted);margin-top:1px;">pendientes</div>
-              </div>
-              <div style="background:rgba(26,111,255,0.09);border:1px solid rgba(26,111,255,0.22);border-radius:8px;padding:7px 3px;text-align:center;" title="Leads de esta semana (desde el miércoles 7pm)">
-                <div style="font-size:0.52rem;font-weight:700;color:rgba(26,111,255,0.8);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">Esta semana</div>
-                <div style="font-size:1.4rem;font-weight:800;color:#60a5fa;line-height:1;">${cSemana}</div>
-                <div style="font-size:0.55rem;color:var(--muted);margin-top:1px;">desde mié 7pm</div>
-              </div>
-              <div style="background:rgba(168,85,247,0.09);border:1px solid rgba(168,85,247,0.22);border-radius:8px;padding:7px 3px;text-align:center;" title="Confirmados desde las 12am de hoy">
-                <div style="font-size:0.52rem;font-weight:700;color:rgba(168,85,247,0.8);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">Hoy</div>
-                <div style="font-size:1.4rem;font-weight:800;color:#c084fc;line-height:1;">${cHoy}</div>
-                <div style="font-size:0.55rem;color:var(--muted);margin-top:1px;">hoy</div>
-              </div>
-            </div>
+            <!-- Métricas diarias Lun-Dom -->
+            ${(() => {
+              const DAYS_SHORT = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+              const now2 = new Date();
+              const todayKey2 = now2.toISOString().slice(0,10);
+              const dow2 = now2.getDay();
+              const mon2 = new Date(now2);
+              mon2.setDate(now2.getDate() - (dow2 === 0 ? 6 : dow2 - 1));
+              mon2.setHours(0,0,0,0);
+              const wk = Array.from({length:7},(_,i)=>{ const d=new Date(mon2); d.setDate(mon2.getDate()+i); return d; });
+              const vDailyMap = dailyMap[v.nombre] || {};
+              const METS = [{k:'marcaciones',l:'Marc',c:'#94a3b8'},{k:'llamadas',l:'Llam',c:'#60a5fa'},{k:'confirmados',l:'Conf',c:'#22c55e'},{k:'referidos',l:'Ref',c:'#f472b6'}];
+              return `<div style="margin-bottom:10px;overflow-x:auto;">
+                <div style="font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:5px;">📊 Métricas semanales</div>
+                <table style="width:100%;border-collapse:collapse;font-size:0.65rem;min-width:200px;">
+                  <thead><tr>
+                    <th style="text-align:left;color:var(--muted);padding:2px 3px;width:32px;"></th>
+                    ${wk.map(d=>{const ds=d.toISOString().slice(0,10);const isT=ds===todayKey2;const isFut=d>now2;return`<th style="text-align:center;padding:2px 2px;font-size:0.58rem;font-weight:700;color:${isT?'var(--gold)':isFut?'rgba(255,255,255,0.15)':'var(--muted)'};">${DAYS_SHORT[d.getDay()]}</th>`}).join('')}
+                  </tr></thead>
+                  <tbody>
+                    ${METS.map(m=>`<tr>
+                      <td style="color:${m.c};font-weight:700;padding:3px 3px;white-space:nowrap;font-size:0.6rem;">${m.l}</td>
+                      ${wk.map(d=>{const ds=d.toISOString().slice(0,10);const isT=ds===todayKey2;const isFut=d>now2;const val=vDailyMap[ds]?vDailyMap[ds][m.k]:null;return`<td style="text-align:center;padding:3px 2px;${isT?'font-weight:800;color:'+m.c+';background:rgba(255,214,0,0.05);border-radius:3px;':''}${isFut?'color:rgba(255,255,255,0.12);':val!==null?'color:var(--text);':'color:rgba(255,255,255,0.2);'}">${val!==null?val:(isFut?'':'—')}</td>`}).join('')}
+                    </tr>`).join('')}
+                  </tbody>
+                </table>
+              </div>`;
+            })()}
 
             <!-- Comisiones -->
             <div style="background:rgba(255,214,0,0.07);border:1px solid rgba(255,214,0,0.15);border-radius:8px;padding:9px 12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
