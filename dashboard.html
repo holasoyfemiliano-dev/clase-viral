@@ -1924,6 +1924,28 @@ async function renderOverview() {
       } catch(e) {}
     });
 
+    // ── System-detected confirmados per vendor per day (cross-check) ──
+    const sysConfByDay = {};
+    const CONF_ESTADOS_SET = new Set(['confirmado','pendiente_confirmar','asistio','seguimiento_exitoso','compro_evento']);
+    (leadsVend||[]).forEach(e => {
+      const name = e.vendedor || e.asignado_a;
+      if (!name || !CONF_ESTADOS_SET.has(e.estado)) return;
+      const ds = e.updated_at ? e.updated_at.slice(0,10) : null;
+      if (!ds) return;
+      if (!sysConfByDay[name]) sysConfByDay[name] = {};
+      sysConfByDay[name][ds] = (sysConfByDay[name][ds]||0) + 1;
+    });
+
+    // ── System-detected referidos per vendor per day (cross-check) ──
+    const sysRefByDay = {};
+    (actividad||[]).forEach(a => {
+      if (a.accion !== 'lead_referido') return;
+      const ds = a.ts ? a.ts.slice(0,10) : null;
+      if (!ds || !a.vendedor) return;
+      if (!sysRefByDay[a.vendedor]) sysRefByDay[a.vendedor] = {};
+      sysRefByDay[a.vendedor][ds] = (sysRefByDay[a.vendedor][ds]||0) + 1;
+    });
+
     // ── Per-vendor time: today (completed + currently active session) ──
     const tiempoHoyMap = {};
     const lastStartHoy = {}; // track open sessions
@@ -2033,7 +2055,13 @@ async function renderOverview() {
               mon2.setHours(0,0,0,0);
               const wk = Array.from({length:7},(_,i)=>{ const d=new Date(mon2); d.setDate(mon2.getDate()+i); return d; });
               const vDailyMap = dailyMap[v.nombre] || {};
-              const METS = [{k:'marcaciones',l:'Marc',c:'#94a3b8'},{k:'llamadas',l:'Llam',c:'#60a5fa'},{k:'confirmados',l:'Conf',c:'#22c55e'},{k:'referidos',l:'Ref',c:'#f472b6'}];
+              const METS = [
+                {k:'marcaciones',l:'Marc',c:'#94a3b8',sys:null},
+                {k:'llamadas',l:'Llam',c:'#60a5fa',sys:null},
+                {k:'confirmados',l:'Conf',c:'#22c55e',sys:sysConfByDay[v.nombre]||{}},
+                {k:'referidos',l:'Ref',c:'#f472b6',sys:sysRefByDay[v.nombre]||{}},
+              ];
+              const vBadge=(rep,sys)=>{if(rep===null||sys===undefined)return'';const sv=sys||0;if(rep===sv)return'<span style="font-size:0.5rem;color:#22c55e;"> ✓</span>';if(Math.abs(rep-sv)<=1)return'<span style="font-size:0.5rem;color:#eab308;" title="Sistema:'+sv+'"> ~</span>';return'<span style="font-size:0.5rem;color:#ef4444;" title="Sistema:'+sv+'"> ⚠</span>';};
               return `<div style="margin-bottom:10px;overflow-x:auto;">
                 <div style="font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:5px;">📊 Métricas semanales</div>
                 <table style="width:100%;border-collapse:collapse;font-size:0.65rem;min-width:200px;">
@@ -2044,7 +2072,7 @@ async function renderOverview() {
                   <tbody>
                     ${METS.map(m=>`<tr>
                       <td style="color:${m.c};font-weight:700;padding:3px 3px;white-space:nowrap;font-size:0.6rem;">${m.l}</td>
-                      ${wk.map(d=>{const ds=d.toISOString().slice(0,10);const isT=ds===todayKey2;const isFut=d>now2;const val=vDailyMap[ds]?vDailyMap[ds][m.k]:null;return`<td style="text-align:center;padding:3px 2px;${isT?'font-weight:800;color:'+m.c+';background:rgba(255,214,0,0.05);border-radius:3px;':''}${isFut?'color:rgba(255,255,255,0.12);':val!==null?'color:var(--text);':'color:rgba(255,255,255,0.2);'}">${val!==null?val:(isFut?'':'—')}</td>`}).join('')}
+                      ${wk.map(d=>{const ds=d.toISOString().slice(0,10);const isT=ds===todayKey2;const isFut=d>now2;const val=vDailyMap[ds]?vDailyMap[ds][m.k]:null;const badge=m.sys!==null?vBadge(val,m.sys[ds]):'';return`<td style="text-align:center;padding:3px 2px;${isT?'font-weight:800;color:'+m.c+';background:rgba(255,214,0,0.05);border-radius:3px;':''}${isFut?'color:rgba(255,255,255,0.12);':val!==null?'color:var(--text);':'color:rgba(255,255,255,0.2);'}">${val!==null?val+badge:(isFut?'':'—')}</td>`}).join('')}
                     </tr>`).join('')}
                   </tbody>
                 </table>
